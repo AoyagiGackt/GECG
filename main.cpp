@@ -4,6 +4,10 @@
 #include <string>
 // ファイルやディレクトリに関する操作を行うライブラリ
 #include <filesystem>
+// ファイルに書いたり読んだりするライブラリ
+#include <fstream>
+// 時間を扱うライブラリ
+#include <chrono>
 
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -25,6 +29,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // 文字列を出す
 void Log(const std::string& message)
 {
+    OutputDebugStringA(message.c_str());
+}
+
+void Log(std::ostream& os, const std::string& message)
+{
+    // ログファイルに書き込む
+    os << message << std::endl;
+    // 出力ウィンドウに書き込む
     OutputDebugStringA(message.c_str());
 }
 
@@ -98,7 +110,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // ログのディレクトリを用意
     std::filesystem::create_directory("logs");
-    
+
+    // 現在時間を取得
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+
+    // ログファイルの名前にコンマ何秒入らないので削って秒にする
+    std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds>
+    now_seconds = std::chrono::time_point_cast<std::chrono::seconds>(now);
+
+    // 日本時間(PCの時間)に変換
+    std::chrono::zoned_time localTime(std::chrono::current_zone(), now_seconds);
+
+    // formztを使って年月日_時分秒の文字列に変換
+    std::string dateString = std::format("{:%Y%m%d_%H%M%S}", localTime);
+
+    // 時刻を使ってファイル名を決定
+    std::string logFilePath = std::string("logs/") + dateString + ".log";
+
+    // ファイルを作って書き込み準備   
+    std::ofstream logFile(logFilePath);
+
     // 出力ウィンドウへの文字入力
     OutputDebugStringA("Hello, DirectX!\n");
 
