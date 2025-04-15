@@ -28,15 +28,6 @@ void Log(const std::string& message)
     OutputDebugStringA(message.c_str());
 }
 
-// string->wstring
-std::wstring ConvertString(const std::string& str);
-
-// wstring->string
-std::string ConvertString(const std::wstring& str);
-
-// ログのディレクトリを用意
-// std::filesystem::create_directory("logs");
-
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -99,6 +90,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         }
     }
 
+    // string->wstring
+    std::wstring ConvertString(const std::string& str);
+
+    // wstring->string
+    std::string ConvertString(const std::wstring& str);
+
+    // ログのディレクトリを用意
+    std::filesystem::create_directory("logs");
+    
     // 出力ウィンドウへの文字入力
     OutputDebugStringA("Hello, DirectX!\n");
 
