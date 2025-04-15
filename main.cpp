@@ -1,5 +1,9 @@
-﻿#include <Windows.h>
+#include <Windows.h>
 #include <cstdint>
+#include <format>
+#include <string>
+// ファイルやディレクトリに関する操作を行うライブラリ
+#include <filesystem>
 
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -18,9 +22,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 }
 
+// 文字列を出す
+void Log(const std::string& message)
+{
+    OutputDebugStringA(message.c_str());
+}
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+
     WNDCLASS wc = {};
 
     // ウィンドクラスプロシージャ
@@ -66,7 +77,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // ウィンドウを表示する
     ShowWindow(hwnd, SW_SHOW);
 
-    MSG msg{};
+    MSG msg {};
 
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
@@ -79,7 +90,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         }
     }
 
+    // string->wstring
+    std::wstring ConvertString(const std::string& str);
+
+    // wstring->string
+    std::string ConvertString(const std::wstring& str);
+
+    // ログのディレクトリを用意
+    std::filesystem::create_directory("logs");
+    
     // 出力ウィンドウへの文字入力
     OutputDebugStringA("Hello, DirectX!\n");
+
     return 0;
 }
