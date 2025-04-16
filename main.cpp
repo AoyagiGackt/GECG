@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-﻿#include <Windows.h>
-=======
 #include <Windows.h>
->>>>>>> ada95a8a483bc7b7df06e57756845427112f343b
 #include <cstdint>
 #include <format>
 #include <string>
@@ -102,11 +98,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // ログのディレクトリを用意
     std::filesystem::create_directory("logs");
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> ada95a8a483bc7b7df06e57756845427112f343b
     // 出力ウィンドウへの文字入力
     OutputDebugStringA("Hello, DirectX!\n");
 
