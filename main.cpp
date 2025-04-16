@@ -1,3 +1,7 @@
+/*———————————–——————–——————–——————–——————–
+*include
+———————————–——————–——————–——————–——————–*/
+
 #include <Windows.h>
 #include <cstdint>
 #include <format>
@@ -8,6 +12,16 @@
 #include <fstream>
 // 時間を扱うライブラリ
 #include <chrono>
+#include<d3d12.h>
+#include <dxgi1_4.h>
+#include <cassert>
+
+/*———————————–——————–——————–——————–——————–
+*libのリンク
+———————————–——————–——————–——————–——————–*/
+
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
 
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
