@@ -41,11 +41,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 // DXGIファクトリーの生成
-IDXGIFactory7* dxgiFactory = nullptr;
+// IDXGIFactory7* dxgiFactory = nullptr;
 
-HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
+// HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
 
-assert(SUCCEEDED(hr));
+// assert(SUCCEEDED(hr));
 
 // 文字列を出す
 void Log(const std::string& message)
