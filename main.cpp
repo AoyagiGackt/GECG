@@ -11,10 +11,10 @@
 // ファイルに書いたり読んだりするライブラリ
 #include <fstream>
 // 時間を扱うライブラリ
-#include <chrono>
-#include<d3d12.h>
-#include <dxgi1_4.h>
 #include <cassert>
+#include <chrono>
+#include <d3d12.h>
+#include <dxgi1_4.h>
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -39,6 +39,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 }
+
+// DXGIファクトリーの生成
+IDXGIFactory7* dxgiFactory = nullptr;
+
+HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
+
+assert(SUCCEEDED(hr));
 
 // 文字列を出す
 void Log(const std::string& message)
