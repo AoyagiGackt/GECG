@@ -6,10 +6,9 @@
 #include <cstdint>
 #include <format>
 #include <string>
-// 時間を扱うライブラリ
-#include <cassert>
 #include <d3d12.h>
 #include <dxgi1_6.h>
+#include <cassert>
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -155,9 +154,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 
     // いい順にアダプタを頼む
-    for (UINT i = 0; dxgiFactory->EnumAdapterByGpuPreference(i, DEGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&adapter)) != DXGI_ERROR_NOT_FOUND; ++i) {
+    for (UINT i = 0; dxgiFactory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter)) != DXGI_ERROR_NOT_FOUND; ++i) {
         // アダプターの情報を取得する
-        DXGI_ADAPTER_DESC1 adapterDesc;
+        DXGI_ADAPTER_DESC1 adapterDesc{};
         hr = useAdapter->GetDesc3(&adapterDesc);
         assert(SUCCEEDED(hr));
         // ソフトウェアアダプタでなければ採用!
