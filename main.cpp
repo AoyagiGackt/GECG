@@ -1,3 +1,7 @@
+/*———————————–——————–——————–——————–——————–
+*include
+———————————–——————–——————–——————–——————–*/
+
 #include <Windows.h>
 #include <cstdint>
 #include <format>
@@ -7,7 +11,17 @@
 // ファイルに書いたり読んだりするライブラリ
 #include <fstream>
 // 時間を扱うライブラリ
+#include <cassert>
 #include <chrono>
+#include <d3d12.h>
+#include <dxgi1_4.h>
+
+/*———————————–——————–——————–——————–——————–
+*libのリンク
+———————————–——————–——————–——————–——————–*/
+
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
 
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -26,9 +40,24 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 }
 
+// DXGIファクトリーの生成
+// IDXGIFactory7* dxgiFactory = nullptr;
+
+// HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
+
+// assert(SUCCEEDED(hr));
+
 // 文字列を出す
 void Log(const std::string& message)
 {
+    OutputDebugStringA(message.c_str());
+}
+
+void Log(std::ostream& os, const std::string& message)
+{
+    // ログファイルに書き込む
+    os << message << std::endl;
+    // 出力ウィンドウに書き込む
     OutputDebugStringA(message.c_str());
 }
 
@@ -121,6 +150,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // ゲームの処理
         }
     }
+
+    // 出力ウィンドウへの文字入力
+    OutputDebugStringA("Hello, DirectX!\n");
 
     Log(ConvertString(std::format(L"WSTRING{}\n", L"abc")));
 
