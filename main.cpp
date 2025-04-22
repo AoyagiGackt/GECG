@@ -6,8 +6,6 @@
 #include <cstdint>
 #include <format>
 #include <string>
-// ファイルやディレクトリに関する操作を行うライブラリ
-#include <filesystem>
 // 時間を扱うライブラリ
 #include <cassert>
 #include <d3d12.h>
@@ -40,14 +38,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // 文字列を出す
 void Log(const std::string& message)
 {
-    OutputDebugStringA(message.c_str());
-}
-
-void Log(std::ostream& os, const std::string& message)
-{
-    // ログファイルに書き込む
-    os << message << std::endl;
-    // 出力ウィンドウに書き込む
     OutputDebugStringA(message.c_str());
 }
 
