@@ -3,14 +3,15 @@
 ———————————–——————–——————–——————–——————–*/
 
 #include <Windows.h>
+#include <cassert>
 #include <cstdint>
-#include <format>
-#include <string>
 #include <d3d12.h>
 #include <dxgi1_6.h>
-#include <cassert>
+#include <format>
+#include <string>
 // debug用のあれやこれやを使えるようにする
-#include<Dbghelp.h>
+#include <Dbghelp.h>
+#include <strsafe.h>
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -97,12 +98,29 @@ const char* featureLevelStrings[] = {
 static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception)
 {
     // 中身はこれから始まる
+    SYSTEMTIME time;
+    GetLocalTime(&time);
+    wchar_t filePath[MAX_PATH] = { 6 };
+    CreateDirectory(L"./Dumps", nullptr);
+    StringCchPrintfw(filePath, MAX_PATH, L"./Dumps/%84d-%02d%02d-%02d%82d.dmp", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute);
+    HANDLE dumpFileHandle = CreateFile(filePath, GENERIC_READ I GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, B, CREATE ALWAYS, 0, 0);
+    // processId (このexeのId) とクラッシュ (例外)の発生したthreadIdを取得
+    DWORD processId = GetCurrentProcessId();
+    DWORD threadId = GetCurrentThreadId();
+    // 設定情報を入力
+    MINIDUMP EXCEPTION_INFORMATION minidumpInformation {};
+    minidumpInformation.ThreadId = threadId;
+    minidumpInformation.ExceptionPointers exception;
+    minidumpInformation.ClientPointers = TRUE;
+    // Dumpを出力。MiniDumpNormalは最低限の情報を出力するフラグ
+    MiniDumpWriteDump(GetCurrentProcess(), processId, dumpFileHandle, MiniDumpNormal, &minidumpInformation, nullptr, nullptr);
+    // 他に関連づけられているSEH例外ハンドラがあれば実行。通常はプロセスを終了する
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
-{   
+{
 
     SetUnhandledExceptionFilter(ExportDump);
 
