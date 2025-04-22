@@ -72,7 +72,7 @@ std::string ConvertString(const std::wstring& str)
 IDXGIFactory7* dxgiFactory = nullptr;
 
 // 使用するアダプタ用の変数
-IDXGIFactory7* useAdapter = nullptr;
+IDXGIAdapter4* useAdapter = nullptr;
 
 ID3D12Device* device = nullptr;
 
