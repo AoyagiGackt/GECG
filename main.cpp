@@ -96,6 +96,39 @@ for (UNIT i = 0; degiFactry->EnumadapterByGpuPreference(i, DEGI_GPU_PREFERENCE_H
 // 適切なアダプタが見つからなかったので起動できない
 assert(useAdapter != nullptr);
 
+ID3D12Device* device = nullptr;
+
+// 機能レベルとログ出力用の文字列
+D3D_FEATURE_LEVEL featureLevels[] = {
+    D3D_FEATURE_LEVEL_12_2,
+    D3D_FEATURE_LEVEL_12_1,
+    D3D_FEATURE_LEVEL_12_0,
+};
+
+const char* featureLevelStrings[] = {
+    "12.2",
+    "12.1",
+    "12.0",
+};
+
+// 高い順に生成できるか試していく
+for (size_t i = 0; i < _countof(featureLevels); i++) {
+    // 採用したアダプターでデバイスの生成
+    hr = D3D12CreateDevice(
+        useAdapter, // アダプタ
+        featureLevels[i], // 機能レベル
+        IID_PPV_ARGS(&device) // デバイス
+    );
+    // 指定した機能レベルでログ出力を行ってループを抜ける
+    if (SUCCEEDED(hr)) {
+        Log(std::format("Feature Level: {}\n", featureLevelStrings[i]));
+        break;
+    }
+}
+// デバイスの生成に失敗したので起動できない
+assert(device! = nullptr);
+Log("Complete create D3D12Device!!!\n");// 初期化完了のログを出す
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
