@@ -72,6 +72,12 @@ std::string ConvertString(const std::wstring& str)
 // DXGIファクトリーの生成
 IDXGIFactory7* dxgiFactory = nullptr;
 
+HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
+
+assert(SUCCEEDED(hr));
+
+IDXGIFactory7* useAdapter = nullptr;
+
 // いい順にアダプタを頼む
 for (UNIT i = 0; degiFactry->EnumadapterByGpuPreference(i, DEGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&adapter)) != DXGI_ERROR_NOT_FOUND; i++) {
     // アダプターの情報を取得する
@@ -87,8 +93,6 @@ for (UNIT i = 0; degiFactry->EnumadapterByGpuPreference(i, DEGI_GPU_PREFERENCE_H
 }
 // 適切なアダプタが見つからなかったので起動できない
 assert(useAdapter != nullptr);
-
-HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
