@@ -119,6 +119,7 @@ for (size_t i = 0; i < _countof(featureLevels); i++) {
         featureLevels[i], // 機能レベル
         IID_PPV_ARGS(&device) // デバイス
     );
+
     // 指定した機能レベルでログ出力を行ってループを抜ける
     if (SUCCEEDED(hr)) {
         Log(std::format("Feature Level: {}\n", featureLevelStrings[i]));
