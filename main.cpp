@@ -8,13 +8,10 @@
 #include <string>
 // ファイルやディレクトリに関する操作を行うライブラリ
 #include <filesystem>
-// ファイルに書いたり読んだりするライブラリ
-#include <fstream>
 // 時間を扱うライブラリ
 #include <cassert>
-#include <chrono>
 #include <d3d12.h>
-#include <dxgi1_4.h>
+#include <dxgi1_6.h>
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -39,13 +36,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 }
-
-// DXGIファクトリーの生成
-// IDXGIFactory7* dxgiFactory = nullptr;
-
-// HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
-
-// assert(SUCCEEDED(hr));
 
 // 文字列を出す
 void Log(const std::string& message)
@@ -88,6 +78,11 @@ std::string ConvertString(const std::wstring& str)
     WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
     return result;
 }
+
+// DXGIファクトリーの生成
+IDXGIFactory7* dxgiFactory = nullptr;
+
+HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -155,6 +150,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     OutputDebugStringA("Hello, DirectX!\n");
 
     Log(ConvertString(std::format(L"WSTRING{}\n", L"abc")));
+    
+    assert(SUCCEEDED(hr));
 
     return 0;
 }
