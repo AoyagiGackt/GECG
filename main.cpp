@@ -9,6 +9,8 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <cassert>
+// debug用のあれやこれやを使えるようにする
+#include<Dbghelp.h>
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -16,6 +18,7 @@
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "Dbghelp.lib")
 
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -91,9 +94,17 @@ const char* featureLevelStrings[] = {
     "12.0",
 };
 
+static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception)
+{
+    // 中身はこれから始まる
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
-{
+{   
+
+    SetUnhandledExceptionFilter(ExportDump);
 
     WNDCLASS wc = {};
 
