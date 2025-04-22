@@ -1,7 +1,3 @@
-/*———————————–——————–——————–——————–——————–
-*include
-———————————–——————–——————–——————–——————–*/
-
 #include <Windows.h>
 #include <cstdint>
 #include <format>
@@ -11,17 +7,7 @@
 // ファイルに書いたり読んだりするライブラリ
 #include <fstream>
 // 時間を扱うライブラリ
-#include <cassert>
 #include <chrono>
-#include <d3d12.h>
-#include <dxgi1_4.h>
-
-/*———————————–——————–——————–——————–——————–
-*libのリンク
-———————————–——————–——————–——————–——————–*/
-
-#pragma comment(lib, "d3d12.lib")
-#pragma comment(lib, "dxgi.lib")
 
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -40,25 +26,38 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 }
 
-// DXGIファクトリーの生成
-// IDXGIFactory7* dxgiFactory = nullptr;
-
-// HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
-
-// assert(SUCCEEDED(hr));
-
 // 文字列を出す
 void Log(const std::string& message)
 {
     OutputDebugStringA(message.c_str());
 }
 
-void Log(std::ostream& os, const std::string& message)
+std::wstring ConvertString(const std::string& str)
 {
-    // ログファイルに書き込む
-    os << message << std::endl;
-    // 出力ウィンドウに書き込む
-    OutputDebugStringA(message.c_str());
+    if (str.empty()) {
+        return std::wstring();
+    }
+    auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), NULL, 0);
+    if (sizeNeeded == 0) {
+        return std::wstring();
+    }
+    std::wstring result(sizeNeeded, 0);
+    MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), &result[0], sizeNeeded);
+    return result;
+}
+
+std::string ConvertString(const std::wstring& str)
+{
+    if (str.empty()) {
+        return std::string();
+    }
+    auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
+    if (sizeNeeded == 0) {
+        return std::string();
+    }
+    std::string result(sizeNeeded, 0);
+    WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
+    return result;
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -123,36 +122,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         }
     }
 
-    // string->wstring
-    std::wstring ConvertString(const std::string& str);
-
-    // wstring->string
-    std::string ConvertString(const std::wstring& str);
-
-    // ログのディレクトリを用意
-    std::filesystem::create_directory("logs");
-
-    // 現在時間を取得
-    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-
-    // ログファイルの名前にコンマ何秒入らないので削って秒にする
-    std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds>
-        now_seconds = std::chrono::time_point_cast<std::chrono::seconds>(now);
-
-    // 日本時間(PCの時間)に変換
-    std::chrono::zoned_time localTime(std::chrono::current_zone(), now_seconds);
-
-    // formztを使って年月日_時分秒の文字列に変換
-    std::string dateString = std::format("{:%Y%m%d_%H%M%S}", localTime);
-
-    // 時刻を使ってファイル名を決定
-    std::string logFilePath = std::string("logs/") + dateString + ".log";
-
-    // ファイルを作って書き込み準備
-    std::ofstream logFile(logFilePath);
-
-    // 出力ウィンドウへの文字入力
-    OutputDebugStringA("Hello, DirectX!\n");
+    Log(ConvertString(std::format(L"WSTRING{}\n", L"abc")));
 
     return 0;
 }
