@@ -76,6 +76,7 @@ HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
 
 assert(SUCCEEDED(hr));
 
+// 使用するアダプタ用の変数
 IDXGIFactory7* useAdapter = nullptr;
 
 // いい順にアダプタを頼む
@@ -91,6 +92,7 @@ for (UNIT i = 0; degiFactry->EnumadapterByGpuPreference(i, DEGI_GPU_PREFERENCE_H
     }
     useAdapter = nullptr; // ソフトウェアアダプタの場合は見なかったことにする
 }
+
 // 適切なアダプタが見つからなかったので起動できない
 assert(useAdapter != nullptr);
 
