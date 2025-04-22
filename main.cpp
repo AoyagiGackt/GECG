@@ -72,12 +72,12 @@ std::string ConvertString(const std::wstring& str)
 // DXGIファクトリーの生成
 IDXGIFactory7* dxgiFactory = nullptr;
 
-HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
-
 // 使用するアダプタ用の変数
 IDXGIFactory7* useAdapter = nullptr;
 
 ID3D12Device* device = nullptr;
+
+HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
 
 // 機能レベルとログ出力用の文字列
 D3D_FEATURE_LEVEL featureLevels[] = {
