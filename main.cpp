@@ -3,12 +3,12 @@
 ———————————–——————–——————–——————–——————–*/
 
 #include <Windows.h>
+#include <cassert>
 #include <cstdint>
-#include <format>
-#include <string>
 #include <d3d12.h>
 #include <dxgi1_6.h>
-#include <cassert>
+#include <format>
+#include <string>
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -90,6 +90,24 @@ const char* featureLevelStrings[] = {
     "12.1",
     "12.0",
 };
+
+// コマンドキューを生成する
+ID3D12CommandQueue* commandQueue = nullptr;
+D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
+
+// コマンドアロケータを生成する
+ID3D12CommandAllocator* commandAllocator = nullptr;
+
+// コマンドリストを生成する
+ID3D12GraphicsCommandList* commandList = nullptr;
+
+// スワップチェーンを生成する
+IDXGISwapChain3* swapChain = nullptr;
+DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+
+// ディスクリプタヒープの生成
+ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
+D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc = {};
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -191,6 +209,67 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // 適切なアダプタが見つからなかったので起動できない
     assert(useAdapter != nullptr);
+
+    // コマンドキューの設定
+    hr = device->CreateCommandQueue(
+        &commandQueueDesc, // コマンドキューの設定
+        IID_PPV_ARGS(&commandQueue) // コマンドキューのポインタ
+    );
+
+    // コマンドキューの生成に失敗したので起動できない
+    assert(SUCCEEDED(hr));
+
+    // コマンドアロケータの生成
+    hr = device->CreateCommandAllocator(
+        D3D12_COMMAND_LIST_TYPE_DIRECT, // コマンドリストの種類
+        IID_PPV_ARGS(&commandAllocator) // コマンドアロケータのポインタ
+    );
+
+    // コマンドアロケータの生成に失敗したので起動できない
+    assert(SUCCEEDED(hr));
+
+    // コマンドリストの生成
+    hr = device->CreateCommandList(
+        0, // コマンドリストのフラグ
+        D3D12_COMMAND_LIST_TYPE_DIRECT, // コマンドリストの種類
+        commandAllocator, // コマンドアロケータ
+        nullptr, // パイプラインステートオブジェクト
+        IID_PPV_ARGS(&commandList) // コマンドリストのポインタ
+    );
+
+    // コマンドリストの生成に失敗したので起動できない
+    assert(SUCCEEDED(hr));
+
+    // スワップチェーンの設定
+    swapChainDesc.Width = kClientWidth; // 画面の幅
+    swapChainDesc.Height = kClientHeight; // 画面の高さ
+    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // 色の形式
+    swapChainDesc.SampleDesc.Count = 1; // マルチサンプリングしない
+    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 描画のターゲットとして利用する
+    swapChainDesc.BufferCount = 2; // ダブルバッファ
+    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // スワップ効果
+    // コマンドキュー、ウィンドウハンドル、スワップチェーンの設定
+    hr = dxgiFactory->CreateSwapChainForHwnd(
+        commandQueue, // コマンドキュー
+        hwnd, // ウィンドウハンドル
+        &swapChainDesc, // スワップチェーンの設定
+        nullptr, // モニターのハンドル
+        nullptr, // スワップチェーンのフラグ
+        reinterpret_cast<IDXGISwapChain1**>(&swapChain) // スワップチェーンのポインタ
+    );
+
+    assert(SUCCEEDED(hr));
+
+    // ディスクリプタヒープの生成
+    rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; // レンダーターゲットビュー用
+    rtvDescriptorHeapDesc.NumDescriptors = 2; // ダブルバッファ用に2つ
+    hr = device->CreateDescriptorHeap(
+        &rtvDescriptorHeapDesc, // ディスクリプタヒープの設定
+        IID_PPV_ARGS(&rtvDescriptorHeap) // ディスクリプタヒープのポインタ
+    );
+
+    // ディスクリプタヒープの生成に失敗したので起動できない
+    assert(SUCCEEDED(hr));
 
     // 出力ウィンドウへの文字入力
     OutputDebugStringA("Hello, DirectX!\n");
