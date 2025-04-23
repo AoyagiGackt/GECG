@@ -125,6 +125,11 @@ typedef struct D3D12_CPU_DESCRIPTOR_HANDLE {
     UINT_PTR ptr;
 } D3D12_CPU_DESCRIPTOR_HANDLE;
 
+UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex(); // バックバッファのインデックス
+
+// GPUのコマンドリスト実行を行わせる
+ID3D12CommandList* commandLists[] = { commandList };
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -323,6 +328,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     rtvHandles[0] = rtvStartHandle;
 
     rtvHandles[1] = { rtvStartHandle.ptr * device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV) };
+
+    // 描画先のRTVを取得する
+    commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
+
+    // 指定した色で画面全体をクリアする
+    float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f };// 青っぽい色、RGBAの順
+
+    commandList->ClearRenderTargetView(
+        rtvHandles[backBufferIndex], // 描画先のRTV
+        clearColor, // クリアする色
+        0, // フラグ
+        nullptr // 深度ステンシルビューのハンドル
+    );
+
+    hr = commandList->Close();
+
+    // コマンドリストの生成に失敗したので起動できない
+    assert(SUCCEEDED(hr));
+
+    // GPUとOSに画面の交換を行うように通知する
+    swapChain->Present(1, 0);
+
+    // 次のフレーム用のコマンドリストを準備
+    hr = commandAllocator->Reset();
+    assert(SUCCEEDED(hr));
+    hr = commandList->Reset(commandAllocator, nullptr);
+    assert(SUCCEEDED(hr));
 
     // 出力ウィンドウへの文字入力
     OutputDebugStringA("Hello, DirectX!\n");
