@@ -121,10 +121,6 @@ D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptor
 // RTVを2つ分確保する
 D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 
-typedef struct D3D12_CPU_DESCRIPTOR_HANDLE {
-    UINT_PTR ptr;
-} D3D12_CPU_DESCRIPTOR_HANDLE;
-
 UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex(); // バックバッファのインデックス
 
 // GPUのコマンドリスト実行を行わせる
@@ -175,6 +171,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         wc.hInstance, // インスタンスハンドル
         nullptr // オプション
     );
+
+    typedef struct D3D12_CPU_DESCRIPTOR_HANDLE {
+        SIZE_T ptr;
+    } D3D12_CPU_DESCRIPTOR_HANDLE;
 
     // ウィンドウを表示する
     ShowWindow(hwnd, SW_SHOW);
@@ -316,7 +316,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     );
 
     // 2つ目のスワップチェーンのリソースにRTVを設定する
-    rtvHandles[1] = { rtvStartHandle.ptr * device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV) };
+    rtvHandles[1].ptr = { rtvStartHandle.ptr * device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV) };
 
     // 2つ目を作る
     device->CreateRenderTargetView(
