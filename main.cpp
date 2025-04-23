@@ -112,6 +112,19 @@ D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc = {};
 // スワップチェーンからリソースを引っ張ってくる
 ID3D12Resource* swapChainResoures[2] = { nullptr };
 
+// RTVの設定
+D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+
+// ディスクリプタの先頭を取得する
+D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
+// RTVを2つ分確保する
+D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
+
+typedef struct D3D12_CPU_DESCRIPTOR_HANDLE {
+    UINT_PTR ptr;
+} D3D12_CPU_DESCRIPTOR_HANDLE;
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -285,6 +298,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // スワップチェーンのリソースの取得に失敗したので起動できない
     assert(SUCCEEDED(hr));
+
+    rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 色の形式
+    rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // テクスチャ2D
+
+    // まず1つ目のスワップチェーンのリソースにRTVを設定する
+    rtvHandles[0] = rtvStartHandle;
+    device->CreateRenderTargetView(
+        swapChainResoures[0], // スワップチェーンのリソース
+        &rtvDesc, // RTVの設定
+        rtvHandles[0] // RTVのハンドル
+    );
+
+    // 2つ目のスワップチェーンのリソースにRTVを設定する
+    rtvHandles[1] = { rtvStartHandle.ptr * device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV) };
+
+    // 2つ目を作る
+    device->CreateRenderTargetView(
+        swapChainResoures[1], // スワップチェーンのリソース
+        &rtvDesc, // RTVの設定
+        rtvHandles[1] // RTVのハンドル
+    );
+
+    rtvHandles[0] = rtvStartHandle;
+
+    rtvHandles[1] = { rtvStartHandle.ptr * device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV) };
 
     // 出力ウィンドウへの文字入力
     OutputDebugStringA("Hello, DirectX!\n");
