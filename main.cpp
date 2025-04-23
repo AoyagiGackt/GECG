@@ -109,6 +109,9 @@ DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
 D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc = {};
 
+// スワップチェーンからリソースを引っ張ってくる
+ID3D12Resource* swapChainResoures[2] = { nullptr };
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -269,6 +272,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     );
 
     // ディスクリプタヒープの生成に失敗したので起動できない
+    assert(SUCCEEDED(hr));
+
+    // スワップチェーンのリソースを取得する
+    hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResoures[0]));
+
+    // スワップチェーンのリソースの取得に失敗したので起動できない
+    assert(SUCCEEDED(hr));
+
+    // スワップチェーンのリソースを取得する
+    hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResoures[1]));
+
+    // スワップチェーンのリソースの取得に失敗したので起動できない
     assert(SUCCEEDED(hr));
 
     // 出力ウィンドウへの文字入力
