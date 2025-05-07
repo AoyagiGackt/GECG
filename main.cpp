@@ -219,11 +219,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 適切なアダプタが見つからなかったので起動できない
     assert(useAdapter != nullptr);
 
-    // コマンドキューの設定
-    hr = device->CreateCommandQueue(
-        &commandQueueDesc, // コマンドキューの設定
-        IID_PPV_ARGS(&commandQueue) // コマンドキューのポインタ
-    );
+    
 
     // コマンドキューの生成に失敗したので起動できない
     assert(SUCCEEDED(hr));
