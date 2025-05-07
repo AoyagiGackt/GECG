@@ -91,6 +91,33 @@ const char* featureLevelStrings[] = {
     "12.0",
 };
 
+// コマンドキューを生成する
+ID3D12CommandQueue* commandQueue = nullptr;
+D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
+
+// コマンドアロケータを生成する
+ID3D12CommandAllocator* commandAllocator = nullptr;
+
+// コマンドリストを生成する
+ID3D12GraphicsCommandList* commandList = nullptr;
+
+// スワップチェーンを生成する
+IDXGISwapChain4* swapChain = nullptr;
+DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+
+// ディスクリプタヒープの生成
+ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
+D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc = {};
+
+// スワップチェーンからリソースを引っ張ってくる
+ID3D12Resource* swapChainResoures[2] = { nullptr };
+
+// RTVの設定
+D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+
+// GPUのコマンドリスト実行を行わせる
+ID3D12CommandList* commandLists[] = { commandList };
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -192,10 +219,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 適切なアダプタが見つからなかったので起動できない
     assert(useAdapter != nullptr);
 
-    // コマンドキューを生成する
-    ID3D12CommandQueue* commandQueue = nullptr;
-    D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
-
     // コマンドキューの設定
     hr = device->CreateCommandQueue(
         &commandQueueDesc, // コマンドキューの設定
@@ -205,9 +228,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // コマンドキューの生成に失敗したので起動できない
     assert(SUCCEEDED(hr));
 
-    // コマンドアロケータを生成する
-    ID3D12CommandAllocator* commandAllocator = nullptr;
-
     // コマンドアロケータの生成
     hr = device->CreateCommandAllocator(
         D3D12_COMMAND_LIST_TYPE_DIRECT, // コマンドリストの種類
@@ -216,9 +236,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // コマンドアロケータの生成に失敗したので起動できない
     assert(SUCCEEDED(hr));
-
-    // コマンドリストを生成する
-    ID3D12GraphicsCommandList* commandList = nullptr;
 
     // コマンドリストの生成
     hr = device->CreateCommandList(
@@ -231,10 +248,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // コマンドリストの生成に失敗したので起動できない
     assert(SUCCEEDED(hr));
-
-    // スワップチェーンを生成する
-    IDXGISwapChain4* swapChain = nullptr;
-    DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 
     // スワップチェーンの設定
     swapChainDesc.Width = kClientWidth; // 画面の幅
@@ -257,10 +270,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     assert(SUCCEEDED(hr));
 
     // ディスクリプタヒープの生成
-    ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
-    D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc = {};
-
-    // ディスクリプタヒープの生成
     rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; // レンダーターゲットビュー用
     rtvDescriptorHeapDesc.NumDescriptors = 2; // ダブルバッファ用に2つ
     hr = device->CreateDescriptorHeap(
@@ -270,9 +279,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // ディスクリプタヒープの生成に失敗したので起動できない
     assert(SUCCEEDED(hr));
-
-    // スワップチェーンからリソースを引っ張ってくる
-    ID3D12Resource* swapChainResoures[2] = { nullptr };
 
     // スワップチェーンのリソースを取得する
     hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResoures[0]));
@@ -285,9 +291,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // スワップチェーンのリソースの取得に失敗したので起動できない
     assert(SUCCEEDED(hr));
-
-    // RTVの設定
-    D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 
     rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 色の形式
     rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // テクスチャ2D
@@ -305,7 +308,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         &rtvDesc, // RTVの設定
         rtvHandles[0] // RTVのハンドル
     );
-
 
     // 2つ目のスワップチェーンのリソースにRTVを設定する
     rtvHandles[1].ptr = { rtvStartHandle.ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV) };
@@ -344,9 +346,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // コマンドリストの生成に失敗したので起動できない
     assert(SUCCEEDED(hr));
-
-    // GPUのコマンドリスト実行を行わせる
-    ID3D12CommandList* commandLists[] = { commandList };
 
     // GPUとOSに画面の交換を行うように通知する
     swapChain->Present(1, 0);
