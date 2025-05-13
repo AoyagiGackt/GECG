@@ -330,13 +330,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             // バリアを張る対象のリソース。現在のバックバッファに対して行う
             barrier.Transition.pResource = swapChainResoures[backBufferIndex];
-            
+
+            // 漂移前のResourceState
             barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 
+            // 漂移後のResourceState
             barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
+            // TransitionBarrierを張る
             commandList->ResourceBarrier(1, &barrier);
-
 
             // 指定した色で画面全体をクリアする
             float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青っぽい色、RGBAの順
@@ -347,6 +349,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 0, // フラグ
                 nullptr // 深度ステンシルビューのハンドル
             );
+
+            // 今回はRenderTargetからPresentにする
+            barrier.Transition.StateBefore == D3D12_RESOURCE_STATE_RENDER_TARGET;
+            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+
+            // TransitionBarrierを張る
+            commandList->ResourceBarrier(1, &barrier);
 
             hr = commandList->Close();
 
