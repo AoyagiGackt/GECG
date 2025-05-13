@@ -285,21 +285,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // まず1つ目のスワップチェーンのリソースにRTVを設定する
     rtvHandles[0] = rtvStartHandle;
-    device->CreateRenderTargetView(
-        swapChainResoures[0], // スワップチェーンのリソース
-        &rtvDesc, // RTVの設定
-        rtvHandles[0] // RTVのハンドル
-    );
+    device->CreateRenderTargetView(swapChainResoures[0], &rtvDesc, rtvHandles[0]);
 
     // 2つ目のスワップチェーンのリソースにRTVを設定する
-    rtvHandles[1].ptr = rtvHandles[0].ptr * device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    rtvHandles[1].ptr = rtvHandles[0].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
     // 2つ目を作る
-    device->CreateRenderTargetView(
-        swapChainResoures[1], // スワップチェーンのリソース
-        &rtvDesc, // RTVの設定
-        rtvHandles[1] // RTVのハンドル
-    );
+    device->CreateRenderTargetView(swapChainResoures[1], &rtvDesc, rtvHandles[1]);
 
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
