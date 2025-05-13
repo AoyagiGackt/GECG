@@ -361,7 +361,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             );
 
             // 今回はRenderTargetからPresentにする
-            barrier.Transition.StateBefore == D3D12_RESOURCE_STATE_RENDER_TARGET;
+            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
             barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
             // TransitionBarrierを張る
