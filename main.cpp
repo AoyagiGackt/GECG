@@ -386,6 +386,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // GPUがここまでたどり着いたときに、Fenceの値を設定した値に代入するようにSignalを送る
             commandQueue->Signal(fence, fenceValue);
 
+            // Fenceの値が指定したSignal値にたどり着いているか確認する
+            // GetComplatedValueの初期値はFenceに渡した初期値
+            if (fence->GetCompletedValue() < fenceValue) {
+                // 指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する
+                fence->SetEventOnCompletion(fenceValue, fenceEvent);
+                // イベントを待つ
+                WaitForSingleObject(fenceEvent, INFINITE);
+            }
+
             // 次のフレーム用のコマンドリストを準備
             hr = commandAllocator->Reset();
             assert(SUCCEEDED(hr));
