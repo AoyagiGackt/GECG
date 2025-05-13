@@ -302,7 +302,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     );
 
     // 2つ目のスワップチェーンのリソースにRTVを設定する
-    rtvHandles[1].ptr = { rtvStartHandle.ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV) };
+    rtvHandles[1].ptr = rtvHandles[0].ptr * device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
     // 2つ目を作る
     device->CreateRenderTargetView(
@@ -311,14 +311,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         rtvHandles[1] // RTVのハンドル
     );
 
-    typedef struct D3D12_CPU_DESCRIPTOR_HANDLE {
-        SIZE_T ptr;
-    } D3D12_CPU_DESCRIPTOR_HANDLE;
-
-    rtvHandles[0] = rtvStartHandle;
-
-    rtvHandles[1].ptr = rtvHandles[0].ptr * device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
         // windowsにメッセージが来てたら最優先で処理させる
@@ -326,6 +318,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         } else {
+
             // ゲームの処理
             UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex(); // バックバッファのインデックス
 
