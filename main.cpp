@@ -380,6 +380,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // GPUとOSに画面の交換を行うように通知する
             swapChain->Present(1, 0);
 
+            // Fenceの値を更新
+            fenceValue++;
+
+            // GPUがここまでたどり着いたときに、Fenceの値を設定した値に代入するようにSignalを送る
+            commandQueue->Signal(fence, fenceValue);
+
             // 次のフレーム用のコマンドリストを準備
             hr = commandAllocator->Reset();
             assert(SUCCEEDED(hr));
