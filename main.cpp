@@ -142,6 +142,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     MSG msg {};
 
+    #ifdef DEBUG
+    ID3D12Debug* debugController = nullptr;
+    if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
+        // デバッグレイヤーを有効にする
+        debugController->EnableDebugLayer();
+    } else {
+        // さらにGPU側でもチェックを行うようにする
+        debugController->SetEnableGPUBasedValidation(true);
+    }
+
+#endif // DEBUG
+
+
     // いい順にアダプタを頼む
     for (UINT i = 0; dxgiFactory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter)) != DXGI_ERROR_NOT_FOUND; ++i) {
         // アダプターの情報を取得する
