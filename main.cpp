@@ -91,16 +91,6 @@ const char* featureLevelStrings[] = {
     "12.0",
 };
 
-
-
-
-
-
-
-
-
-
-
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
