@@ -319,6 +319,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // 描画先のRTVを取得する
             commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
 
+            // TransitionBarrierの設定
+            D3D12_RESOURCE_BARRIER barrier {};
+
+            // 今回のバリアはTransition
+            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+
+            // Noneにする
+            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+
+            // バリアを張る対象のリソース。現在のバックバッファに対して行う
+            barrier.Transition.pResource = swapChainResoures[backBufferIndex];
+            
+            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+
+            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+            commandList->ResourceBarrier(1, &barrier);
+
+
             // 指定した色で画面全体をクリアする
             float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青っぽい色、RGBAの順
 
