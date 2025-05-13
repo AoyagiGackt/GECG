@@ -68,29 +68,6 @@ std::string ConvertString(const std::wstring& str)
     return result;
 }
 
-// DXGIファクトリーの生成
-IDXGIFactory7* dxgiFactory = nullptr;
-
-// 使用するアダプタ用の変数
-IDXGIAdapter4* useAdapter = nullptr;
-
-ID3D12Device* device = nullptr;
-
-HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
-
-// 機能レベルとログ出力用の文字列
-D3D_FEATURE_LEVEL featureLevels[] = {
-    D3D_FEATURE_LEVEL_12_2,
-    D3D_FEATURE_LEVEL_12_1,
-    D3D_FEATURE_LEVEL_12_0,
-};
-
-const char* featureLevelStrings[] = {
-    "12.2",
-    "12.1",
-    "12.0",
-};
-
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -142,18 +119,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     MSG msg {};
 
-    #ifdef DEBUG
-    ID3D12Debug* debugController = nullptr;
+#ifdef _DEBUG
+    ID3D12Debug1* debugController = nullptr;
     if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
         // デバッグレイヤーを有効にする
         debugController->EnableDebugLayer();
     } else {
         // さらにGPU側でもチェックを行うようにする
-        debugController->SetEnableGPUBasedValidation(true);
+        debugController->SetEnableGPUBasedValidation(TRUE);
     }
 
 #endif // DEBUG
 
+    // DXGIファクトリーの生成
+    IDXGIFactory7* dxgiFactory = nullptr;
+
+    HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
+
+    assert(SUCCEEDED(hr));
+
+    // 使用するアダプタ用の変数
+    IDXGIAdapter4* useAdapter = nullptr;
 
     // いい順にアダプタを頼む
     for (UINT i = 0; dxgiFactory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter)) != DXGI_ERROR_NOT_FOUND; ++i) {
@@ -169,6 +155,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         }
         useAdapter = nullptr; // ソフトウェアアダプタの場合は見なかったことにする
     }
+
+    // 適切なアダプタが見つからなかったので起動できない
+    assert(useAdapter != nullptr);
+
+    ID3D12Device* device = nullptr;
+
+    // 機能レベルとログ出力用の文字列
+    D3D_FEATURE_LEVEL featureLevels[] = {
+        D3D_FEATURE_LEVEL_12_2,
+        D3D_FEATURE_LEVEL_12_1,
+        D3D_FEATURE_LEVEL_12_0,
+    };
+
+    const char* featureLevelStrings[] = {
+        "12.2",
+        "12.1",
+        "12.0",
+    };
 
     // 高い順に生成できるか試していく
     for (size_t i = 0; i < _countof(featureLevels); i++) {
@@ -186,13 +190,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         }
     }
 
-    assert(SUCCEEDED(hr));
-
     // デバイスの生成に失敗したので起動できない
     assert(device != nullptr);
-
-    // 適切なアダプタが見つからなかったので起動できない
-    assert(useAdapter != nullptr);
 
     // コマンドキューを生成する
     ID3D12CommandQueue* commandQueue = nullptr;
@@ -357,6 +356,39 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     Log(ConvertString(std::format(L"WSTRING{}\n", L"abc")));
 
     Log("Complete create D3D12Device!!!\n"); // 初期化完了のログを出す
+
+#ifdef _DEBUG
+    ID3D12InfoQueue* infoQueue = nullptr;
+    if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue)))) {
+        // デバッグレイヤーのメッセージを全て出力する
+        infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+        // エラー時に止まる
+        infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+        // 警告時に泊まる
+        infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
+
+        // 抑制するメッセージのID
+        D3D12_MESSAGE_ID denyIds[] = {
+            // Windows11でのDXGIデバッグレイヤーとDX12デバッグレイヤーの相互作用バグによるエラーメッセージ
+            D3D12_MESSAGE_ID_RESOURCE_BARRIER_MISMATCHING_COMMAND_LIST_TYPE
+        };
+
+        D3D12_MESSAGE_SEVERITY severities[] = { D3D12_MESSAGE_SEVERITY_INFO };
+
+        D3D12_INFO_QUEUE_FILTER filter {};
+        filter.DenyList.NumIDs = _countof(denyIds);
+        filter.DenyList.pIDList = denyIds;
+        filter.DenyList.NumSeverities = _countof(severities);
+        filter.DenyList.pSeverityList = severities;
+
+        // 指定したメッセージの表示を無力化する
+        infoQueue->PushStorageFilter(&filter);
+
+        // 解放
+        infoQueue->Release();
+    }
+#endif
+
 
     return 0;
 }
