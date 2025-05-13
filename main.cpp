@@ -305,6 +305,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 2つ目を作る
     device->CreateRenderTargetView(swapChainResoures[1], &rtvDesc, rtvHandles[1]);
 
+    // 初期値0でFrenceを作る
+    ID3D12Fence* fence = nullptr;
+    uint64_t fenceValue = 0;
+    hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+    assert(SUCCEEDED(hr));
+
+    // FenceのSignalを持つためのイベントを作成する
+    HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    assert(fenceEvent != nullptr);
+
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
         // windowsにメッセージが来てたら最優先で処理させる
