@@ -9,9 +9,6 @@
 #include <dxgi1_6.h>
 #include <format>
 #include <string>
-// debug用のあれやこれやを使えるようにする
-#include <Dbghelp.h>
-#include <strsafe.h>
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -19,7 +16,6 @@
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
-#pragma comment(lib, "Dbghelp.lib")
 
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -95,35 +91,9 @@ const char* featureLevelStrings[] = {
     "12.0",
 };
 
-static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception)
-{
-    // 中身はこれから始まる
-    // 時刻を取得して、時刻を名前に入れたファイルを作成、Dumpsディレクトリ以下に出力
-    SYSTEMTIME time;
-    GetLocalTime(&time);
-    wchar_t filePath[MAX_PATH] = { 6 };
-    CreateDirectory(L"./Dumps", nullptr);
-    StringCchPrintfW(filePath, MAX_PATH, L"./Dumps/%84d-%02d%02d-%02d%82d.dmp", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute);
-    HANDLE dumpFileHandle = CreateFile(filePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
-    // processId (このexeのId) とクラッシュ (例外)の発生したthreadIdを取得
-    DWORD processId = GetCurrentProcessId();
-    DWORD threadId = GetCurrentThreadId();
-    // 設定情報を入力
-    MINIDUMP_EXCEPTION_INFORMATION minidumpInformation { 0 };
-    minidumpInformation.ThreadId = threadId;
-    minidumpInformation.ExceptionPointers = exception;
-    minidumpInformation.ClientPointers = TRUE;
-    // Dumpを出力。MiniDumpNormalは最低限の情報を出力するフラグ
-    MiniDumpWriteDump(GetCurrentProcess(), processId, dumpFileHandle, MiniDumpNormal, &minidumpInformation, nullptr, nullptr);
-    // 他に関連づけられているSEH例外ハンドラがあれば実行。通常はプロセスを終了する
-    return EXCEPTION_EXECUTE_HANDLER;
-}
-
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-
-    SetUnhandledExceptionFilter(ExportDump);
 
     WNDCLASS wc = {};
 
@@ -172,17 +142,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     MSG msg {};
 
-    // ウィンドウの×ボタンが押されるまでループ
-    while (msg.message != WM_QUIT) {
-        // windowsにメッセージが来てたら最優先で処理させる
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        } else {
-            // ゲームの処理
-        }
-    }
-
     // いい順にアダプタを頼む
     for (UINT i = 0; dxgiFactory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter)) != DXGI_ERROR_NOT_FOUND; ++i) {
         // アダプターの情報を取得する
@@ -221,6 +180,163 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // 適切なアダプタが見つからなかったので起動できない
     assert(useAdapter != nullptr);
+
+    // コマンドキューを生成する
+    ID3D12CommandQueue* commandQueue = nullptr;
+    D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
+
+    hr = device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue));
+
+    // コマンドキューの生成に失敗したので起動できない
+    assert(SUCCEEDED(hr));
+
+    // コマンドアロケータを生成する
+    ID3D12CommandAllocator* commandAllocator = nullptr;
+
+    // コマンドアロケータの生成
+    hr = device->CreateCommandAllocator(
+        D3D12_COMMAND_LIST_TYPE_DIRECT, // コマンドリストの種類
+        IID_PPV_ARGS(&commandAllocator) // コマンドアロケータのポインタ
+    );
+
+    // コマンドアロケータの生成に失敗したので起動できない
+    assert(SUCCEEDED(hr));
+
+    // コマンドリストを生成する
+    ID3D12GraphicsCommandList* commandList = nullptr;
+
+    // コマンドリストの生成
+    hr = device->CreateCommandList(
+        0, // コマンドリストのフラグ
+        D3D12_COMMAND_LIST_TYPE_DIRECT, // コマンドリストの種類
+        commandAllocator, // コマンドアロケータ
+        nullptr, // パイプラインステートオブジェクト
+        IID_PPV_ARGS(&commandList) // コマンドリストのポインタ
+    );
+
+    // コマンドリストの生成に失敗したので起動できない
+    assert(SUCCEEDED(hr));
+
+    // スワップチェーンを生成する
+    IDXGISwapChain4* swapChain = nullptr;
+    DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+
+    // スワップチェーンの設定
+    swapChainDesc.Width = kClientWidth; // 画面の幅
+    swapChainDesc.Height = kClientHeight; // 画面の高さ
+    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // 色の形式
+    swapChainDesc.SampleDesc.Count = 1; // マルチサンプリングしない
+    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 描画のターゲットとして利用する
+    swapChainDesc.BufferCount = 2; // ダブルバッファ
+    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // スワップ効果
+    // コマンドキュー、ウィンドウハンドル、スワップチェーンの設定
+    hr = dxgiFactory->CreateSwapChainForHwnd(
+        commandQueue, // コマンドキュー
+        hwnd, // ウィンドウハンドル
+        &swapChainDesc, // スワップチェーンの設定
+        nullptr, // モニターのハンドル
+        nullptr, // スワップチェーンのフラグ
+        reinterpret_cast<IDXGISwapChain1**>(&swapChain) // スワップチェーンのポインタ
+    );
+
+    assert(SUCCEEDED(hr));
+
+    // ディスクリプタヒープの生成
+    ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
+    D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc = {};
+
+    // ディスクリプタヒープの生成
+    rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; // レンダーターゲットビュー用
+    rtvDescriptorHeapDesc.NumDescriptors = 2; // ダブルバッファ用に2つ
+    hr = device->CreateDescriptorHeap(
+        &rtvDescriptorHeapDesc, // ディスクリプタヒープの設定
+        IID_PPV_ARGS(&rtvDescriptorHeap) // ディスクリプタヒープのポインタ
+    );
+
+    // ディスクリプタヒープの生成に失敗したので起動できない
+    assert(SUCCEEDED(hr));
+
+    // スワップチェーンからリソースを引っ張ってくる
+    ID3D12Resource* swapChainResoures[2] = { nullptr };
+
+    // スワップチェーンのリソースを取得する
+    hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResoures[0]));
+
+    // スワップチェーンのリソースの取得に失敗したので起動できない
+    assert(SUCCEEDED(hr));
+
+    // スワップチェーンのリソースを取得する
+    hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResoures[1]));
+
+    // スワップチェーンのリソースの取得に失敗したので起動できない
+    assert(SUCCEEDED(hr));
+
+    // RTVの設定
+    D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+
+    rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 色の形式
+    rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // テクスチャ2D
+
+    // ディスクリプタの先頭を取得する
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
+    // RTVを2つ分確保する
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
+
+    // まず1つ目のスワップチェーンのリソースにRTVを設定する
+    rtvHandles[0] = rtvStartHandle;
+    device->CreateRenderTargetView(swapChainResoures[0], &rtvDesc, rtvHandles[0]);
+
+    // 2つ目のスワップチェーンのリソースにRTVを設定する
+    rtvHandles[1].ptr = rtvHandles[0].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+    // 2つ目を作る
+    device->CreateRenderTargetView(swapChainResoures[1], &rtvDesc, rtvHandles[1]);
+
+    // ウィンドウの×ボタンが押されるまでループ
+    while (msg.message != WM_QUIT) {
+        // windowsにメッセージが来てたら最優先で処理させる
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        } else {
+
+            // ゲームの処理
+            UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex(); // バックバッファのインデックス
+
+            // 描画先のRTVを取得する
+            commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
+
+            // 指定した色で画面全体をクリアする
+            float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青っぽい色、RGBAの順
+
+            commandList->ClearRenderTargetView(
+                rtvHandles[backBufferIndex], // 描画先のRTV
+                clearColor, // クリアする色
+                0, // フラグ
+                nullptr // 深度ステンシルビューのハンドル
+            );
+
+            hr = commandList->Close();
+
+            // コマンドリストの生成に失敗したので起動できない
+            assert(SUCCEEDED(hr));
+
+            // GPUのコマンドリスト実行を行わせる
+            ID3D12CommandList* commandLists[] = { commandList };
+
+            commandQueue->ExecuteCommandLists(1, commandLists);
+
+            // GPUとOSに画面の交換を行うように通知する
+            swapChain->Present(1, 0);
+
+            // 次のフレーム用のコマンドリストを準備
+            hr = commandAllocator->Reset();
+            assert(SUCCEEDED(hr));
+            hr = commandList->Reset(commandAllocator, nullptr);
+            assert(SUCCEEDED(hr));
+        }
+    }
 
     // 出力ウィンドウへの文字入力
     OutputDebugStringA("Hello, DirectX!\n");
