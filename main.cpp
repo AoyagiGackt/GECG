@@ -338,7 +338,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         IDxcIncludeHandler* includeHandler)
     {
         // 1.hlslファイルを読む
+        Log(ConvertString(std::format(L"Begin CompileShader, path:{}, profile:{}", filePath, profile)));
+        IDxcBlobEncoding* shaderSource = nullptr;
+        HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
+        assert(SUCCEEDED(hr));
+        DxcBuffer shaderSourceBuffer;
+        shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
+        shaderSourceBuffer.Size = shaderSource->GetBufferSize();
+        shaderSourceBuffer.Encoding = DXC_CP_UTF8;
+
         // 2.Compileする
+        
         // 3.警告・エラーが出てないか確認する
         // 4.Compile結果を受け取って返す
     }
