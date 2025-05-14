@@ -348,7 +348,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         shaderSourceBuffer.Encoding = DXC_CP_UTF8;
 
         // 2.Compileする
-        
+        LPCWSTR arguments[] = {
+            filePath.c_str(),
+            L"-E", L"main",
+            L"-T", profile,
+            L"-Zi", L"-Qembed_debug",
+            L"-Od",
+            L"-Zpr".
+        };
+
+        IDxcResult* shaderResult = nullptr;
+        hr = dxcCompiler->Compile(
+            &shaderSourceBuffer,
+            arguments,
+            _countof(arguments),
+            includeHandler,
+            IID_PPV_ARGS(&shaderResult));
+
+        assert(SUCCEEDED(hr));
+
         // 3.警告・エラーが出てないか確認する
         // 4.Compile結果を受け取って返す
     }
