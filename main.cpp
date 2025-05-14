@@ -6,9 +6,9 @@
 #include <cassert>
 #include <cstdint>
 #include <d3d12.h>
+#include <dxcapi.h>
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
-#include <dxcapi.h>
 #include <format>
 #include <string>
 
@@ -326,6 +326,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     assert(SUCCEEDED(hr));
     hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
     assert(SUCCEEDED(hr));
+
+    IDxcBlob* CompileShader(
+        // Comilerするファイルへのパス
+        const std::wstring& filePath,
+        // Compilerに使用するProfile
+        const wchar_t* profile,
+        // 初期化で生成したものを3つ
+        IDxcUtils* dxcUtils,
+        IDxcCompiler3* dxcCompiler,
+        IDxcIncludeHandler* includeHandler)
+    {
+        // 1.hlslファイルを読む
+        // 2.Compileする
+        // 3.警告・エラーが出てないか確認する
+        // 4.Compile結果を受け取って返す
+    }
 
     // 現時点でincludeはしないが、includeに対応するための設定を行っておく
     IDxcIncludeHandler* includeHandler = nullptr;
