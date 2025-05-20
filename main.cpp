@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstdint>
 #include <d3d12.h>
+#include <dxcapi.h>
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 #include <format>
@@ -18,6 +19,7 @@
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
+#pragma comment(lib, "dxcompiler.lib")
 
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -316,6 +318,77 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // FenceのSignalを持つためのイベントを作成する
     HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     assert(fenceEvent != nullptr);
+
+    // dxcCompilerを初期化
+    IDxcUtils* dxcUtils = nullptr;
+    IDxcCompiler3* dxcCompiler = nullptr;
+    hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
+    assert(SUCCEEDED(hr));
+    hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
+    assert(SUCCEEDED(hr));
+
+    IDxcBlob* CompileShader(
+        // Comilerするファイルへのパス
+        const std::wstring& filePath,
+        // Compilerに使用するProfile
+        const wchar_t* profile,
+        // 初期化で生成したものを3つ
+        IDxcUtils* dxcUtils,
+        IDxcCompiler3* dxcCompiler,
+        IDxcIncludeHandler* includeHandler)
+    {
+        // 1.hlslファイルを読む
+        Log(ConvertString(std::format(L"Begin CompileShader, path:{}, profile:{}", filePath, profile)));
+        IDxcBlobEncoding* shaderSource = nullptr;
+        HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
+        assert(SUCCEEDED(hr));
+        DxcBuffer shaderSourceBuffer;
+        shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
+        shaderSourceBuffer.Size = shaderSource->GetBufferSize();
+        shaderSourceBuffer.Encoding = DXC_CP_UTF8;
+
+        // 2.Compileする
+        LPCWSTR arguments[] = {
+            filePath.c_str(),
+            L"-E", L"main",
+            L"-T", profile,
+            L"-Zi", L"-Qembed_debug",
+            L"-Od",
+            L"-Zpr".
+        };
+
+        IDxcResult* shaderResult = nullptr;
+        hr = dxcCompiler->Compile(
+            &shaderSourceBuffer,
+            arguments,
+            _countof(arguments),
+            includeHandler,
+            IID_PPV_ARGS(&shaderResult));
+
+        assert(SUCCEEDED(hr));
+
+        // 3.警告・エラーが出てないか確認する
+        IDxcBlobUtf8* shaderError = nullptr;
+        shaderError->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
+        if (shaderError != nullptr && shaderError->GetStringLength()) {
+            Log(shaderError->GetStringPointer());
+            assert(false); // エラーが出たので起動できない
+        }
+        // 4.Compile結果を受け取って返す
+        IDxcBlob* shaderBlob = nullptr;
+        hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
+        assert(SUCCEEDED(hr));
+        Log(ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}", filePath, profile)));
+        // 読み込んだファイルのリソースを解放する
+        shaderSource->Release();
+        shaderResult->Release();
+        return shaderBlob;
+    }
+
+    // 現時点でincludeはしないが、includeに対応するための設定を行っておく
+    IDxcIncludeHandler* includeHandler = nullptr;
+    hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
+    assert(SUCCEEDED(hr));
 
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
