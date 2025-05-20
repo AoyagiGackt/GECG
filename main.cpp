@@ -405,11 +405,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
         assert(false);
     }
+
     // バイナリを元に生成
-    ID3D12RootSignature rootSignature = nullptr;
+    ID3D12RootSignature* rootSignature = nullptr;
     hr = device->CreateRootSignature(0,
         signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
         IID_PPV_ARGS(&rootSignature));
+
     assert(SUCCEEDED(hr));
 
     D3D12_INPUT_ELEMENT_DESC inputElementDescs[1] = {};
@@ -417,7 +419,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     inputElementDescs[0]
         .SemanticIndex
         = 0;
-    inputElementDescs[0].Format = DXGI_FOKMAT_R32G32B32A32_FLOAT;
+    inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
     D3D12_INPUT_LAYOUT_DESC inputLayoutDesc {};
     inputLayoutDesc.pInputElementDescs = inputElementDescs;
@@ -429,7 +431,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     D3D12_RASTERIZER_DESC rasterizerDesc {};
     rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-    rasterizerDesc.CullMode = D3D12_FILL_MODE_SOLID;
+    rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
     // Shaderをコンパイルする
     IDxcBlob* vertexShaderBlob = CompileShader(L"Object3D. VS.hlsl",
