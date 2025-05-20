@@ -72,6 +72,10 @@ std::string ConvertString(const std::wstring& str)
     return result;
 }
 
+struct Vector4 {
+    float x, y, z, w;
+};
+
 IDxcBlob* CompileShader(
     // Comilerするファイルへのパス
     const std::wstring& filePath,
@@ -462,7 +466,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 実際に生成
     ID3D12PipelineState* graphicsPipelineState = nullptr;
     hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-        IID_PPV_ARGS(SgraphicsPipelineState));
+        IID_PPV_ARGS(&graphicsPipelineState));
     assert(SUCCEEDED(hr));
 
     // 生成したShaderのリソースを解放する
