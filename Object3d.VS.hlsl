@@ -1,12 +1,11 @@
-// float32_t4
-struct VertexShaderOutput
-{
-    float4 position : SV_POSITION;
-};
-
 struct VertexShaderInput
 {
     float4 position : POSITION0;
+};
+
+struct VertexShaderOutput
+{
+    float4 position : SV_POSITION;
 };
 
 VertexShaderOutput main(VertexShaderInput input)
@@ -15,4 +14,3 @@ VertexShaderOutput main(VertexShaderInput input)
     output.position = input.position;
     return output;
 }
-
