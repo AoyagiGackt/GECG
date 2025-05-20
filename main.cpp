@@ -368,7 +368,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         assert(SUCCEEDED(hr));
 
         // 3.警告・エラーが出てないか確認する
+        IDxcBlobUtf8* shaderError = nullptr;
+        shaderError->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
+        if (shaderError != nullptr && shaderError->GetStringLength()) {
+            Log(shaderError->GetStringPointer());
+            assert(false); // エラーが出たので起動できない
+        }
         // 4.Compile結果を受け取って返す
+        IDxcBlob* shaderBlob = nullptr;
+        hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
+        assert(SUCCEEDED(hr));
+        Log(ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}", filePath, profile)));
+        // 読み込んだファイルのリソースを解放する
+        shaderSource->Release();
+        shaderResult->Release();
+        return shaderBlob;
     }
 
     // 現時点でincludeはしないが、includeに対応するための設定を行っておく
