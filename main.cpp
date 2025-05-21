@@ -138,6 +138,32 @@ IDxcBlob* CompileShader(
     return shaderBlob;
 }
 
+ID3D12Resource* CreateBufferResouse(ID3D12Device* device, size_t sizeInBytes)
+{
+    // 生成したShaderのリソースを解放する
+    D3D12_HEAP_PROPERTIES uploadHeapProperties {};
+    uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD; // UploadHeap 5
+    // 頂点リソースの設定
+    D3D12_RESOURCE_DESC vertexResourceDesc {};
+    // バッファリソース。テクスチャの場合はまた別の設定をする
+    vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+    vertexResourceDesc.Width = sizeof(Vector4) * 3; // リソースのサイズ。今回はVector4を3頂
+    // バッファの場合はこれらは1にする決まり
+    vertexResourceDesc.Height = 1;
+    vertexResourceDesc.DepthOrArraySize = 1;
+    vertexResourceDesc.MipLevels = 1;
+    vertexResourceDesc.SampleDesc.Count = 1;
+    // バッファの場合はこれにする決まり
+    vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+    // 実際に頂点リソースを作る
+    ID3D12Resource* vertexResource = nullptr;
+    HRESULT hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE,
+        &vertexResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+        IID_PPV_ARGS(&vertexResource));
+    assert(SUCCEEDED(hr));
+    return vertexResource;
+}
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -401,6 +427,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature {};
     descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
+    D3D12_ROOT_PARAMETER rootParameters[1] = {};
+    rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[0].Descriptor.ShaderRegister = 0;
+    descriptionRootSignature.pParameters = rootParameters;
+    descriptionRootSignature.NumParameters = _countof(rootParameters);
+
     // シリアライズしてバイナリにする
     ID3DBlob* signatureBlob = nullptr;
     ID3DBlob* errorBlob = nullptr;
@@ -470,50 +503,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         IID_PPV_ARGS(&graphicsPipelineState));
     assert(SUCCEEDED(hr));
 
-    // 生成したShaderのリソースを解放する
-    D3D12_HEAP_PROPERTIES uploadHeapProperties {};
-    uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD; // UploadHeap 5
-    // 頂点リソースの設定
-    D3D12_RESOURCE_DESC vertexResourceDesc {};
-    // バッファリソース。テクスチャの場合はまた別の設定をする
-    vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    vertexResourceDesc.Width = sizeof(Vector4) * 3; // リソースのサイズ。今回はVector4を3頂
-    // バッファの場合はこれらは1にする決まり
-    vertexResourceDesc.Height = 1;
-    vertexResourceDesc.DepthOrArraySize = 1;
-    vertexResourceDesc.MipLevels = 1;
-    vertexResourceDesc.SampleDesc.Count = 1;
-    // バッファの場合はこれにする決まり
-    vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    // 実際に頂点リソースを作る
-    ID3D12Resource* vertexResource = nullptr;
-    hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE,
-        &vertexResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-        IID_PPV_ARGS(&vertexResource));
-    assert(SUCCEEDED(hr));
+    ID3D12Resource* materialResource = CreateBufferResouse(device, sizeof(Vector4) * 3);
 
-    D3D12_VERTEX_BUFFER_VIEW vertexBufferView {};
+    Vector4* materialData = nullptr;
 
-    vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-    // 使用するリソースのサイズは頂点3つ分のサイズ
-    vertexBufferView.SizeInBytes = sizeof(Vector4) * 3;
-    // 1頂点あたりのサイズ
-    vertexBufferView.StrideInBytes = sizeof(Vector4);
+    materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 
-    // 頂点リソースにデータを書き込む
+    *materialData = Vector4 { 1.0f, 0.0f, 0.0f, 1.0f }; // 赤
+
+    // 頂点バッファ用リソースを作成
+    ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(Vector4) * 3);
+
+    // 頂点データを書き込む
     Vector4* vertexData = nullptr;
-
-    // 書き込むためのアドレスを取得
     vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+    vertexData[0] = { -0.5f, -0.5f, 0.0f, 1.0f }; // 左下
+    vertexData[1] = { 0.0f, 0.5f, 0.0f, 1.0f }; // 上
+    vertexData[2] = { 0.5f, -0.5f, 0.0f, 1.0f }; // 右下
+    vertexResource->Unmap(0, nullptr);
 
-    // 左下
-    vertexData[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
-
-    // 中央上
-    vertexData[1] = { 0.0f, 0.5f, 0.0f, 1.0f };
-
-    // 右下
-    vertexData[2] = { 0.5f, -0.5f, 0.0f, 1.0f };
+    // 頂点バッファビューを作成
+    D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
+    vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+    vertexBufferView.SizeInBytes = sizeof(Vector4) * 3;
+    vertexBufferView.StrideInBytes = sizeof(Vector4);
 
     // ビューポート
     D3D12_VIEWPORT viewport {};
@@ -587,6 +600,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetPipelineState(graphicsPipelineState);
             commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
             commandList->DrawInstanced(3, 1, 0, 0);
@@ -687,7 +701,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     pixelShaderBlob->Release();
     vertexShaderBlob->Release();
 
-    vertexResource->Release();
+    vertexResource -> Release();
+    materialResource->Release();
 
     rootSignature->Release();
 
