@@ -582,15 +582,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
             // TransitionBarrierを張る
-            commandList->ResourceBarrier(1, &barrier);
-
             commandList->SetGraphicsRootSignature(rootSignature);
             commandList->SetPipelineState(graphicsPipelineState);
-            commandList->IASetVertexBuffers(0, 1, &vertexBufferView); // VBVEMR
+            commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            commandList->DrawInstanced(3, 1, 0, 0);
-            commandList->RSSetViewports(1, &viewport); // Viewport &M
+            commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
+            commandList->DrawInstanced(3, 1, 0, 0);
 
             hr = commandList->Close();
 
