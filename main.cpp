@@ -503,33 +503,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         IID_PPV_ARGS(&graphicsPipelineState));
     assert(SUCCEEDED(hr));
 
+    ID3D12Resource* materialResource = CreateBufferResouse(device, sizeof(Vector4) * 3);
+
+    Vector4* materialData = nullptr;
+
+    materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+
+    *materialData = Vector4 { 1.0f, 0.0f, 0.0f, 1.0f }; // 赤
+
+    // 頂点バッファ用リソースを作成
     ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(Vector4) * 3);
 
+    // 頂点データを書き込む
     Vector4* vertexData = nullptr;
-
     vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+    vertexData[0] = { -0.5f, -0.5f, 0.0f, 1.0f }; // 左下
+    vertexData[1] = { 0.0f, 0.5f, 0.0f, 1.0f }; // 上
+    vertexData[2] = { 0.5f, -0.5f, 0.0f, 1.0f }; // 右下
+    vertexResource->Unmap(0, nullptr);
 
-    *vertexData = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-
-    D3D12_VERTEX_BUFFER_VIEW vertexBufferView {};
-
+    // 頂点バッファビューを作成
+    D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
     vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-    // 使用するリソースのサイズは頂点3つ分のサイズ
     vertexBufferView.SizeInBytes = sizeof(Vector4) * 3;
-    // 1頂点あたりのサイズ
     vertexBufferView.StrideInBytes = sizeof(Vector4);
-
-    // 書き込むためのアドレスを取得
-    vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-
-    // 左下
-    vertexData[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
-
-    // 中央上
-    vertexData[1] = { 0.0f, 0.5f, 0.0f, 1.0f };
-
-    // 右下
-    vertexData[2] = { 0.5f, -0.5f, 0.0f, 1.0f };
 
     // ビューポート
     D3D12_VIEWPORT viewport {};
@@ -603,7 +600,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetPipelineState(graphicsPipelineState);
             commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            commandList->SetComputeRootConstantBufferView(0, vertexResource->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
             commandList->DrawInstanced(3, 1, 0, 0);
@@ -704,7 +701,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     pixelShaderBlob->Release();
     vertexShaderBlob->Release();
 
-    vertexResource->Release();
+    vertexResource -> Release();
+    materialResource->Release();
 
     rootSignature->Release();
 
