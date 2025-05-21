@@ -161,6 +161,7 @@ ID3D12Resource* CreateBufferResouse(ID3D12Device* device, size_t sizeInBytes)
         &vertexResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
         IID_PPV_ARGS(&vertexResource));
     assert(SUCCEEDED(hr));
+    return vertexResource;
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -518,9 +519,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 1頂点あたりのサイズ
     vertexBufferView.StrideInBytes = sizeof(Vector4);
 
-    // 頂点リソースにデータを書き込む
-    Vector4* vertexData = nullptr;
-
     // 書き込むためのアドレスを取得
     vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 
@@ -605,6 +603,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetPipelineState(graphicsPipelineState);
             commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            commandList->SetComputeRootConstantBufferView(0, vertexResource->GetGPUVirtualAddress());
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
             commandList->DrawInstanced(3, 1, 0, 0);
