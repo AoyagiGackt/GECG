@@ -1,7 +1,7 @@
 
 struct TransfoermationMatrix
 {
-    float4 WVP;
+    float4x4 WVP;
 };
 
 ConstantBuffer<TransfoermationMatrix> gTransformationMatrix : register(b0);

@@ -83,9 +83,7 @@ IDxcBlob* CompileShader(
     // Compilerに使用するProfile
     const wchar_t* profile,
     // 初期化で生成したものを3つ
-    IDxcUtils* dxcUtils,
-    IDxcCompiler3* dxcCompiler,
-    IDxcIncludeHandler* includeHandler)
+    IDxcUtils* dxcUtils, IDxcCompiler3* dxcCompiler, IDxcIncludeHandler* includeHandler)
 {
     // 1.hlslファイルを読む
     Log(ConvertString(std::format(L"Begin CompileShader, path:{}, profile:{}", filePath, profile)));
@@ -555,6 +553,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     scissorRect.top = 0;
     scissorRect.bottom = kClientHeight;
 
+    Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f,float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+
+    Matrix4x4* transformationMatrixData = nullptr;
+    ID3D12Resource* transformationMatrixResource = CreateBufferResouse(device, sizeof(Matrix4x4));
+    transformationMatrixResource->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData));
+
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
         // windowsにメッセージが来てたら最優先で処理させる
@@ -603,6 +607,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // 今回はRenderTargetからPresentにする
             barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
             barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+
+            transform.rotate.y += 0.03f;
+            Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+            *wvpData = worldMatrix;
+            Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+            Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+            Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+            Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix,projectionMatrix));
+            *transformationMatrixData = worldViewProjectionMatrix;
 
             // TransitionBarrierを張る
             commandList->SetGraphicsRootSignature(rootSignature);
@@ -714,6 +727,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     wvpResource->Release();
     vertexResource->Release();
     materialResource->Release();
+    transformationMatrixResource->Release();
 
     rootSignature->Release();
 

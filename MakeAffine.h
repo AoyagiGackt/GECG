@@ -18,6 +18,18 @@ struct Transform {
     Vector3 translate;
 };
 
+Transform transform = {
+    { 1.0f, 1.0f, 1.0f }, // scale
+    { 0.0f, 0.0f, 0.0f }, // rotate
+    { 0.0f, 0.0f, 0.0f } // translate
+};
+
+Transform cameraTransform = {
+    { 1.0f, 1.0f, 1.0f }, // scale
+    { 0.0f, 0.0f, 0.0f }, // rotate
+    { 0.0f, 0.0f, -5.0f } // translate
+};
+
 // 単位行列
 Matrix4x4 MakeIdentity4x4()
 {
