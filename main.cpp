@@ -11,6 +11,7 @@
 #include <dxgidebug.h>
 #include <format>
 #include <string>
+#include "MakeAffine.h"
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
