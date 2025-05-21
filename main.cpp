@@ -438,11 +438,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
     // Shaderをコンパイルする
-    IDxcBlob* vertexShaderBlob = CompileShader(L"Object3D. VS.hlsl",
+    IDxcBlob* vertexShaderBlob = CompileShader(L"Object3d.VS.hlsl",
         L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
     assert(vertexShaderBlob != nullptr);
 
-    IDxcBlob* pixelShaderBlob = CompileShader(L"Object3D. PS.hlsl",
+    IDxcBlob* pixelShaderBlob = CompileShader(L"Object.3dPS.hlsl",
         L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
     assert(pixelShaderBlob != nullptr);
 
@@ -584,11 +584,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // TransitionBarrierを張る
             commandList->ResourceBarrier(1, &barrier);
 
-            hr = commandList->Close();
-
-            // コマンドリストの生成に失敗したので起動できない
-            assert(SUCCEEDED(hr));
-
             commandList->SetGraphicsRootSignature(rootSignature);
             commandList->SetPipelineState(graphicsPipelineState);
             commandList->IASetVertexBuffers(0, 1, &vertexBufferView); // VBVEMR
@@ -596,6 +591,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->DrawInstanced(3, 1, 0, 0);
             commandList->RSSetViewports(1, &viewport); // Viewport &M
             commandList->RSSetScissorRects(1, &scissorRect);
+
+            hr = commandList->Close();
+
+            // コマンドリストの生成に失敗したので起動できない
+            assert(SUCCEEDED(hr));
 
             // GPUのコマンドリスト実行を行わせる
             ID3D12CommandList* commandLists[] = { commandList };
@@ -684,29 +684,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     signatureBlob->Release();
     if (errorBlob) {
         errorBlob->Release();
+    }
+    pixelShaderBlob->Release();
+    vertexShaderBlob->Release();
 
-        pixelShaderBlob->Release();
-        vertexShaderBlob->Release();
+    vertexResource->Release();
 
-        vertexResource->Release();
-
-        rootSignature->Release();
+    rootSignature->Release();
 
 #ifdef _DEBUG
 
-        debugController->Release();
+    debugController->Release();
 
 #endif // _DEBUG
-        CloseWindow(hwnd);
+    CloseWindow(hwnd);
 
-        // リソースリークチェック
-        IDXGIDebug1* debug;
-        if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
-            debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-            debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
-            debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-            debug->Release();
-        }
-
-        return 0;
+    // リソースリークチェック
+    IDXGIDebug1* debug;
+    if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
+        debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+        debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
+        debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
+        debug->Release();
     }
+    return 0;
+}
