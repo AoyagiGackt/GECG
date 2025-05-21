@@ -2,6 +2,7 @@
 *include
 ———————————–——————–——————–——————–——————–*/
 
+#include "MakeAffine.h"
 #include <Windows.h>
 #include <cassert>
 #include <cstdint>
@@ -11,7 +12,6 @@
 #include <dxgidebug.h>
 #include <format>
 #include <string>
-#include "MakeAffine.h"
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -428,10 +428,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature {};
     descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    D3D12_ROOT_PARAMETER rootParameters[1] = {};
+    D3D12_ROOT_PARAMETER rootParameters[2] = {};
     rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[0].Descriptor.ShaderRegister = 0;
+    rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+    rootParameters[1].Descriptor.ShaderRegister = 0;
     descriptionRootSignature.pParameters = rootParameters;
     descriptionRootSignature.NumParameters = _countof(rootParameters);
 
@@ -503,6 +506,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
         IID_PPV_ARGS(&graphicsPipelineState));
     assert(SUCCEEDED(hr));
+
+    ID3D12Resource* wvpResource = CreateBufferResouse(device, sizeof(Matrix4x4));
+    Matrix4x4* wvpData = nullptr;
+    wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
+    *wvpData = MakeIdentity4x4();
 
     ID3D12Resource* materialResource = CreateBufferResouse(device, sizeof(Vector4) * 3);
 
@@ -602,6 +610,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
             commandList->DrawInstanced(3, 1, 0, 0);
@@ -702,7 +711,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     pixelShaderBlob->Release();
     vertexShaderBlob->Release();
 
-    vertexResource -> Release();
+    wvpResource->Release();
+    vertexResource->Release();
     materialResource->Release();
 
     rootSignature->Release();

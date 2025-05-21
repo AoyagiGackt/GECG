@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <cmath>
 
@@ -18,7 +18,7 @@ struct Transform {
     Vector3 translate;
 };
 
-// ’PˆÊs—ñ
+// å˜ä½è¡Œåˆ—
 Matrix4x4 MakeIdentity4x4()
 {
     Matrix4x4 identity;
@@ -41,7 +41,7 @@ Matrix4x4 MakeIdentity4x4()
     return identity;
 }
 
-// 4x4‚ÌŠ|‚¯Z
+// 4x4ã®æ›ã‘ç®—
 Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2)
 {
     Matrix4x4 result;
@@ -68,7 +68,7 @@ Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2)
     return result;
 }
 
-// X²‚Å‰ñ“]
+// Xè»¸ã§å›è»¢
 Matrix4x4 MakeRotateXMatrix(float radian)
 {
     float cosTheta = std::cos(radian);
@@ -79,7 +79,7 @@ Matrix4x4 MakeRotateXMatrix(float radian)
         0.0f, 0.0f, 0.0f, 1.0f };
 }
 
-// Y²‚Å‰ñ“]
+// Yè»¸ã§å›è»¢
 Matrix4x4 MakeRotateYMatrix(float radian)
 {
     float cosTheta = std::cos(radian);
@@ -90,7 +90,7 @@ Matrix4x4 MakeRotateYMatrix(float radian)
         0.0f, 0.0f, 0.0f, 1.0f };
 }
 
-// Z²‚Å‰ñ“]
+// Zè»¸ã§å›è»¢
 Matrix4x4 MakeRotateZMatrix(float radian)
 {
     float cosTheta = std::cos(radian);
@@ -101,7 +101,7 @@ Matrix4x4 MakeRotateZMatrix(float radian)
         0.0f, 0.0f, 0.0f, 1.0f };
 }
 
-// Affine•ÏŠ·
+// Affineå¤‰æ›
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
 {
     Matrix4x4 result = Multiply(Multiply(MakeRotateXMatrix(rotate.x), MakeRotateYMatrix(rotate.y)), MakeRotateZMatrix(rotate.z));
