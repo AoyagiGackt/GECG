@@ -1,16 +1,18 @@
-struct VertexShaderInput
+struct Material
 {
-    float4 position : POSITION0;
+    float4 color;
 };
 
-struct VertexShaderOutput
+ConstantBuffer<Material> gMaterial : register(b0);
+
+struct PixelShaderOutput
 {
-    float4 position : SV_POSITION;
+    float4 color : SV_TARGET0;
 };
 
-VertexShaderOutput main(VertexShaderInput input)
+PixelShaderOutput main()
 {
-    VertexShaderOutput output;
-    output.position = input.position;
+    PixelShaderOutput output;
+    output.color = gMaterial.color;
     return output;
 }
