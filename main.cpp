@@ -630,8 +630,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             ImGui::ShowDemoWindow();
 
+            ImGui::Render();
+
+            ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
+            commandList->SetDescriptorHeaps(1, descriptorHeaps);
+
             // TransitionBarrierを張る
             commandList->ResourceBarrier(1, &barrier);
+
+            ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
             // 指定した色で画面全体をクリアする
             float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青っぽい色、RGBAの順
@@ -656,8 +663,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix,projectionMatrix));
             *transformationMatrixData = worldViewProjectionMatrix;
 
-            ImGui::Render();
-
             // TransitionBarrierを張る
             commandList->SetGraphicsRootSignature(rootSignature);
             commandList->SetPipelineState(graphicsPipelineState);
@@ -673,11 +678,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             // コマンドリストの生成に失敗したので起動できない
             assert(SUCCEEDED(hr));
-
-            ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
-            commandList->SetDescriptorHeaps(1, descriptorHeaps);
-
-            ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
             // GPUのコマンドリスト実行を行わせる
             ID3D12CommandList* commandLists[] = { commandList };
@@ -750,7 +750,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #endif
 
 
-
+    srvDescriptorHeap->Release();
     CloseHandle(fenceEvent);
     fence->Release();
     rtvDescriptorHeap->Release();
