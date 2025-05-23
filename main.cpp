@@ -600,6 +600,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             DispatchMessage(&msg);
         } else {
 
+            ImGui_ImplDX12_NewFrame();
+            ImGui_ImplWin32_NewFrame();
+            ImGui::NewFrame();
+
             // ゲームの処理
             UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex(); // バックバッファのインデックス
 
@@ -623,6 +627,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             // 漂移後のResourceState
             barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+            ImGui::ShowDemoWindow();
 
             // TransitionBarrierを張る
             commandList->ResourceBarrier(1, &barrier);
@@ -649,6 +655,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
             Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix,projectionMatrix));
             *transformationMatrixData = worldViewProjectionMatrix;
+
+            ImGui::Render();
 
             // TransitionBarrierを張る
             commandList->SetGraphicsRootSignature(rootSignature);
