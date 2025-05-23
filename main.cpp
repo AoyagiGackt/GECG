@@ -368,22 +368,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     );
 
     assert(SUCCEEDED(hr));
-    /*
-    // ディスクリプタヒープの生成
-    ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
-    D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc = {};
+    
+    ID3D12DescriptorHeap* rtvDescriptorHeap = CreateDescriptorHeap(
+        device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 
-    // ディスクリプタヒープの生成
-    rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; // レンダーターゲットビュー用
-    rtvDescriptorHeapDesc.NumDescriptors = 2; // ダブルバッファ用に2つ
-    hr = device->CreateDescriptorHeap(
-        &rtvDescriptorHeapDesc, // ディスクリプタヒープの設定
-        IID_PPV_ARGS(&rtvDescriptorHeap) // ディスクリプタヒープのポインタ
-    );
+    ID3D12DescriptorHeap* srvDescriptorHeap = CreateDescriptorHeap(
+        device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 
-    // ディスクリプタヒープの生成に失敗したので起動できない
-    assert(SUCCEEDED(hr));
-    */
     // スワップチェーンからリソースを引っ張ってくる
     ID3D12Resource* swapChainResoures[2] = { nullptr };
 
