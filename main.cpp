@@ -749,9 +749,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 #endif
 
-    ImGui_ImplDX12_Shutdown();
-    ImGui_ImplWin32_Shutdown();
-    ImGui::DestroyContext();
+
 
     CloseHandle(fenceEvent);
     fence->Release();
@@ -786,6 +784,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     debugController->Release();
 
 #endif // _DEBUG
+
+    ImGui_ImplDX12_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
+
     CloseWindow(hwnd);
 
     // リソースリークチェック
