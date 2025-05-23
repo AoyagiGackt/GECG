@@ -674,6 +674,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // コマンドリストの生成に失敗したので起動できない
             assert(SUCCEEDED(hr));
 
+            ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
+            commandList->SetDescriptorHeaps(1, descriptorHeaps);
+
+            ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
+
             // GPUのコマンドリスト実行を行わせる
             ID3D12CommandList* commandLists[] = { commandList };
 
