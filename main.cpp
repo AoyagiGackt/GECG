@@ -163,6 +163,27 @@ ID3D12Resource* CreateBufferResouse(ID3D12Device* device, size_t sizeInBytes)
     return vertexResource;
 }
 
+ID3D12DescriptorHeap* CreateDescriptorHeap(
+    ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors,bool shaderVisible)
+{
+    // ディスクリプタヒープの生成
+    ID3D12DescriptorHeap* descriptorHeap = nullptr;
+    D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc = {};
+    // ディスクリプタヒープの生成
+    descriptorHeapDesc.Type = heapType; // レンダーターゲットビュー用
+    descriptorHeapDesc.NumDescriptors = numDescriptors; // ダブルバッファ用に2つ
+    descriptorHeapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+    HRESULT hr = device->CreateDescriptorHeap(
+        &descriptorHeapDesc, // ディスクリプタヒープの設定
+        IID_PPV_ARGS(&descriptorHeap) // ディスクリプタヒープのポインタ
+    );
+
+    // ディスクリプタヒープの生成に失敗したので起動できない
+    assert(SUCCEEDED(hr));
+    return descriptorHeap;
+}
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -347,7 +368,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     );
 
     assert(SUCCEEDED(hr));
-
+    /*
     // ディスクリプタヒープの生成
     ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
     D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc = {};
@@ -362,7 +383,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // ディスクリプタヒープの生成に失敗したので起動できない
     assert(SUCCEEDED(hr));
-
+    */
     // スワップチェーンからリソースを引っ張ってくる
     ID3D12Resource* swapChainResoures[2] = { nullptr };
 
