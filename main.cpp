@@ -628,17 +628,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // 漂移後のResourceState
             barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
-            ImGui::ShowDemoWindow();
-
-            ImGui::Render();
-
-            ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
-            commandList->SetDescriptorHeaps(1, descriptorHeaps);
-
             // TransitionBarrierを張る
             commandList->ResourceBarrier(1, &barrier);
 
-            ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
+            ImGui::ShowDemoWindow();
+
+            ImGui::Render();
 
             // 指定した色で画面全体をクリアする
             float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青っぽい色、RGBAの順
@@ -649,6 +644,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 0, // フラグ
                 nullptr // 深度ステンシルビューのハンドル
             );
+
+            ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
+            commandList->SetDescriptorHeaps(1, descriptorHeaps);
 
             // 今回はRenderTargetからPresentにする
             barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -673,6 +671,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
             commandList->DrawInstanced(3, 1, 0, 0);
+            ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
             hr = commandList->Close();
 
