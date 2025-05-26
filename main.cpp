@@ -196,6 +196,7 @@ ID3D12DescriptorHeap* CreateDescriptorHeap(
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+    CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
     WNDCLASS wc = {};
 
@@ -787,6 +788,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
+
+    CoUninitialize();
 
     CloseWindow(hwnd);
 
