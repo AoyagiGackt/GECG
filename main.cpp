@@ -529,12 +529,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
     rootParameters[1].Descriptor.ShaderRegister = 0;
-    rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRanges;
-    rootParameters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRanges);
+    rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRanges;
+    rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRanges);
     descriptionRootSignature.pParameters = rootParameters;
     descriptionRootSignature.NumParameters = _countof(rootParameters);
+
+    D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+    staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+    staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+    staticSamplers[0].ShaderRegister = 0;
+    staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    descriptionRootSignature.pStaticSamplers = staticSamplers;
+    descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
 
     // シリアライズしてバイナリにする
     ID3DBlob* signatureBlob = nullptr;
@@ -629,9 +641,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 頂点データを書き込む
     VertexData* vertexData = nullptr;
     vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-    vertexData[0] = { -0.5f, -0.5f, 0.0f, 1.0f }; // 左下
-    vertexData[1] = { 0.0f, 0.5f, 0.0f, 1.0f }; // 上
-    vertexData[2] = { 0.5f, -0.5f, 0.0f, 1.0f }; // 右下
+    vertexData[0] = { { -0.5f, -0.5f, 0.0f, 1.0f }, { 0.0f, 1.0f } }; // 左下
+    vertexData[1] = { { 0.0f, 0.5f, 0.0f, 1.0f }, { 0.5f, 0.0f } }; // 上
+    vertexData[2] = { { 0.5f, -0.5f, 0.0f, 1.0f }, { 1.0f, 1.0f } }; // 右下
     vertexResource->Unmap(0, nullptr);
 
     // 頂点バッファビューを作成
@@ -773,6 +785,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
             commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootDescriptorTable(2, textureSrvStartHandleGPU);
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
             commandList->DrawInstanced(3, 1, 0, 0);
