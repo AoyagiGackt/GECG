@@ -3,6 +3,10 @@
 ———————————–——————–——————–——————–——————–*/
 
 #include "MakeAffine.h"
+#include "externals/DirectXTex/DirectXTex.h"
+#include "externals/imgui/imgui.h"
+#include "externals/imgui/imgui_impl_dx12.h"
+#include "externals/imgui/imgui_impl_win32.h"
 #include <Windows.h>
 #include <cassert>
 #include <cstdint>
@@ -12,9 +16,6 @@
 #include <dxgidebug.h>
 #include <format>
 #include <string>
-#include "externals/imgui/imgui.h"
-#include "externals/imgui/imgui_impl_win32.h"
-#include "externals/imgui/imgui_impl_dx12.h"
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -80,6 +81,62 @@ std::string ConvertString(const std::wstring& str)
     std::string result(sizeNeeded, 0);
     WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
     return result;
+}
+
+DirectX ::ScratchImage LoadTexture(const std ::string filePath)
+{
+    DirectX::ScratchImage image {};
+    std::wstring filePathW = ConvertString(filePath);
+    HRESULT hr = DirectX ::LoadFromWICFile(filePathW.c_str(), DirectX ::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+    assert(SUCCEEDED(hr));
+    DirectX ::ScratchImage mipImages {};
+    hr = DirectX ::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX ::TEX_FILTER_SRGB, 8, mipImages);
+    assert(SUCCEEDED(hr));
+    return mipImages;
+}
+
+ID3D12Resource* CreateTextureResourse(ID3D12Device* device, const DirectX::TexMetadata& metadata)
+{
+    D3D12_RESOURCE_DESC resourceDesc {};
+    resourceDesc.Width = UINT(metadata.width);
+    resourceDesc.Height = UINT(metadata.height);
+    resourceDesc.MipLevels = UINT16(metadata.mipLevels);
+    resourceDesc.DepthOrArraySize = UINT16(metadata.arraySize);
+    resourceDesc.Format = metadata.format;
+    resourceDesc.SampleDesc.Count = 1;
+    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension);
+
+    D3D12_HEAP_PROPERTIES heapProperties {};
+    heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;
+    heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
+    heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
+
+    ID3D12Resource* resource = nullptr;
+    HRESULT hr = device->CreateCommittedResource(
+        &heapProperties,
+        D3D12_HEAP_FLAG_NONE,
+        &resourceDesc,
+        D3D12_RESOURCE_STATE_GENERIC_READ,
+        nullptr,
+        IID_PPV_ARGS(&resource));
+    assert(SUCCEEDED(hr));
+    return resource;
+}
+
+void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages)
+{
+    const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+
+    for (size_t mipLevel = 0; mipLevel < metadata.mipLevels; ++mipLevel) {
+        const DirectX ::Image* img = mipImages.GetImage(mipLevel, 0, 0);
+        HRESULT hr = texture->WriteToSubresource(
+            UINT(mipLevel),
+            nullptr,
+            img->pixels,
+            UINT(img->rowPitch),
+            UINT(img->slicePitch));
+        assert(SUCCEEDED(hr));
+    }
 }
 
 struct Vector4 {
@@ -173,7 +230,7 @@ ID3D12Resource* CreateBufferResouse(ID3D12Device* device, size_t sizeInBytes)
 }
 
 ID3D12DescriptorHeap* CreateDescriptorHeap(
-    ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors,bool shaderVisible)
+    ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
 {
     // ディスクリプタヒープの生成
     ID3D12DescriptorHeap* descriptorHeap = nullptr;
@@ -196,6 +253,7 @@ ID3D12DescriptorHeap* CreateDescriptorHeap(
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+    CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
     WNDCLASS wc = {};
 
@@ -377,7 +435,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     );
 
     assert(SUCCEEDED(hr));
-    
+
     ID3D12DescriptorHeap* rtvDescriptorHeap = CreateDescriptorHeap(
         device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 
@@ -574,7 +632,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     scissorRect.top = 0;
     scissorRect.bottom = kClientHeight;
 
-    Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f,float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+    Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
 
     Matrix4x4* transformationMatrixData = nullptr;
     ID3D12Resource* transformationMatrixResource = CreateBufferResouse(device, sizeof(Matrix4x4));
@@ -658,7 +716,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
             Matrix4x4 viewMatrix = Inverse(cameraMatrix);
             Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
-            Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix,projectionMatrix));
+            Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
             *transformationMatrixData = worldViewProjectionMatrix;
 
             // TransitionBarrierを張る
@@ -748,7 +806,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 #endif
 
-
     srvDescriptorHeap->Release();
     CloseHandle(fenceEvent);
     fence->Release();
@@ -787,6 +844,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
+
+    CoUninitialize();
 
     CloseWindow(hwnd);
 
