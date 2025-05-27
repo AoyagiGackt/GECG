@@ -55,6 +55,34 @@ void Log(const std::string& message)
     OutputDebugStringA(message.c_str());
 }
 
+std::wstring ConvertString(const std::string& str)
+{
+    if (str.empty()) {
+        return std::wstring();
+    }
+    auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), NULL, 0);
+    if (sizeNeeded == 0) {
+        return std::wstring();
+    }
+    std::wstring result(sizeNeeded, 0);
+    MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), &result[0], sizeNeeded);
+    return result;
+}
+
+std::string ConvertString(const std::wstring& str)
+{
+    if (str.empty()) {
+        return std::string();
+    }
+    auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
+    if (sizeNeeded == 0) {
+        return std::string();
+    }
+    std::string result(sizeNeeded, 0);
+    WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
+    return result;
+}
+
 DirectX ::ScratchImage LoadTexture(const std ::string filePath)
 {
     DirectX::ScratchImage image {};
@@ -62,7 +90,7 @@ DirectX ::ScratchImage LoadTexture(const std ::string filePath)
     HRESULT hr = DirectX ::LoadFromWICFile(filePathW.c_str(), DirectX ::WIC_FLAGS_FORCE_SRGB, nullptr, image);
     assert(SUCCEEDED(hr));
     DirectX ::ScratchImage mipImages {};
-    hr - DirectX ::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX ::TEX_FILTER_SRGB, 8, mipImages);
+    hr = DirectX ::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX ::TEX_FILTER_SRGB, 8, mipImages);
     assert(SUCCEEDED(hr));
     return mipImages;
 }
@@ -95,7 +123,6 @@ ID3D12Resource* CreateTextureResourse(ID3D12Device* device, const DirectX::TexMe
     return resource;
 }
 
-// 全MipMapについて
 void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages)
 {
     const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
@@ -107,38 +134,9 @@ void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
             nullptr,
             img->pixels,
             UINT(img->rowPitch),
-            UINT(img->slicePitch)
-        );
+            UINT(img->slicePitch));
         assert(SUCCEEDED(hr));
     }
-}
-
-std::wstring ConvertString(const std::string& str)
-{
-    if (str.empty()) {
-        return std::wstring();
-    }
-    auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), NULL, 0);
-    if (sizeNeeded == 0) {
-        return std::wstring();
-    }
-    std::wstring result(sizeNeeded, 0);
-    MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), &result[0], sizeNeeded);
-    return result;
-}
-
-std::string ConvertString(const std::wstring& str)
-{
-    if (str.empty()) {
-        return std::string();
-    }
-    auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
-    if (sizeNeeded == 0) {
-        return std::string();
-    }
-    std::string result(sizeNeeded, 0);
-    WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
-    return result;
 }
 
 struct Vector4 {
