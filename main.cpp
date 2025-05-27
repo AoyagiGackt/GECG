@@ -609,7 +609,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     *materialData = Vector4 { 1.0f, 0.0f, 0.0f, 1.0f }; // 赤
 
     // 頂点バッファ用リソースを作成
-    ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(Vector4) * 3);
+    ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(VertexData) * 3);
 
     // 頂点データを書き込む
     Vector4* vertexData = nullptr;
@@ -622,8 +622,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 頂点バッファビューを作成
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
     vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-    vertexBufferView.SizeInBytes = sizeof(Vector4) * 3;
-    vertexBufferView.StrideInBytes = sizeof(Vector4);
+    vertexBufferView.SizeInBytes = sizeof(VertexData) * 3;
+    vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+    VertexData* vertexData = nullptr;
 
     // ビューポート
     D3D12_VIEWPORT viewport {};
