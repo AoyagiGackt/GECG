@@ -825,6 +825,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 #endif
 
+    
     srvDescriptorHeap->Release();
     CloseHandle(fenceEvent);
     fence->Release();
@@ -853,6 +854,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     transformationMatrixResource->Release();
 
     rootSignature->Release();
+
+    // --- 追加: テクスチャリソースとmipImagesの解放 ---
+    textureResouce->Release();
+    mipImages.Release();
+
+    // --- 追加: dxc関連の解放 ---
+    includeHandler->Release();
+    dxcCompiler->Release();
+    dxcUtils->Release();
 
 #ifdef _DEBUG
 
