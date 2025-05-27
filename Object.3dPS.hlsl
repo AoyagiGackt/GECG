@@ -1,5 +1,5 @@
 
-#include "Object.3d.hlsl"
+#include "Object3d.hlsli"
 
 struct Material
 {
