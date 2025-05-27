@@ -61,7 +61,7 @@ DirectX ::ScratchImage LoadTexture(const std ::string filePath)
     std::wstring filePathW = ConvertString(filePath);
     HRESULT hr = DirectX ::LoadFromWICFile(filePathW.c_str(), DirectX ::WIC_FLAGS_FORCE_SRGB, nullptr, image);
     assert(SUCCEEDED(hr));
-    DirectX ::ScratchImage mipInages {};
+    DirectX ::ScratchImage mipImages {};
     hr - DirectX ::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX ::TEX_FILTER_SRGB, 8, mipImages);
     assert(SUCCEEDED(hr));
     return mipImages;
@@ -82,6 +82,16 @@ ID3D12Resource* CreateTextureResourse(ID3D12Device* device, const DirectX::TexMe
     heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
     heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
 
+    ID3D12Resource* resource = nullptr;
+    HRESULT hr = device->CreateCommittedResource(
+        &heapProperties,
+        D3D12_HEAP_FLAG_NONE,
+        &resourceDesc,
+        D3D12_RESOURCE_STATE_GENERIC_READ,
+        nullptr,
+        IID_PPV_ARGS(&resource));
+    assert(SUCCEEDED(hr));
+    return resource;
 }
 
 std::wstring ConvertString(const std::string& str)
