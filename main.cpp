@@ -3,6 +3,10 @@
 ———————————–——————–——————–——————–——————–*/
 
 #include "MakeAffine.h"
+#include "externals/DirectXTex/DirectXTex.h"
+#include "externals/imgui/imgui.h"
+#include "externals/imgui/imgui_impl_dx12.h"
+#include "externals/imgui/imgui_impl_win32.h"
 #include <Windows.h>
 #include <cassert>
 #include <cstdint>
@@ -12,9 +16,6 @@
 #include <dxgidebug.h>
 #include <format>
 #include <string>
-#include "externals/imgui/imgui.h"
-#include "externals/imgui/imgui_impl_win32.h"
-#include "externals/imgui/imgui_impl_dx12.h"
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -52,6 +53,18 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 void Log(const std::string& message)
 {
     OutputDebugStringA(message.c_str());
+}
+
+DirectX ::ScratchImage LoadTexture(const std ::string filePath)
+{
+    DirectX::ScratchImage image {};
+    std::wstring filePathW = ConvertString(filePath);
+    HRESULT hr = DirectX ::LoadFromWICFile(filePathW.c_str(), DirectX ::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+    assert(SUCCEEDED(hr));
+    DirectX ::ScratchImage mipInages {};
+    hr - DirectX ::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX ::TEX_FILTER_SRGB, 8, mipImages);
+    assert(SUCCEEDED(hr));
+    return mipImages;
 }
 
 std::wstring ConvertString(const std::string& str)
@@ -173,7 +186,7 @@ ID3D12Resource* CreateBufferResouse(ID3D12Device* device, size_t sizeInBytes)
 }
 
 ID3D12DescriptorHeap* CreateDescriptorHeap(
-    ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors,bool shaderVisible)
+    ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
 {
     // ディスクリプタヒープの生成
     ID3D12DescriptorHeap* descriptorHeap = nullptr;
@@ -378,7 +391,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     );
 
     assert(SUCCEEDED(hr));
-    
+
     ID3D12DescriptorHeap* rtvDescriptorHeap = CreateDescriptorHeap(
         device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 
@@ -575,7 +588,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     scissorRect.top = 0;
     scissorRect.bottom = kClientHeight;
 
-    Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f,float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+    Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
 
     Matrix4x4* transformationMatrixData = nullptr;
     ID3D12Resource* transformationMatrixResource = CreateBufferResouse(device, sizeof(Matrix4x4));
@@ -659,7 +672,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
             Matrix4x4 viewMatrix = Inverse(cameraMatrix);
             Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
-            Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix,projectionMatrix));
+            Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
             *transformationMatrixData = worldViewProjectionMatrix;
 
             // TransitionBarrierを張る
@@ -748,7 +761,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         infoQueue->Release();
     }
 #endif
-
 
     srvDescriptorHeap->Release();
     CloseHandle(fenceEvent);
