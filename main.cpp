@@ -825,7 +825,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 #endif
 
-    
+    // --- ここからリソース解放処理 ---
+
     srvDescriptorHeap->Release();
     CloseHandle(fenceEvent);
     fence->Release();
