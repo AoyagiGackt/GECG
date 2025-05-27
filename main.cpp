@@ -143,6 +143,17 @@ struct Vector4 {
     float x, y, z, w;
 };
 
+struct Vector2 {
+    float x;
+    float y;
+};
+;
+
+struct VertexData {
+    Vector4 position;
+    Vector2 texcoord;
+};
+
 IDxcBlob* CompileShader(
     // Comilerするファイルへのパス
     const std::wstring& filePath,
