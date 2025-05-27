@@ -636,7 +636,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 
-    *materialData = Vector4 { 1.0f, 0.0f, 0.0f, 1.0f }; // 赤
+    *materialData = Vector4 { 1.0f, 1.0f, 1.0f, 1.0f };
 
     // 頂点バッファ用リソースを作成
     ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(VertexData) * 3);
