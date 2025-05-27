@@ -685,6 +685,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     device->CreateShaderResourceView(textureResouce, &srvDesc, textureSrvStartHandleCPU);
 
+    
+
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
         // windowsにメッセージが来てたら最優先で処理させる
