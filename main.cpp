@@ -630,6 +630,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
     *wvpData = MakeIdentity4x4();
 
+
     ID3D12Resource* materialResource = CreateBufferResouse(device, sizeof(Vector4) * 3);
 
     Vector4* materialData = nullptr;
