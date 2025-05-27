@@ -1,3 +1,6 @@
+
+#include "Object.3d.hlsl"
+
 struct Material
 {
     float4 color;
