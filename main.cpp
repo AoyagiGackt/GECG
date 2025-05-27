@@ -4,6 +4,7 @@
 
 #include "MakeAffine.h"
 #include "externals/DirectXTex/DirectXTex.h"
+#include "externals/DirectXTex/d3dx12.h"
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
@@ -16,10 +17,12 @@
 #include <dxgidebug.h>
 #include <format>
 #include <string>
+#include <vector>
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
 ———————————–——————–——————–——————–——————–*/
+
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -141,6 +144,17 @@ void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
 
 struct Vector4 {
     float x, y, z, w;
+};
+
+struct Vector2 {
+    float x;
+    float y;
+};
+;
+
+struct VertexData {
+    Vector4 position;
+    Vector2 texcoord;
 };
 
 IDxcBlob* CompileShader(
@@ -505,15 +519,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature {};
     descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    D3D12_ROOT_PARAMETER rootParameters[2] = {};
+    D3D12_DESCRIPTOR_RANGE descriptorRanges[1] = {};
+    descriptorRanges[0].BaseShaderRegister = 0;
+    descriptorRanges[0].NumDescriptors = 1;
+    descriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    descriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+    D3D12_ROOT_PARAMETER rootParameters[3] = {};
     rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[0].Descriptor.ShaderRegister = 0;
     rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
     rootParameters[1].Descriptor.ShaderRegister = 0;
+    rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRanges;
+    rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRanges);
     descriptionRootSignature.pParameters = rootParameters;
     descriptionRootSignature.NumParameters = _countof(rootParameters);
+
+    D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+    staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+    staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+    staticSamplers[0].ShaderRegister = 0;
+    staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    descriptionRootSignature.pStaticSamplers = staticSamplers;
+    descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
 
     // シリアライズしてバイナリにする
     ID3DBlob* signatureBlob = nullptr;
@@ -533,13 +569,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     assert(SUCCEEDED(hr));
 
-    D3D12_INPUT_ELEMENT_DESC inputElementDescs[1] = {};
+    D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
     inputElementDescs[0].SemanticName = "POSITION";
     inputElementDescs[0]
         .SemanticIndex
         = 0;
     inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+    inputElementDescs[1].SemanticName = "TEXCOORD";
+    inputElementDescs[1].SemanticIndex = 0;
+    inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+    inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+
     D3D12_INPUT_LAYOUT_DESC inputLayoutDesc {};
     inputLayoutDesc.pInputElementDescs = inputElementDescs;
     inputLayoutDesc.NumElements = _countof(inputElementDescs);
@@ -598,21 +639,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     *materialData = Vector4 { 1.0f, 0.0f, 0.0f, 1.0f }; // 赤
 
     // 頂点バッファ用リソースを作成
-    ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(Vector4) * 3);
+    ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(VertexData) * 3);
 
     // 頂点データを書き込む
-    Vector4* vertexData = nullptr;
+    VertexData* vertexData = nullptr;
     vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-    vertexData[0] = { -0.5f, -0.5f, 0.0f, 1.0f }; // 左下
-    vertexData[1] = { 0.0f, 0.5f, 0.0f, 1.0f }; // 上
-    vertexData[2] = { 0.5f, -0.5f, 0.0f, 1.0f }; // 右下
+    vertexData[0] = { { -0.5f, -0.5f, 0.0f, 1.0f }, { 0.0f, 1.0f } }; // 左下
+    vertexData[1] = { { 0.0f, 0.5f, 0.0f, 1.0f }, { 0.5f, 0.0f } }; // 上
+    vertexData[2] = { { 0.5f, -0.5f, 0.0f, 1.0f }, { 1.0f, 1.0f } }; // 右下
     vertexResource->Unmap(0, nullptr);
 
     // 頂点バッファビューを作成
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
     vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-    vertexBufferView.SizeInBytes = sizeof(Vector4) * 3;
-    vertexBufferView.StrideInBytes = sizeof(Vector4);
+    vertexBufferView.SizeInBytes = sizeof(VertexData) * 3;
+    vertexBufferView.StrideInBytes = sizeof(VertexData);
 
     // ビューポート
     D3D12_VIEWPORT viewport {};
@@ -649,6 +690,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         srvDescriptorHeap,
         srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
         srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+
+    DirectX::ScratchImage mipImages = LoadTexture("Resources/uvChecker.png");
+    const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+    ID3D12Resource* textureResouce = CreateTextureResourse(device, metadata);
+    UploadTextureData(textureResouce, mipImages);
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc {};
+    srvDesc.Format = metadata.format;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+
+    D3D12_CPU_DESCRIPTOR_HANDLE textureSrvStartHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    D3D12_GPU_DESCRIPTOR_HANDLE textureSrvStartHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+
+    textureSrvStartHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    textureSrvStartHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+    device->CreateShaderResourceView(textureResouce, &srvDesc, textureSrvStartHandleCPU);
+
+    
 
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
@@ -726,6 +788,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
             commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootDescriptorTable(2, textureSrvStartHandleGPU);
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
             commandList->DrawInstanced(3, 1, 0, 0);
@@ -806,6 +869,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 #endif
 
+    // --- ここからリソース解放処理 ---
+
     srvDescriptorHeap->Release();
     CloseHandle(fenceEvent);
     fence->Release();
@@ -834,6 +899,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     transformationMatrixResource->Release();
 
     rootSignature->Release();
+
+    // --- 追加: テクスチャリソースとmipImagesの解放 ---
+    textureResouce->Release();
+    mipImages.Release();
+
+    // --- 追加: dxc関連の解放 ---
+    includeHandler->Release();
+    dxcCompiler->Release();
+    dxcUtils->Release();
 
 #ifdef _DEBUG
 
