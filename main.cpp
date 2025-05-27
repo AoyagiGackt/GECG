@@ -544,13 +544,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     assert(SUCCEEDED(hr));
 
-    D3D12_INPUT_ELEMENT_DESC inputElementDescs[1] = {};
+    D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
     inputElementDescs[0].SemanticName = "POSITION";
     inputElementDescs[0]
         .SemanticIndex
         = 0;
     inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+    inputElementDescs[1].SemanticName = "TEVCOORD";
+    inputElementDescs[1].SemanticIndex = 0;
+    inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+    inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+
     D3D12_INPUT_LAYOUT_DESC inputLayoutDesc {};
     inputLayoutDesc.pInputElementDescs = inputElementDescs;
     inputLayoutDesc.NumElements = _countof(inputElementDescs);
@@ -612,7 +617,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(VertexData) * 3);
 
     // 頂点データを書き込む
-    Vector4* vertexData = nullptr;
+    VertexData* vertexData = nullptr;
     vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
     vertexData[0] = { -0.5f, -0.5f, 0.0f, 1.0f }; // 左下
     vertexData[1] = { 0.0f, 0.5f, 0.0f, 1.0f }; // 上
@@ -624,8 +629,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
     vertexBufferView.SizeInBytes = sizeof(VertexData) * 3;
     vertexBufferView.StrideInBytes = sizeof(VertexData);
-
-    VertexData* vertexData = nullptr;
 
     // ビューポート
     D3D12_VIEWPORT viewport {};
