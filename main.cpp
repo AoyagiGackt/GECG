@@ -67,7 +67,8 @@ DirectX ::ScratchImage LoadTexture(const std ::string filePath)
     return mipImages;
 }
 
-ID3D12Resource* CreateTextureResourse(ID3D12Device* device, const DirectX::TexMetadata& metadata) {
+ID3D12Resource* CreateTextureResourse(ID3D12Device* device, const DirectX::TexMetadata& metadata)
+{
     D3D12_RESOURCE_DESC resourceDesc {};
     resourceDesc.Width = UINT(metadata.width);
     resourceDesc.Height = UINT(metadata.height);
@@ -92,6 +93,24 @@ ID3D12Resource* CreateTextureResourse(ID3D12Device* device, const DirectX::TexMe
         IID_PPV_ARGS(&resource));
     assert(SUCCEEDED(hr));
     return resource;
+}
+
+// 全MipMapについて
+void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages)
+{
+    const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+
+    for (size_t mipLevel = 0; mipLevel < metadata.mipLevels; ++mipLevel) {
+        const DirectX ::Image* img = mipImages.GetImage(mipLevel, 0, 0);
+        HRESULT hr = texture->WriteToSubresource(
+            UINT(mipLevel),
+            nullptr,
+            img->pixels,
+            UINT(img->rowPitch),
+            UINT(img->slicePitch)
+        );
+        assert(SUCCEEDED(hr));
+    }
 }
 
 std::wstring ConvertString(const std::string& str)
