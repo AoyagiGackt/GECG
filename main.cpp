@@ -840,15 +840,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
             commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 
-            commandList->ClearDepthStencilView(
-                dsvHandle,
-                D3D12_CLEAR_FLAG_DEPTH, 
-                1.0f, 
-                0,
-                0, 
-                nullptr 
-            );
-
             // TransitionBarrierを張る
             commandList->SetGraphicsRootSignature(rootSignature);
             commandList->SetPipelineState(graphicsPipelineState);
@@ -860,6 +851,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
             commandList->DrawInstanced(6, 1, 0, 0);
+            commandList->ClearDepthStencilView(
+                dsvHandle,
+                D3D12_CLEAR_FLAG_DEPTH,
+                1.0f,
+                0,
+                0,
+                nullptr);
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
             hr = commandList->Close();
