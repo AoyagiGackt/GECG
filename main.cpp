@@ -837,6 +837,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
             *transformationMatrixData = worldViewProjectionMatrix;
 
+            D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+            commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
+
+            commandList->ClearDepthStencilView(
+                dsvHandle, // 深度ステンシルビューのハンドル
+                D3D12_CLEAR_FLAG_DEPTH, // クリアするフラグ
+                1.0f, // 深度値
+                0, // ステンシル値
+                0, // フラグ
+                nullptr // Rects
+            );
+
             // TransitionBarrierを張る
             commandList->SetGraphicsRootSignature(rootSignature);
             commandList->SetPipelineState(graphicsPipelineState);
@@ -926,7 +938,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #endif
 
     // --- ここからリソース解放処理 ---
-
+    dsvDescriptorHeap->Release();
+    depthStencilResource->Release();
     srvDescriptorHeap->Release();
     CloseHandle(fenceEvent);
     fence->Release();
