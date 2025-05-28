@@ -716,6 +716,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ID3D12Resource* transformationMatrixResource = CreateBufferResouse(device, sizeof(Matrix4x4));
     transformationMatrixResource->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData));
 
+    // あやしいかも
     ID3D12Resource* depthStencilResource = CreateDepthStencilTextureResource(device, kClientWidth, kClientHeight);
     ID3D12DescriptorHeap* dsvDescriptorHeap = CreateDescriptorHeap(
         device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
@@ -726,6 +727,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         depthStencilResource,
         &dsvDesc,
         dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+
+    D3D12_DEPTH_STENCIL_DESC depthStencilDesc = {};
+    depthStencilDesc.DepthEnable = true;
+    depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+    depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+    // DepthStencilを設定
+    graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
+    graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
     // ImGuiの初期化
     IMGUI_CHECKVERSION();
