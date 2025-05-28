@@ -640,7 +640,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     *materialData = Vector4 { 1.0f, 1.0f, 1.0f, 1.0f };
 
     // 頂点バッファ用リソースを作成
-    ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(VertexData) * 3);
+    ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(VertexData) * 6);
 
     // 頂点データを書き込む
     VertexData* vertexData = nullptr;
@@ -648,12 +648,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexData[0] = { { -0.5f, -0.5f, 0.0f, 1.0f }, { 0.0f, 1.0f } }; // 左下
     vertexData[1] = { { 0.0f, 0.5f, 0.0f, 1.0f }, { 0.5f, 0.0f } }; // 上
     vertexData[2] = { { 0.5f, -0.5f, 0.0f, 1.0f }, { 1.0f, 1.0f } }; // 右下
+    vertexData[3].position = { -0.5f, -0.5f, 0.5f, 1.0f };
+    vertexData[3].texcoord = { 0.0f, 1.0f }; // 左下
+    vertexData[4].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+    vertexData[4].texcoord = { 0.5f, 0.0f }; // 上
+    vertexData[5].position = { 0.5f, -0.5f, 0.5f, 1.0f };
+    vertexData[5].texcoord = { 1.0f, 1.0f }; // 右下
     vertexResource->Unmap(0, nullptr);
 
     // 頂点バッファビューを作成
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
     vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-    vertexBufferView.SizeInBytes = sizeof(VertexData) * 3;
+    vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
     vertexBufferView.StrideInBytes = sizeof(VertexData);
 
     // ビューポート
@@ -792,7 +798,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvStartHandleGPU);
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
-            commandList->DrawInstanced(3, 1, 0, 0);
+            commandList->DrawInstanced(6, 1, 0, 0);
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
             hr = commandList->Close();
