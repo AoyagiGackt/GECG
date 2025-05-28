@@ -841,12 +841,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 
             commandList->ClearDepthStencilView(
-                dsvHandle, // 深度ステンシルビューのハンドル
-                D3D12_CLEAR_FLAG_DEPTH, // クリアするフラグ
-                1.0f, // 深度値
-                0, // ステンシル値
-                0, // フラグ
-                nullptr // Rects
+                dsvHandle,
+                D3D12_CLEAR_FLAG_DEPTH, 
+                1.0f, 
+                0,
+                0, 
+                nullptr 
             );
 
             // TransitionBarrierを張る
