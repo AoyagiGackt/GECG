@@ -23,7 +23,6 @@
 *libのリンク
 ———————————–——————–——————–——————–——————–*/
 
-
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
@@ -262,6 +261,38 @@ ID3D12DescriptorHeap* CreateDescriptorHeap(
     // ディスクリプタヒープの生成に失敗したので起動できない
     assert(SUCCEEDED(hr));
     return descriptorHeap;
+}
+
+ID3D12Resource* CreateDepthStencilTextureResource(
+    ID3D12Device* device, int32_t width, int32_t height)
+{
+    // 深度ステンシルテクスチャの設定
+    D3D12_RESOURCE_DESC resourceDesc = {};
+    resourceDesc.Width = width; // 幅
+    resourceDesc.Height = height; // 高さ
+    resourceDesc.MipLevels = 1; // ミップレベル
+    resourceDesc.DepthOrArraySize = 1; // 深度または配列サイズ
+    resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // 深度ステンシルフォーマット
+    resourceDesc.SampleDesc.Count = 1; // サンプル数
+    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; // 2Dテクスチャ
+    resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL; // 深度ステンシルを許可
+
+    // ヒーププロパティの設定
+    D3D12_HEAP_PROPERTIES heapProperties = {};
+    heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+    D3D12_CLEAR_VALUE depthClearValue {};
+    depthClearValue.DepthStencil.Depth = 1.0f;
+    depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    ID3D12Resource* resource = nullptr;
+    HRESULT hr = device->CreateCommittedResource(
+        &heapProperties,
+        D3D12_HEAP_FLAG_NONE,
+        &resourceDesc,
+        D3D12_RESOURCE_STATE_DEPTH_WRITE,
+        &depthClearValue,
+        IID_PPV_ARGS(&resource));
+    assert(SUCCEEDED(hr));
+    return resource;
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -630,7 +661,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
     *wvpData = MakeIdentity4x4();
 
-
     ID3D12Resource* materialResource = CreateBufferResouse(device, sizeof(Vector4) * 3);
 
     Vector4* materialData = nullptr;
@@ -717,8 +747,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     device->CreateShaderResourceView(textureResouce, &srvDesc, textureSrvStartHandleCPU);
 
-    
-
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
         // windowsにメッセージが来てたら最優先で処理させる
@@ -779,7 +807,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
             barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
-            transform.rotate.y += 0.03f;
+            transform.rotate.y += 0.01f;
             Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
             *wvpData = worldMatrix;
             Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
