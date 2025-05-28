@@ -682,7 +682,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexData[3].texcoord = { 0.0f, 1.0f }; // 左下
     vertexData[4].position = { 0.0f, 0.0f, 0.0f, 1.0f };
     vertexData[4].texcoord = { 0.5f, 0.0f }; // 上
-    vertexData[5].position = { 0.5f, -0.5f, 0.5f, 1.0f };
+    vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
     vertexData[5].texcoord = { 1.0f, 1.0f }; // 右下
     vertexResource->Unmap(0, nullptr);
 
