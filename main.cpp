@@ -650,6 +650,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // どのように画面に色を打ち込むかの設定
     graphicsPipelineStateDesc.SampleDesc.Count = 1;
     graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+
+    D3D12_DEPTH_STENCIL_DESC depthStencilDesc = {};
+    depthStencilDesc.DepthEnable = true;
+    depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+    depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+    // DepthStencilを設定
+    graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
+    graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
     // 実際に生成
     ID3D12PipelineState* graphicsPipelineState = nullptr;
     hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
@@ -727,15 +737,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         depthStencilResource,
         &dsvDesc,
         dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-
-    D3D12_DEPTH_STENCIL_DESC depthStencilDesc = {};
-    depthStencilDesc.DepthEnable = true;
-    depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-    depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-
-    // DepthStencilを設定
-    graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
-    graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
     // ImGuiの初期化
     IMGUI_CHECKVERSION();
@@ -835,7 +836,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Matrix4x4 viewMatrix = Inverse(cameraMatrix);
             Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
             Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-            *transformationMatrixData = worldViewProjectionMatrix;
+            *wvpData = worldViewProjectionMatrix;
 
             D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
             commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
