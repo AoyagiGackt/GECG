@@ -792,276 +792,284 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         }
     };
 
-        // ImGuiの初期化
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGui::StyleColorsDark();
-        ImGui_ImplWin32_Init(hwnd);
-        ImGui_ImplDX12_Init(device,
-            swapChainDesc.BufferCount,
-            rtvDesc.Format,
-            srvDescriptorHeap,
-            srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-            srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+    // ImGuiの初期化
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplWin32_Init(hwnd);
+    ImGui_ImplDX12_Init(device,
+        swapChainDesc.BufferCount,
+        rtvDesc.Format,
+        srvDescriptorHeap,
+        srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+        srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
-        DirectX::ScratchImage mipImages = LoadTexture("Resources/uvChecker.png");
-        const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-        ID3D12Resource* textureResouce = CreateTextureResourse(device, metadata);
-        UploadTextureData(textureResouce, mipImages);
+    DirectX::ScratchImage mipImages = LoadTexture("Resources/uvChecker.png");
+    const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+    ID3D12Resource* textureResouce = CreateTextureResourse(device, metadata);
+    UploadTextureData(textureResouce, mipImages);
 
-        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc {};
-        srvDesc.Format = metadata.format;
-        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-        srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc {};
+    srvDesc.Format = metadata.format;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
 
-        D3D12_CPU_DESCRIPTOR_HANDLE textureSrvStartHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-        D3D12_GPU_DESCRIPTOR_HANDLE textureSrvStartHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+    D3D12_CPU_DESCRIPTOR_HANDLE textureSrvStartHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    D3D12_GPU_DESCRIPTOR_HANDLE textureSrvStartHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
 
-        textureSrvStartHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        textureSrvStartHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    textureSrvStartHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    textureSrvStartHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-        device->CreateShaderResourceView(textureResouce, &srvDesc, textureSrvStartHandleCPU);
+    device->CreateShaderResourceView(textureResouce, &srvDesc, textureSrvStartHandleCPU);
 
-        // ウィンドウの×ボタンが押されるまでループ
-        while (msg.message != WM_QUIT) {
-            // windowsにメッセージが来てたら最優先で処理させる
-            if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-                TranslateMessage(&msg);
-                DispatchMessage(&msg);
-            } else {
+    // ウィンドウの×ボタンが押されるまでループ
+    while (msg.message != WM_QUIT) {
+        // windowsにメッセージが来てたら最優先で処理させる
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        } else {
 
-                ImGui_ImplDX12_NewFrame();
-                ImGui_ImplWin32_NewFrame();
-                ImGui::NewFrame();
+            ImGui_ImplDX12_NewFrame();
+            ImGui_ImplWin32_NewFrame();
+            ImGui::NewFrame();
 
-                // ゲームの処理
-                UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex(); // バックバッファのインデックス
+            // ゲームの処理
+            UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex(); // バックバッファのインデックス
 
-                // 描画先のRTVを取得する
-                commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
+            // 描画先のRTVを取得する
+            commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
 
-                // TransitionBarrierの設定
-                D3D12_RESOURCE_BARRIER barrier {};
+            // TransitionBarrierの設定
+            D3D12_RESOURCE_BARRIER barrier {};
 
-                // 今回のバリアはTransition
-                barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+            // 今回のバリアはTransition
+            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 
-                // Noneにする
-                barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+            // Noneにする
+            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 
-                // バリアを張る対象のリソース。現在のバックバッファに対して行う
-                barrier.Transition.pResource = swapChainResoures[backBufferIndex];
+            // バリアを張る対象のリソース。現在のバックバッファに対して行う
+            barrier.Transition.pResource = swapChainResoures[backBufferIndex];
 
-                // 漂移前のResourceState
-                barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+            // 漂移前のResourceState
+            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 
-                // 漂移後のResourceState
-                barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+            // 漂移後のResourceState
+            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
-                // TransitionBarrierを張る
-                commandList->ResourceBarrier(1, &barrier);
+            // TransitionBarrierを張る
+            commandList->ResourceBarrier(1, &barrier);
 
-                ImGui::ShowDemoWindow();
+            ImGui::ShowDemoWindow();
 
-                ImGui::Render();
+            ImGui::Render();
 
-                // 指定した色で画面全体をクリアする
-                float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青っぽい色、RGBAの順
+            // 指定した色で画面全体をクリアする
+            float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青っぽい色、RGBAの順
 
-                commandList->ClearRenderTargetView(
-                    rtvHandles[backBufferIndex], // 描画先のRTV
-                    clearColor, // クリアする色
-                    0, // フラグ
-                    nullptr // 深度ステンシルビューのハンドル
-                );
+            commandList->ClearRenderTargetView(
+                rtvHandles[backBufferIndex], // 描画先のRTV
+                clearColor, // クリアする色
+                0, // フラグ
+                nullptr // 深度ステンシルビューのハンドル
+            );
 
-                ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
-                commandList->SetDescriptorHeaps(1, descriptorHeaps);
+            ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
+            commandList->SetDescriptorHeaps(1, descriptorHeaps);
 
-                // 今回はRenderTargetからPresentにする
-                barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-                barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+            // 今回はRenderTargetからPresentにする
+            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
-                transform.rotate.y += 0.01f;
-                Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-                *wvpData = worldMatrix;
-                Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-                Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-                Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
-                Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-                *wvpData = worldViewProjectionMatrix;
+            transform.rotate.y += 0.01f;
+            Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+            *wvpData = worldMatrix;
+            Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+            Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+            Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+            Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+            *wvpData = worldViewProjectionMatrix;
 
-                Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
-                Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-                Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f,float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
-                Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite,projectionMatrixSprite));
-                *transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
+            Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+            Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
+            // 例: 1280x720 のウィンドウの場合
+            Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(
+                0.0f, float(kClientWidth),
+                float(kClientHeight), 0.0f,
+                0.0f, 100.0f
+            );
 
-                D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-                commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
-                commandList->ClearDepthStencilView(
-                    dsvHandle,
-                    D3D12_CLEAR_FLAG_DEPTH,
-                    1.0f,
-                    0,
-                    0,
-                    nullptr);
+            Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
+            *transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
 
-                // TransitionBarrierを張る
-                commandList->SetGraphicsRootSignature(rootSignature);
-                commandList->SetPipelineState(graphicsPipelineState);
-                commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-                commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-                commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-                commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-                commandList->SetGraphicsRootDescriptorTable(2, textureSrvStartHandleGPU);
-                commandList->RSSetViewports(1, &viewport);
-                commandList->RSSetScissorRects(1, &scissorRect);
-                commandList->DrawInstanced(6, 1, 0, 0);
-                ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
+            D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+            commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
+            commandList->ClearDepthStencilView(
+                dsvHandle,
+                D3D12_CLEAR_FLAG_DEPTH,
+                1.0f,
+                0,
+                0,
+                nullptr);
 
-                hr = commandList->Close();
+            // TransitionBarrierを張る
+            commandList->SetGraphicsRootSignature(rootSignature);
+            commandList->SetPipelineState(graphicsPipelineState);
+            commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+            commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootDescriptorTable(2, textureSrvStartHandleGPU);
+            commandList->RSSetViewports(1, &viewport);
+            commandList->RSSetScissorRects(1, &scissorRect);
+            commandList->DrawInstanced(6, 1, 0, 0);
+            commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+            commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+            commandList->DrawInstanced(6, 1, 0, 0);
+            ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
-                // コマンドリストの生成に失敗したので起動できない
-                assert(SUCCEEDED(hr));
+            hr = commandList->Close();
 
-                // GPUのコマンドリスト実行を行わせる
-                ID3D12CommandList* commandLists[] = { commandList };
+            // コマンドリストの生成に失敗したので起動できない
+            assert(SUCCEEDED(hr));
 
-                commandQueue->ExecuteCommandLists(1, commandLists);
+            // GPUのコマンドリスト実行を行わせる
+            ID3D12CommandList* commandLists[] = { commandList };
 
-                // GPUとOSに画面の交換を行うように通知する
-                swapChain->Present(1, 0);
+            commandQueue->ExecuteCommandLists(1, commandLists);
 
-                // Fenceの値を更新
-                fenceValue++;
+            // GPUとOSに画面の交換を行うように通知する
+            swapChain->Present(1, 0);
 
-                // GPUがここまでたどり着いたときに、Fenceの値を設定した値に代入するようにSignalを送る
-                commandQueue->Signal(fence, fenceValue);
+            // Fenceの値を更新
+            fenceValue++;
 
-                // Fenceの値が指定したSignal値にたどり着いているか確認する
-                // GetComplatedValueの初期値はFenceに渡した初期値
-                if (fence->GetCompletedValue() < fenceValue) {
-                    // 指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する
-                    fence->SetEventOnCompletion(fenceValue, fenceEvent);
-                    // イベントを待つ
-                    WaitForSingleObject(fenceEvent, INFINITE);
-                }
+            // GPUがここまでたどり着いたときに、Fenceの値を設定した値に代入するようにSignalを送る
+            commandQueue->Signal(fence, fenceValue);
 
-                // 次のフレーム用のコマンドリストを準備
-                hr = commandAllocator->Reset();
-                assert(SUCCEEDED(hr));
-                hr = commandList->Reset(commandAllocator, nullptr);
-                assert(SUCCEEDED(hr));
+            // Fenceの値が指定したSignal値にたどり着いているか確認する
+            // GetComplatedValueの初期値はFenceに渡した初期値
+            if (fence->GetCompletedValue() < fenceValue) {
+                // 指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する
+                fence->SetEventOnCompletion(fenceValue, fenceEvent);
+                // イベントを待つ
+                WaitForSingleObject(fenceEvent, INFINITE);
             }
+
+            // 次のフレーム用のコマンドリストを準備
+            hr = commandAllocator->Reset();
+            assert(SUCCEEDED(hr));
+            hr = commandList->Reset(commandAllocator, nullptr);
+            assert(SUCCEEDED(hr));
         }
+    }
 
-        // 出力ウィンドウへの文字入力
-        OutputDebugStringA("Hello, DirectX!\n");
+    // 出力ウィンドウへの文字入力
+    OutputDebugStringA("Hello, DirectX!\n");
 
-        Log(ConvertString(std::format(L"WSTRING{}\n", L"abc")));
+    Log(ConvertString(std::format(L"WSTRING{}\n", L"abc")));
 
-        Log("Complete create D3D12Device!!!\n"); // 初期化完了のログを出す
+    Log("Complete create D3D12Device!!!\n"); // 初期化完了のログを出す
 
 #ifdef _DEBUG
-        ID3D12InfoQueue* infoQueue = nullptr;
-        if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue)))) {
-            // デバッグレイヤーのメッセージを全て出力する
-            infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
-            // エラー時に止まる
-            infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
-            // 警告時に泊まる
-            infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
+    ID3D12InfoQueue* infoQueue = nullptr;
+    if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue)))) {
+        // デバッグレイヤーのメッセージを全て出力する
+        infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+        // エラー時に止まる
+        infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+        // 警告時に泊まる
+        infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
 
-            // 抑制するメッセージのID
-            D3D12_MESSAGE_ID denyIds[] = {
-                // Windows11でのDXGIデバッグレイヤーとDX12デバッグレイヤーの相互作用バグによるエラーメッセージ
-                D3D12_MESSAGE_ID_RESOURCE_BARRIER_MISMATCHING_COMMAND_LIST_TYPE
-            };
+        // 抑制するメッセージのID
+        D3D12_MESSAGE_ID denyIds[] = {
+            // Windows11でのDXGIデバッグレイヤーとDX12デバッグレイヤーの相互作用バグによるエラーメッセージ
+            D3D12_MESSAGE_ID_RESOURCE_BARRIER_MISMATCHING_COMMAND_LIST_TYPE
+        };
 
-            D3D12_MESSAGE_SEVERITY severities[] = { D3D12_MESSAGE_SEVERITY_INFO };
+        D3D12_MESSAGE_SEVERITY severities[] = { D3D12_MESSAGE_SEVERITY_INFO };
 
-            D3D12_INFO_QUEUE_FILTER filter {};
-            filter.DenyList.NumIDs = _countof(denyIds);
-            filter.DenyList.pIDList = denyIds;
-            filter.DenyList.NumSeverities = _countof(severities);
-            filter.DenyList.pSeverityList = severities;
+        D3D12_INFO_QUEUE_FILTER filter {};
+        filter.DenyList.NumIDs = _countof(denyIds);
+        filter.DenyList.pIDList = denyIds;
+        filter.DenyList.NumSeverities = _countof(severities);
+        filter.DenyList.pSeverityList = severities;
 
-            // 指定したメッセージの表示を無力化する
-            infoQueue->PushStorageFilter(&filter);
+        // 指定したメッセージの表示を無力化する
+        infoQueue->PushStorageFilter(&filter);
 
-            // 解放
-            infoQueue->Release();
-        }
+        // 解放
+        infoQueue->Release();
+    }
 #endif
 
-        // --- ここからリソース解放処理 ---
-        dsvDescriptorHeap->Release();
-        depthStencilResource->Release();
-        transformationMatrixResource->Release();
-        vertexResourceSprite->Release();
-        srvDescriptorHeap->Release();
-        CloseHandle(fenceEvent);
-        fence->Release();
-        rtvDescriptorHeap->Release();
-        swapChainResoures[0]->Release();
-        swapChainResoures[1]->Release();
-        swapChain->Release();
-        commandList->Release();
-        commandAllocator->Release();
-        commandQueue->Release();
-        device->Release();
-        useAdapter->Release();
-        dxgiFactory->Release();
+    // --- ここからリソース解放処理 ---
+    dsvDescriptorHeap->Release();
+    depthStencilResource->Release();
+    transformationMatrixResource->Release();
+    vertexResourceSprite->Release();
+    srvDescriptorHeap->Release();
+    CloseHandle(fenceEvent);
+    fence->Release();
+    rtvDescriptorHeap->Release();
+    swapChainResoures[0]->Release();
+    swapChainResoures[1]->Release();
+    swapChain->Release();
+    commandList->Release();
+    commandAllocator->Release();
+    commandQueue->Release();
+    device->Release();
+    useAdapter->Release();
+    dxgiFactory->Release();
 
-        graphicsPipelineState->Release();
-        signatureBlob->Release();
-        if (errorBlob) {
-            errorBlob->Release();
-        }
-        pixelShaderBlob->Release();
-        vertexShaderBlob->Release();
+    graphicsPipelineState->Release();
+    signatureBlob->Release();
+    if (errorBlob) {
+        errorBlob->Release();
+    }
+    pixelShaderBlob->Release();
+    vertexShaderBlob->Release();
 
-        wvpResource->Release();
-        vertexResource->Release();
-        materialResource->Release();
-        transformationMatrixResource->Release();
-        transformationMatrixResourceSprite->Release();
-        vertexResourceSprite->Release();
+    wvpResource->Release();
+    vertexResource->Release();
+    materialResource->Release();
 
-        rootSignature->Release();
+    transformationMatrixResourceSprite->Release();
 
-        // --- 追加: テクスチャリソースとmipImagesの解放 ---
-        textureResouce->Release();
-        mipImages.Release();
+    rootSignature->Release();
 
-        // --- 追加: dxc関連の解放 ---
-        includeHandler->Release();
-        dxcCompiler->Release();
-        dxcUtils->Release();
+    // --- 追加: テクスチャリソースとmipImagesの解放 ---
+    textureResouce->Release();
+    mipImages.Release();
+
+    // --- 追加: dxc関連の解放 ---
+    includeHandler->Release();
+    dxcCompiler->Release();
+    dxcUtils->Release();
 
 #ifdef _DEBUG
 
-        debugController->Release();
+    debugController->Release();
 
 #endif // _DEBUG
 
-        ImGui_ImplDX12_Shutdown();
-        ImGui_ImplWin32_Shutdown();
-        ImGui::DestroyContext();
+    ImGui_ImplDX12_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
 
-        CoUninitialize();
+    CoUninitialize();
 
-        CloseWindow(hwnd);
+    CloseWindow(hwnd);
 
-        // リソースリークチェック
-        IDXGIDebug1* debug;
-        if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
-            debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-            debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
-            debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-            debug->Release();
-        }
-        return 0;
+    // リソースリークチェック
+    IDXGIDebug1* debug;
+    if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
+        debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+        debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
+        debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
+        debug->Release();
     }
+    return 0;
+}

@@ -146,7 +146,7 @@ Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip
     };
 }
 
-Matrix4x4 MakeOrthographicMatrix(float left, float right, float bottom, float top, float nearClip, float farClip)
+Matrix4x4 MakeOrthographicMatrix(float left, float right, float top, float bottom, float nearClip, float farClip)
 {
     float invWidth = 1.0f / (right - left);
     float invHeight = 1.0f / (top - bottom);
