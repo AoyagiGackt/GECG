@@ -893,11 +893,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
             Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-            // 例: 1280x720 のウィンドウの場合
+
             Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(
-                0.0f, 0.0f,float(kClientWidth),
-                float(kClientHeight),
-                0.0f, 100.0f
+                0.0f, float(kClientWidth), // left, right
+                float(kClientHeight), 0.0f, // top, bottom（DirectX流：Y軸反転）
+                0.0f, 100.0f // near, far
             );
 
             Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
