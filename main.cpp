@@ -744,13 +744,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite {};
     
     // リソースの先品のアドレスから使ラ
-    vertexBufferViewSprite.BufferLocation - vertexResourceSprite->GetGPUVirtualAddress();
+    vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
     
     // 使用するリソースのサイズは頂点のつ分のサイズ
-    vertexBufferViewSprite.SizeInBytes - sizeof(VertexData) * 6;
+    vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
 
     // 1頂点あたりのリイズ
-    vertexBufferViewSprite.StrideInBytes - sizeof(VertexData);
+    vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
 
     // ImGuiの初期化
     IMGUI_CHECKVERSION();
@@ -953,6 +953,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // --- ここからリソース解放処理 ---
     dsvDescriptorHeap->Release();
     depthStencilResource->Release();
+    vertexResourceSprite->Release();
     srvDescriptorHeap->Release();
     CloseHandle(fenceEvent);
     fence->Release();
