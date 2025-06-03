@@ -892,6 +892,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
                 *wvpData = worldViewProjectionMatrix;
 
+                Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+                Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
+                Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f,float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
+                Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite,projectionMatrixSprite));
+                *transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
+
                 D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
                 commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
                 commandList->ClearDepthStencilView(
@@ -993,6 +999,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         // --- ここからリソース解放処理 ---
         dsvDescriptorHeap->Release();
         depthStencilResource->Release();
+        transformationMatrixResource->Release();
         vertexResourceSprite->Release();
         srvDescriptorHeap->Release();
         CloseHandle(fenceEvent);
@@ -1020,6 +1027,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         vertexResource->Release();
         materialResource->Release();
         transformationMatrixResource->Release();
+        transformationMatrixResourceSprite->Release();
+        vertexResourceSprite->Release();
 
         rootSignature->Release();
 
