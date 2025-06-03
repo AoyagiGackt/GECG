@@ -755,7 +755,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // tuika
     VertexData* vertexDataSprite = nullptr;
     vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-    vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };
+    vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f }; 
     vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
     vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };
     vertexDataSprite[1].texcoord = { 0.0f, 0.0f };
