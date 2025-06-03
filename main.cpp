@@ -754,19 +754,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // tuika
     VertexData* vertexDataSprite = nullptr;
-    vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-    vertexData[0].position = { 0.0f, 360.0f, 0.0f, 1.0f }; // 左下
-    vertexData[0].texcoord = { 0.0f, 1.0f };
-    vertexData[1].position = { 0.0f, 0.0f, 0.0f, 1.0f }; // 上
-    vertexData[1].texcoord = { 0.0f, 0.0f };
-    vertexData[2].position = { 640.0f, 360.0f, 0.0f, 1.0f }; // 右下
-    vertexData[2].texcoord = { 1.0f, 1.0f };
-    vertexData[3].position = { 0.0f, 0.0f, 0.0f, 1.0f };
-    vertexData[3].texcoord = { 0.0f, 1.0f }; // 左下
-    vertexData[4].position = { 640.0f, 0.0f, 0.0f, 1.0f };
-    vertexData[4].texcoord = { 1.0f, 0.0f }; // 上
-    vertexData[5].position = { 640.0f, 360.0f, 0.0f, 1.0f };
-    vertexData[5].texcoord = { 1.0f, 1.0f }; // 右下
+    vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
+    vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f }; // 左下
+    vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
+    vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f }; // 上
+    vertexDataSprite[1].texcoord = { 0.0f, 0.0f };
+    vertexDataSprite[2].position = { 640.0f, 360.0f, 0.0f, 1.0f }; // 右下
+    vertexDataSprite[2].texcoord = { 1.0f, 1.0f };
+    vertexDataSprite[3].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+    vertexDataSprite[3].texcoord = { 0.0f, 1.0f }; // 左下
+    vertexDataSprite[4].position = { 640.0f, 0.0f, 0.0f, 1.0f };
+    vertexDataSprite[4].texcoord = { 1.0f, 0.0f }; // 上
+    vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f };
+    vertexDataSprite[5].texcoord = { 1.0f, 1.0f }; // 右下
 
     ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResouse(device, sizeof(Matrix4x4));
     Matrix4x4* transformationMatrixDataSprite = nullptr;
@@ -785,7 +785,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             0.0f,
         },
         {
-            // 平行移動
             0.0f,
             0.0f,
             0.0f,
@@ -896,8 +895,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
             // 例: 1280x720 のウィンドウの場合
             Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(
-                0.0f, float(kClientWidth),
-                float(kClientHeight), 0.0f,
+                0.0f, 0.0f,float(kClientWidth),
+                float(kClientHeight),
                 0.0f, 100.0f
             );
 
