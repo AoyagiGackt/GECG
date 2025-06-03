@@ -220,12 +220,12 @@ ID3D12Resource* CreateBufferResouse(ID3D12Device* device, size_t sizeInBytes)
 {
     // 生成したShaderのリソースを解放する
     D3D12_HEAP_PROPERTIES uploadHeapProperties {};
-    uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD; // UploadHeap 5
+    uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
     // 頂点リソースの設定
     D3D12_RESOURCE_DESC vertexResourceDesc {};
     // バッファリソース。テクスチャの場合はまた別の設定をする
     vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    vertexResourceDesc.Width = sizeof(Vector4) * 3; // リソースのサイズ。今回はVector4を3頂
+    vertexResourceDesc.Width = sizeInBytes; 
     // バッファの場合はこれらは1にする決まり
     vertexResourceDesc.Height = 1;
     vertexResourceDesc.DepthOrArraySize = 1;
@@ -896,9 +896,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
 
             Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(
-                0.0f, float(kClientWidth), // left, right
-                float(kClientHeight), 0.0f, // top, bottom（DirectX流：Y軸反転）
-                0.0f, 100.0f // near, far
+                0.0f, 0.0f,
+                float(kClientWidth),float(kClientHeight), 
+                0.0f, 100.0f
             );
 
             Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
