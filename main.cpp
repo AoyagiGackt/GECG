@@ -220,12 +220,12 @@ ID3D12Resource* CreateBufferResouse(ID3D12Device* device, size_t sizeInBytes)
 {
     // 生成したShaderのリソースを解放する
     D3D12_HEAP_PROPERTIES uploadHeapProperties {};
-    uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD; // UploadHeap 5
+    uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
     // 頂点リソースの設定
     D3D12_RESOURCE_DESC vertexResourceDesc {};
     // バッファリソース。テクスチャの場合はまた別の設定をする
     vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    vertexResourceDesc.Width = sizeof(Vector4) * 3; // リソースのサイズ。今回はVector4を3頂
+    vertexResourceDesc.Width = sizeInBytes; 
     // バッファの場合はこれらは1にする決まり
     vertexResourceDesc.Height = 1;
     vertexResourceDesc.DepthOrArraySize = 1;
@@ -737,6 +737,61 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         &dsvDesc,
         dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
+    // Sprite用の瓦点リソースを作る
+    ID3D12Resource* vertexResourceSprite = CreateBufferResouse(device, sizeof(VertexData) * 6);
+
+    // 瓦点バッファビューを作成する
+    D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite {};
+
+    // リソースの先品のアドレスから使ラ
+    vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
+
+    // 使用するリソースのサイズは頂点のつ分のサイズ
+    vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
+
+    // 1頂点あたりのリイズ
+    vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
+
+    // tuika
+    VertexData* vertexDataSprite = nullptr;
+    vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
+    vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f }; 
+    vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
+    vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+    vertexDataSprite[1].texcoord = { 0.0f, 0.0f };
+    vertexDataSprite[2].position = { 640.0f, 360.0f, 0.0f, 1.0f };
+    vertexDataSprite[2].texcoord = { 1.0f, 1.0f };
+
+    vertexDataSprite[3].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+    vertexDataSprite[3].texcoord = { 0.0f, 0.0f }; 
+    vertexDataSprite[4].position = { 640.0f, 0.0f, 0.0f, 1.0f };
+    vertexDataSprite[4].texcoord = { 1.0f, 0.0f };
+    vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f };
+    vertexDataSprite[5].texcoord = { 1.0f, 1.0f };
+
+    ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResouse(device, sizeof(Matrix4x4));
+    Matrix4x4* transformationMatrixDataSprite = nullptr;
+    transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
+    *transformationMatrixDataSprite = MakeIdentity4x4();
+
+    Transform transformSprite {
+        {
+            1.0f,
+            1.0f,
+            1.0f,
+        },
+        {
+            0.0f,
+            0.0f,
+            0.0f,
+        },
+        {
+            0.0f,
+            0.0f,
+            0.0f,
+        }
+    };
+
     // ImGuiの初期化
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -837,6 +892,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
             *wvpData = worldViewProjectionMatrix;
 
+            Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+            Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
+
+            Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(
+                0.0f, 0.0f,
+                float(kClientWidth) ,float(kClientHeight), 
+                0.0f, 100.0f
+            );
+
+            Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
+            *transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
+
             D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
             commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
             commandList->ClearDepthStencilView(
@@ -857,6 +924,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvStartHandleGPU);
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
+            commandList->DrawInstanced(6, 1, 0, 0);
+            commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+            commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
             commandList->DrawInstanced(6, 1, 0, 0);
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
@@ -938,6 +1008,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // --- ここからリソース解放処理 ---
     dsvDescriptorHeap->Release();
     depthStencilResource->Release();
+    transformationMatrixResource->Release();
+    vertexResourceSprite->Release();
     srvDescriptorHeap->Release();
     CloseHandle(fenceEvent);
     fence->Release();
@@ -963,7 +1035,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     wvpResource->Release();
     vertexResource->Release();
     materialResource->Release();
-    transformationMatrixResource->Release();
+
+    transformationMatrixResourceSprite->Release();
 
     rootSignature->Release();
 
