@@ -864,6 +864,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             ImGui::ShowDemoWindow();
 
+            ImGui::Begin("Sprite Transform");
+
+            ImGui::InputFloat3("Position", &transformSprite.translate.x);
+            ImGui::InputFloat3("Rotation", &transformSprite.rotate.x);
+            ImGui::InputFloat3("Scale", &transformSprite.scale.x);
+
+            ImGui::End();
+
             ImGui::Render();
 
             // 指定した色で画面全体をクリアする
