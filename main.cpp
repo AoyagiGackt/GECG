@@ -896,8 +896,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
 
             Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(
-                0.0f, float(kClientWidth),
-                float(kClientHeight),0.0f, 
+                0.0f, 0.0f,
+                float(kClientWidth) ,float(kClientHeight), 
                 0.0f, 100.0f
             );
 
