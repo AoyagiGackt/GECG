@@ -866,9 +866,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             ImGui::Begin("Sprite Transform");
 
-            ImGui::InputFloat3("Position", &transformSprite.translate.x);
-            ImGui::InputFloat3("Rotation", &transformSprite.rotate.x);
-            ImGui::InputFloat3("Scale", &transformSprite.scale.x);
+            ImGui::DragFloat3("Position", &transformSprite.translate.x);
+            ImGui::DragFloat3("Rotation", &transformSprite.rotate.x);
+            ImGui::DragFloat3("Scale", &transformSprite.scale.x);
 
             ImGui::End();
 
