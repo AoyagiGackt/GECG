@@ -802,6 +802,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
 
+    uint32_t* indexDataSprite = nullptr;
+
+    indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+    indexDataSprite[0] = 0;
+    indexDataSprite[1] = 1;
+    indexDataSprite[2] = 2;
+    indexDataSprite[3] = 1;
+    indexDataSprite[4] = 3;
+    indexDataSprite[5] = 2;
+
     // ImGuiの初期化
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
