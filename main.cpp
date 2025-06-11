@@ -792,6 +792,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         }
     };
 
+    ID3D12Resource* indexResourceSprite = CreateBufferResouse(device, sizeof(uint32_t) * 6);
+
+    D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite {};
+
+    indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
+
+    indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
+
+    indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
+
     // ImGuiの初期化
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
