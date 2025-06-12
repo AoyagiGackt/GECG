@@ -947,12 +947,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvStartHandleGPU);
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
-            //commandList->DrawInstanced(6, 1, 0, 0);
-            /*
+            commandList->DrawInstanced(6, 1, 0, 0);
             commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
             commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
             commandList->DrawInstanced(6, 1, 0, 0);
-            */
             commandList->IASetIndexBuffer(&indexBufferViewSprite);
             commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
