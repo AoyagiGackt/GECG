@@ -152,6 +152,11 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileN
     std::string line;
     std::ifstream fileStream(directoryPath + "/"+ fileName);
     assert(file.is_open());
+    while (std::getline(file, line)) {
+        std::string identifer;
+        std::istringstream s(line);
+        s >> identifer;
+    }
 }
 
 struct Vector4 {
