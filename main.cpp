@@ -16,10 +16,10 @@
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 #include <format>
-#include <string>
-#include <vector>
 #include <fstream>
 #include <sstream>
+#include <string>
+#include <vector>
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -143,22 +143,6 @@ void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
     }
 }
 
-ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName)
-{
-    ModelData modelData;
-    std::vector<Vector4> positions;
-    std::vector<Vector4> normals;
-    std::vector<Vector2> texcoords;
-    std::string line;
-    std::ifstream fileStream(directoryPath + "/"+ fileName);
-    assert(file.is_open());
-    while (std::getline(file, line)) {
-        std::string identifer;
-        std::istringstream s(line);
-        s >> identifer;
-    }
-}
-
 struct Vector4 {
     float x, y, z, w;
 };
@@ -247,7 +231,7 @@ ID3D12Resource* CreateBufferResouse(ID3D12Device* device, size_t sizeInBytes)
     D3D12_RESOURCE_DESC vertexResourceDesc {};
     // バッファリソース。テクスチャの場合はまた別の設定をする
     vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    vertexResourceDesc.Width = sizeInBytes; 
+    vertexResourceDesc.Width = sizeInBytes;
     // バッファの場合はこれらは1にする決まり
     vertexResourceDesc.Height = 1;
     vertexResourceDesc.DepthOrArraySize = 1;
@@ -315,6 +299,61 @@ ID3D12Resource* CreateDepthStencilTextureResource(
         IID_PPV_ARGS(&resource));
     assert(SUCCEEDED(hr));
     return resource;
+}
+
+ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName)
+{
+    ModelData modelData;
+    std::vector<Vector4> positions;
+    std::vector<Vector3> normals;
+    std::vector<Vector2> texcoords;
+    std::string line;
+    std::ifstream fileStream(directoryPath + "/" + fileName);
+    assert(fileStream.is_open());
+
+    while (std::getline(fileStream, line)) {
+        std::string identifer;
+        std::istringstream s(line);
+        s >> identifer;
+        if (identifer == "v") {
+            // 頂点位置
+            Vector4 position;
+            s >> position.x >> position.y >> position.z;
+            position.w = 1.0f; // 同次座標のためwは1.0f
+            positions.push_back(position);
+        } else if (identifer == "vt") {
+            // テクスチャ座標
+            Vector2 texcoord;
+            s >> texcoord.x >> texcoord.y;
+            texcoords.push_back(texcoord);
+        } else if (identifer == "vn") {
+            // 法線ベクトル
+            Vector4 normal;
+            s >> normal.x >> normal.y >> normal.z;
+            normals.push_back(normal);
+        } else if (identifer == "f") {
+            // 面は三角形限定。その他は未対応
+            for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
+                std::string vertexDefinition;
+                s >> vertexDefinition;
+                // 頂点の要素へのIndexは「位置/UV/法線」で格納されているので、分解してIndexを取得
+                std::istringstream v(vertexDefinition);
+                uint32_t elementIndices[3];
+                for (int32_t element = 0; element < 3; ++element) {
+                    std::string index;
+                    std::getline(v, index, '/'); /// 区切りでインデックスを読んでいく
+                    elementIndices[element] = std::stoi(index);
+
+                    // 要素へのIndexから、実際の要素の値を取得して、頂点を構築する
+                    Vector4 position = positions[elementIndices[0] - 1];
+                    Vector2 texcoord = texcoords[elementIndices[1] - 1];
+                    Vector3 normal = normals[elementIndices[2] - 1];
+                    VertexData vertex = { position, texcoord, normal };
+                    modelData.vertices.push_back(vertex);
+                }
+            }
+        }
+    }
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -776,7 +815,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     VertexData* vertexDataSprite = nullptr;
     vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-    vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f }; 
+    vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };
     vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
     vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };
     vertexDataSprite[1].texcoord = { 0.0f, 0.0f };
@@ -784,7 +823,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexDataSprite[2].texcoord = { 1.0f, 1.0f };
 
     vertexDataSprite[3].position = { 640.0f, 0.0f, 0.0f, 1.0f };
-    vertexDataSprite[3].texcoord = { 1.0f, 0.0f }; 
+    vertexDataSprite[3].texcoord = { 1.0f, 0.0f };
 
     ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResouse(device, sizeof(Matrix4x4));
     Matrix4x4* transformationMatrixDataSprite = nullptr;
@@ -942,9 +981,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(
                 0.0f, 0.0f,
-                float(kClientWidth) ,float(kClientHeight), 
-                0.0f, 100.0f
-            );
+                float(kClientWidth), float(kClientHeight),
+                0.0f, 100.0f);
 
             Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
             *transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
