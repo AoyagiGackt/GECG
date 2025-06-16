@@ -141,6 +141,10 @@ void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
     }
 }
 
+ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName)
+{
+}
+
 struct Vector4 {
     float x, y, z, w;
 };
@@ -154,6 +158,10 @@ struct Vector2 {
 struct VertexData {
     Vector4 position;
     Vector2 texcoord;
+};
+
+struct ModelData {
+    std::vector<VertexData> vertices;
 };
 
 IDxcBlob* CompileShader(
