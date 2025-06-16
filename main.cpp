@@ -18,6 +18,8 @@
 #include <format>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <sstream>
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -143,6 +145,13 @@ void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
 
 ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName)
 {
+    ModelData modelData;
+    std::vector<Vector4> positions;
+    std::vector<Vector4> normals;
+    std::vector<Vector2> texcoords;
+    std::string line;
+    std::ifstream fileStream(directoryPath + "/"+ fileName);
+    assert(file.is_open());
 }
 
 struct Vector4 {
