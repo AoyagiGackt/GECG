@@ -20,6 +20,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <iostream>
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -305,7 +306,6 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileN
 {
     ModelData modelData;
     std::vector<Vector4> positions;
-    //std::vector<Vector3> normals;
     std::vector<Vector2> texcoords;
     std::string line;
     std::ifstream fileStream(directoryPath + "/" + fileName);
@@ -316,41 +316,31 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileN
         std::istringstream s(line);
         s >> identifer;
         if (identifer == "v") {
-            // 頂点位置
             Vector4 position;
             s >> position.x >> position.y >> position.z;
-            position.w = 1.0f; // 同次座標のためwは1.0f
+            position.w = 1.0f;
             positions.push_back(position);
         } else if (identifer == "vt") {
-            // テクスチャ座標
             Vector2 texcoord;
             s >> texcoord.x >> texcoord.y;
             texcoords.push_back(texcoord);
-        } //else if (identifer == "vn") {
-          //  // 法線ベクトル
-          //  Vector3 normal;
-          //  s >> normal.x >> normal.y >> normal.z;
-          //  normals.push_back(normal);
-         else if (identifer == "f") {
-            // 面は三角形限定。その他は未対応
+        } else if (identifer == "f") {
             for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
                 std::string vertexDefinition;
                 s >> vertexDefinition;
-                // 頂点の要素へのIndexは「位置/UV/法線」で格納されているので、分解してIndexを取得
                 std::istringstream v(vertexDefinition);
-                uint32_t elementIndices[3];
-                for (int32_t element = 0; element < 3; ++element) {
-                    std::string index;
-                    std::getline(v, index, '/'); /// 区切りでインデックスを読んでいく
-                    elementIndices[element] = std::stoi(index);
-
-                    // 要素へのIndexから、実際の要素の値を取得して、頂点を構築する
-                    Vector4 position = positions[elementIndices[0] - 1];
-                    Vector2 texcoord = texcoords[elementIndices[1] - 1];
-                    //Vector3 normal = normals[elementIndices[2] - 1];
-                    VertexData vertex = { position, texcoord};
-                    modelData.vertices.push_back(vertex);
-                }
+                std::string idxStr;
+                uint32_t posIdx = 0, texIdx = 0;
+                // 位置
+                if (std::getline(v, idxStr, '/'))
+                    posIdx = std::stoi(idxStr);
+                // UV
+                if (std::getline(v, idxStr, '/'))
+                    texIdx = std::stoi(idxStr);
+                Vector4 position = positions[posIdx - 1];
+                Vector2 texcoord = texcoords[texIdx - 1];
+                VertexData vertex = { position, texcoord };
+                modelData.vertices.push_back(vertex);
             }
         }
     }
@@ -769,7 +759,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexResource->Unmap(0, nullptr);
     */
     std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
-
+    
     // ビューポート
     D3D12_VIEWPORT viewport {};
     // クライアント領域のサイズと一緒にして画面全体に表示
@@ -1017,7 +1007,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
             commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
             commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-            commandList->DrawInstanced(6, 1, 0, 0);
+            //commandList->DrawInstanced(6, 1, 0, 0);
             commandList->IASetIndexBuffer(&indexBufferViewSprite);
             //commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
