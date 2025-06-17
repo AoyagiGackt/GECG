@@ -147,10 +147,6 @@ struct Vector4 {
     float x, y, z, w;
 };
 
-struct Vector3 {
-    float x, y, z;
-};
-
 struct Vector2 {
     float x;
     float y;
@@ -746,7 +742,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     *materialData = Vector4 { 1.0f, 1.0f, 1.0f, 1.0f };
 
     // modelDataを読み込む
-    ModelData modelData = LoadObjFile("resources", "plane.obj");
+    ModelData modelData = LoadObjFile("Resources", "plane.obj");
 
     // 頂点バッファ用リソースを作成
     ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(VertexData) * modelData.vertices.size());
