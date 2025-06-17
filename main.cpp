@@ -155,7 +155,7 @@ struct Vector2 {
 struct VertexData {
     Vector4 position;
     Vector2 texcoord;
-    Vector3 normal;
+    //Vector3 normal;
 };
 
 struct ModelData {
@@ -305,7 +305,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileN
 {
     ModelData modelData;
     std::vector<Vector4> positions;
-    std::vector<Vector3> normals;
+    //std::vector<Vector3> normals;
     std::vector<Vector2> texcoords;
     std::string line;
     std::ifstream fileStream(directoryPath + "/" + fileName);
@@ -326,12 +326,12 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileN
             Vector2 texcoord;
             s >> texcoord.x >> texcoord.y;
             texcoords.push_back(texcoord);
-        } else if (identifer == "vn") {
-            // 法線ベクトル
-            Vector3 normal;
-            s >> normal.x >> normal.y >> normal.z;
-            normals.push_back(normal);
-        } else if (identifer == "f") {
+        } //else if (identifer == "vn") {
+          //  // 法線ベクトル
+          //  Vector3 normal;
+          //  s >> normal.x >> normal.y >> normal.z;
+          //  normals.push_back(normal);
+         else if (identifer == "f") {
             // 面は三角形限定。その他は未対応
             for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
                 std::string vertexDefinition;
@@ -347,8 +347,8 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileN
                     // 要素へのIndexから、実際の要素の値を取得して、頂点を構築する
                     Vector4 position = positions[elementIndices[0] - 1];
                     Vector2 texcoord = texcoords[elementIndices[1] - 1];
-                    Vector3 normal = normals[elementIndices[2] - 1];
-                    VertexData vertex = { position, texcoord, normal };
+                    //Vector3 normal = normals[elementIndices[2] - 1];
+                    VertexData vertex = { position, texcoord};
                     modelData.vertices.push_back(vertex);
                 }
             }
