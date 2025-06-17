@@ -155,7 +155,6 @@ struct Vector2 {
     float x;
     float y;
 };
-;
 
 struct VertexData {
     Vector4 position;
@@ -359,6 +358,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileN
             }
         }
     }
+    return modelData;
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -754,23 +754,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 頂点バッファビューを作成
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
     vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-    vertexBufferView.SizeInBytes = sizeof(VertexData) * modelData.vertices.size();
+    vertexBufferView.SizeInBytes = UINT(sizeof(VertexData)* modelData.vertices.size());
     vertexBufferView.StrideInBytes = sizeof(VertexData);
 
     // 頂点データを書き込む
     VertexData* vertexData = nullptr;
     vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-    vertexData[0] = { { -0.5f, -0.5f, 0.0f, 1.0f }, { 0.0f, 1.0f } }; // 左下
-    vertexData[1] = { { 0.0f, 0.5f, 0.0f, 1.0f }, { 0.5f, 0.0f } }; // 上
-    vertexData[2] = { { 0.5f, -0.5f, 0.0f, 1.0f }, { 1.0f, 1.0f } }; // 右下
-    vertexData[3].position = { -0.5f, -0.5f, 0.5f, 1.0f };
-    vertexData[3].texcoord = { 0.0f, 1.0f }; // 左下
-    vertexData[4].position = { 0.0f, 0.0f, 0.0f, 1.0f };
-    vertexData[4].texcoord = { 0.5f, 0.0f }; // 上
-    vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
-    vertexData[5].texcoord = { 1.0f, 1.0f }; // 右下
-    vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
     std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
+    vertexResource->Unmap(0, nullptr);
 
     // ビューポート
     D3D12_VIEWPORT viewport {};
@@ -1020,7 +1011,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
             commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
             commandList->DrawInstanced(6, 1, 0, 0);
-            //commandList->IASetIndexBuffer(&indexBufferViewSprite);
+            commandList->IASetIndexBuffer(&indexBufferViewSprite);
             //commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
