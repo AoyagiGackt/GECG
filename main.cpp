@@ -745,8 +745,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     *materialData = Vector4 { 1.0f, 1.0f, 1.0f, 1.0f };
 
+    // modelDataを読み込む
+    ModelData modelData = LoadObjFile("resources", "plane.obj");
+
     // 頂点バッファ用リソースを作成
-    ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(VertexData) * 6);
+    ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(VertexData) * modelData.vertices.size());
+
+    // 頂点バッファビューを作成
+    D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
+    vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+    vertexBufferView.SizeInBytes = sizeof(VertexData) * modelData.vertices.size();
+    vertexBufferView.StrideInBytes = sizeof(VertexData);
 
     // 頂点データを書き込む
     VertexData* vertexData = nullptr;
@@ -760,13 +769,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexData[4].texcoord = { 0.5f, 0.0f }; // 上
     vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
     vertexData[5].texcoord = { 1.0f, 1.0f }; // 右下
-    vertexResource->Unmap(0, nullptr);
-
-    // 頂点バッファビューを作成
-    D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
-    vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-    vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
-    vertexBufferView.StrideInBytes = sizeof(VertexData);
+    vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+    std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
 
     // ビューポート
     D3D12_VIEWPORT viewport {};
@@ -1012,7 +1016,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvStartHandleGPU);
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
-            commandList->DrawInstanced(6, 1, 0, 0);
+            commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
             commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
             commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
             commandList->DrawInstanced(6, 1, 0, 0);
