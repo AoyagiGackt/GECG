@@ -147,6 +147,10 @@ struct Vector4 {
     float x, y, z, w;
 };
 
+struct Vector3 {
+    float x, y, z;
+};
+
 struct Vector2 {
     float x;
     float y;
@@ -156,6 +160,7 @@ struct Vector2 {
 struct VertexData {
     Vector4 position;
     Vector2 texcoord;
+    Vector3 normal;
 };
 
 struct ModelData {
@@ -328,7 +333,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileN
             texcoords.push_back(texcoord);
         } else if (identifer == "vn") {
             // 法線ベクトル
-            Vector4 normal;
+            Vector3 normal;
             s >> normal.x >> normal.y >> normal.z;
             normals.push_back(normal);
         } else if (identifer == "f") {
