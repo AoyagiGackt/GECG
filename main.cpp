@@ -163,6 +163,10 @@ struct ModelData {
     std::vector<VertexData> vertices;
 };
 
+struct MaterialData {
+    std::string textureFilePath;
+};
+
 IDxcBlob* CompileShader(
     // Comilerするファイルへのパス
     const std::wstring& filePath,
@@ -305,6 +309,7 @@ ID3D12Resource* CreateDepthStencilTextureResource(
 ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName)
 {
     ModelData modelData;
+    VertexData triangle[3];
     std::vector<Vector4> positions;
     std::vector<Vector2> texcoords;
     std::string line;
@@ -318,6 +323,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileN
         if (identifer == "v") {
             Vector4 position;
             s >> position.x >> position.y >> position.z;
+            position.y *= -1.0f; // Z軸を反転
             position.w = 1.0f;
             positions.push_back(position);
         } else if (identifer == "vt") {
@@ -341,7 +347,11 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileN
                 Vector2 texcoord = texcoords[texIdx - 1];
                 VertexData vertex = { position, texcoord };
                 modelData.vertices.push_back(vertex);
+                triangle[faceVertex] = { position, texcoord };
             }
+            modelData.vertices.push_back(triangle[2]);
+            modelData.vertices.push_back(triangle[1]); 
+            modelData.vertices.push_back(triangle[0]);
         }
     }
     return modelData;
