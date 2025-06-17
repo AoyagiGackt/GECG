@@ -357,6 +357,27 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileN
     return modelData;
 }
 
+MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName)
+{
+    MaterialData materialData;
+    std::string line;
+    std::ifstream file(directoryPath + "/" + fileName);
+    assert(file.is_open());
+    while (std::getline(file, line)) {
+        std::string identifer;
+        std::istringstream s(line);
+        s >> identifer;
+
+        // identifierに応じた処理を行う
+        if (identifer == "map_kd") {
+            std::string textureFilename;
+            s >> textureFilename;
+            materialData.textureFilePath = directoryPath + "/" + textureFilename;
+        }
+    }
+    return materialData;
+}
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
