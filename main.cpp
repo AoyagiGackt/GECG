@@ -17,10 +17,10 @@
 #include <dxgidebug.h>
 #include <format>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <iostream>
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -156,11 +156,12 @@ struct Vector2 {
 struct VertexData {
     Vector4 position;
     Vector2 texcoord;
-    //Vector3 normal;
+    // Vector3 normal;
 };
 
 struct ModelData {
     std::vector<VertexData> vertices;
+    MaterialData material;
 };
 
 struct MaterialData {
@@ -350,8 +351,12 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileN
                 triangle[faceVertex] = { position, texcoord };
             }
             modelData.vertices.push_back(triangle[2]);
-            modelData.vertices.push_back(triangle[1]); 
+            modelData.vertices.push_back(triangle[1]);
             modelData.vertices.push_back(triangle[0]);
+        } else if (identifer == "mtllib") {
+            std::string materialFileName;
+            s >> materialFileName;
+            modelData.material = LoadMaterialTemplateFile(directoryPath, materialFileName);
         }
     }
     return modelData;
@@ -771,7 +776,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 頂点バッファビューを作成
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
     vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-    vertexBufferView.SizeInBytes = UINT(sizeof(VertexData)* modelData.vertices.size());
+    vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());
     vertexBufferView.StrideInBytes = sizeof(VertexData);
 
     // 頂点データを書き込む
@@ -790,7 +795,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexResource->Unmap(0, nullptr);
     */
     std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
-    
+
     // ビューポート
     D3D12_VIEWPORT viewport {};
     // クライアント領域のサイズと一緒にして画面全体に表示
@@ -999,7 +1004,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
             barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
-            //transform.rotate.y += 0.01f;
+            // transform.rotate.y += 0.01f;
             Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
             *wvpData = worldMatrix;
             Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -1042,9 +1047,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
             commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
             commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-            //commandList->DrawInstanced(6, 1, 0, 0);
+            // commandList->DrawInstanced(6, 1, 0, 0);
             commandList->IASetIndexBuffer(&indexBufferViewSprite);
-            //commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+            // commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
             hr = commandList->Close();
