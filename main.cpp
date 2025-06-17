@@ -370,6 +370,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileN
                 VertexData vertex = { position, texcoord };
                 modelData.vertices.push_back(vertex);
                 triangle[faceVertex] = { position, texcoord };
+                texcoord.y = 1.0f - texcoord.y;
             }
             modelData.vertices.push_back(triangle[2]);
             modelData.vertices.push_back(triangle[1]);
@@ -974,7 +975,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::ShowDemoWindow();
 
             ImGui::Begin("Sprite Transform");
-            ImGui::DragFloat("rotate.y", &transform.rotate.y, 0.01f);
             ImGui::DragFloat3("Position", &transformSprite.translate.x);
             ImGui::DragFloat3("Rotation", &transformSprite.rotate.x);
             ImGui::DragFloat3("Scale", &transformSprite.scale.x);
