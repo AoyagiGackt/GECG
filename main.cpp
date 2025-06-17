@@ -938,11 +938,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::ShowDemoWindow();
 
             ImGui::Begin("Sprite Transform");
-
+            ImGui::DragFloat("rotate.y", &transform.rotate.y, 0.01f);
             ImGui::DragFloat3("Position", &transformSprite.translate.x);
             ImGui::DragFloat3("Rotation", &transformSprite.rotate.x);
             ImGui::DragFloat3("Scale", &transformSprite.scale.x);
 
+            ImGui::End();
+
+            ImGui::Begin("model Transform");
+            ImGui::DragFloat("rotate.y", &transform.rotate.y, 0.01f);
             ImGui::End();
 
             ImGui::Render();
@@ -964,7 +968,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
             barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
-            transform.rotate.y += 0.01f;
+            //transform.rotate.y += 0.01f;
             Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
             *wvpData = worldMatrix;
             Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
