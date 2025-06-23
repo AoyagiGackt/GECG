@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+
 /*———————————–——————–——————–——————–——————–
 *libのリンク
 ———————————–——————–——————–——————–——————–*/
@@ -679,12 +680,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     *materialData = Vector4 { 1.0f, 1.0f, 1.0f, 1.0f };
 
+    // 既存の頂点数
+    constexpr int kBaseTriangleVertexCount = 6;
+    // パーティクル数
+    constexpr int kParticleCount = 10;
+    // 1パーティクルあたりの頂点数（三角形なので3）
+    constexpr int kParticleVertexCount = 3;
+    // 全体の頂点数
+    constexpr int kTotalVertexCount = kBaseTriangleVertexCount + kParticleCount * kParticleVertexCount;
+
     // 頂点バッファ用リソースを作成
-    ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(VertexData) * 6);
+    ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(VertexData) * kTotalVertexCount);
 
     // 頂点データを書き込む
     VertexData* vertexData = nullptr;
     vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+    // 既存の三角形
     vertexData[0] = { { -0.5f, -0.5f, 0.0f, 1.0f }, { 0.0f, 1.0f } }; // 左下
     vertexData[1] = { { 0.0f, 0.5f, 0.0f, 1.0f }, { 0.5f, 0.0f } }; // 上
     vertexData[2] = { { 0.5f, -0.5f, 0.0f, 1.0f }, { 1.0f, 1.0f } }; // 右下
@@ -694,12 +705,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexData[4].texcoord = { 0.5f, 0.0f }; // 上
     vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
     vertexData[5].texcoord = { 1.0f, 1.0f }; // 右下
+
+    // パーティクル三角形を追加
+    for (int i = 0; i < kParticleCount; ++i) {
+        float px = (rand() % 200 - 100) / 100.0f; // -1.0～1.0
+        float py = (rand() % 200 - 100) / 100.0f; // -1.0～1.0
+        float size = 0.05f + (rand() % 50) / 1000.0f; // 0.05～0.1
+        int base = kBaseTriangleVertexCount + i * kParticleVertexCount;
+        vertexData[base + 0] = { { px, py, 0.0f, 1.0f }, { 0.0f, 0.0f } };
+        vertexData[base + 1] = { { px + size, py, 0.0f, 1.0f }, { 1.0f, 0.0f } };
+        vertexData[base + 2] = { { px, py + size, 0.0f, 1.0f }, { 0.0f, 1.0f } };
+    }
     vertexResource->Unmap(0, nullptr);
 
     // 頂点バッファビューを作成
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
     vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-    vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+    vertexBufferView.SizeInBytes = sizeof(VertexData) * kTotalVertexCount;
     vertexBufferView.StrideInBytes = sizeof(VertexData);
 
     // ビューポート
@@ -857,7 +879,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvStartHandleGPU);
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
-            commandList->DrawInstanced(6, 1, 0, 0);
+            commandList->DrawInstanced(kTotalVertexCount, 1, 0, 0);
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
             hr = commandList->Close();
