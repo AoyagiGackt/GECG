@@ -780,7 +780,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui_ImplWin32_NewFrame();
             ImGui::NewFrame();
 
+            // ここから追加
+            ImGui::Begin("Transform Control");
+            ImGui::SliderFloat3("Rotate (rad)", &transform.rotate.x, -3.14f, 3.14f);
+            ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 5.0f);
+            ImGui::SliderFloat3("Translate", &transform.translate.x, -10.0f, 10.0f);
+            ImGui::End();
+            // ここまで追加
+
+            ImGui::ShowDemoWindow();
+
+            ImGui::Render();
+
             // ゲームの処理
+            // transform.rotate.y += 0.01f; // ←自動回転は不要ならコメントアウト
+
             UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex(); // バックバッファのインデックス
 
             // 描画先のRTVを取得する
@@ -806,10 +820,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             // TransitionBarrierを張る
             commandList->ResourceBarrier(1, &barrier);
-
-            ImGui::ShowDemoWindow();
-
-            ImGui::Render();
 
             // 指定した色で画面全体をクリアする
             float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青っぽい色、RGBAの順
