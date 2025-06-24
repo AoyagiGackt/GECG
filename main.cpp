@@ -749,7 +749,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
         srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
-    DirectX::ScratchImage mipImages = LoadTexture("Resources/uvChecker.png");
+    // --- ループ外（WinMainの先頭付近）に追加 ---
+    std::vector<std::string> textureFiles = {
+        "Resources/uvChecker.png",
+        "Resources/sky_sphere.png",
+        "Resources/red01.png"
+    };
+    int currentTextureIndex = 0;
+
+    // テクスチャリソースとmipImagesを保持
+    DirectX::ScratchImage mipImages = LoadTexture(textureFiles[currentTextureIndex]);
     const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
     ID3D12Resource* textureResouce = CreateTextureResourse(device, metadata);
     UploadTextureData(textureResouce, mipImages);
@@ -780,13 +789,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui_ImplWin32_NewFrame();
             ImGui::NewFrame();
 
-            // ここから追加
+            // --- ループ内（ImGui::NewFrame()の直後）に追加 ---
             ImGui::Begin("Transform Control");
             ImGui::SliderFloat3("Rotate (rad)", &transform.rotate.x, -3.14f, 3.14f);
             ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 5.0f);
             ImGui::SliderFloat3("Translate", &transform.translate.x, -10.0f, 10.0f);
+
+            // テクスチャ切り替えUI
+            static int selectedTexture = currentTextureIndex;
+            std::vector<const char*> textureNames;
+            for (const auto& file : textureFiles) textureNames.push_back(file.c_str());
+            if (ImGui::Combo("Texture", &selectedTexture, textureNames.data(), (int)textureNames.size())) {
+                if (selectedTexture != currentTextureIndex) {
+                    // 旧リソース解放
+                    textureResouce->Release();
+                    mipImages.Release();
+
+                    // 新テクスチャロード
+                    mipImages = LoadTexture(textureFiles[selectedTexture]);
+                    const DirectX::TexMetadata& newMeta = mipImages.GetMetadata();
+                    textureResouce = CreateTextureResourse(device, newMeta);
+                    UploadTextureData(textureResouce, mipImages);
+
+                    // SRV再作成
+                    srvDesc.Format = newMeta.format;
+                    srvDesc.Texture2D.MipLevels = UINT(newMeta.mipLevels);
+                    device->CreateShaderResourceView(textureResouce, &srvDesc, textureSrvStartHandleCPU);
+
+                    currentTextureIndex = selectedTexture;
+                }
+            }
             ImGui::End();
-            // ここまで追加
 
             ImGui::ShowDemoWindow();
 
