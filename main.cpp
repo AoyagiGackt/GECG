@@ -296,6 +296,9 @@ ID3D12Resource* CreateDepthStencilTextureResource(
     return resource;
 }
 
+// --- 追加: ImGuiで回転角度を操作する変数を用意 ---
+static float rotationY = 0.0f;
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -802,6 +805,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui_ImplWin32_NewFrame();
             ImGui::NewFrame();
 
+            // --- 追加: ImGuiで回転角度を操作するUI ---
+            ImGui::Begin("Transform Control");
+            ImGui::SliderFloat("Y Rotation", &rotationY, -3.14159f, 3.14159f, "%.2f rad");
+            ImGui::End();
+
             // ゲームの処理
             UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex(); // バックバッファのインデックス
 
@@ -850,7 +858,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
             barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
-            transform.rotate.y += 0.01f;
+            // --- ここでtransform.rotate.yをImGuiの値で上書き ---
+            transform.rotate.y = rotationY;
+
             Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
             *wvpData = worldMatrix;
             Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
