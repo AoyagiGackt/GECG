@@ -824,6 +824,46 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         }
     };
 
+    std::vector<std::string> textureFiles = {
+        "Resources/uvChecker.png",
+        "Resources/monsterBall.png",
+    };
+    std::vector<ID3D12Resource*> textureResources;
+    std::vector<DirectX::ScratchImage> mipImagesList;
+    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> textureSrvHandlesCPU;
+    std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> textureSrvHandlesGPU;
+
+    UINT srvIncrement = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+
+    // 先頭はImGui用に1つ使われているので+1
+    srvHandleCPU.ptr += srvIncrement;
+    srvHandleGPU.ptr += srvIncrement;
+
+    for (size_t i = 0; i < textureFiles.size(); ++i) {
+        mipImagesList.push_back(LoadTexture(textureFiles[i]));
+        const DirectX::TexMetadata& metadata = mipImagesList.back().GetMetadata();
+        ID3D12Resource* texRes = CreateTextureResourse(device, metadata);
+        UploadTextureData(texRes, mipImagesList.back());
+        textureResources.push_back(texRes);
+
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc {};
+        srvDesc.Format = metadata.format;
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+
+        device->CreateShaderResourceView(texRes, &srvDesc, srvHandleCPU);
+
+        textureSrvHandlesCPU.push_back(srvHandleCPU);
+        textureSrvHandlesGPU.push_back(srvHandleGPU);
+
+        srvHandleCPU.ptr += srvIncrement;
+        srvHandleGPU.ptr += srvIncrement;
+    }
+
+
     // ImGuiの初期化
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -854,6 +894,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     textureSrvStartHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     device->CreateShaderResourceView(textureResouce, &srvDesc, textureSrvStartHandleCPU);
+
+    static int kyu = 0;
+    static int sphereTextureIndex = 0;
 
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
@@ -902,6 +945,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::DragFloat3("Rotation", &transformSprite.rotate.x);
             ImGui::DragFloat3("Scale", &transformSprite.scale.x);
 
+            ImGui::End();
+
+            ImGui::Begin("texture Selector");
+            ImGui::Combo("texture", &sphereTextureIndex, "texture1\0texture2\0");
             ImGui::End();
 
             ImGui::Render();
@@ -982,12 +1029,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
             commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-            commandList->SetGraphicsRootDescriptorTable(2, textureSrvStartHandleGPU);
+            commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[sphereTextureIndex]);
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
             commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
             commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
             commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
             commandList->DrawInstanced(6, 1, 0, 0);
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
@@ -1090,6 +1138,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     if (errorBlob) {
         errorBlob->Release();
     }
+
     pixelShaderBlob->Release();
     vertexShaderBlob->Release();
 
@@ -1109,6 +1158,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     includeHandler->Release();
     dxcCompiler->Release();
     dxcUtils->Release();
+
+    // --- 追加: テクスチャリソースとmipImagesListの解放 ---
+    for (auto tex : textureResources) {
+        tex->Release();
+    }
+    for (auto& mip : mipImagesList) {
+        mip.Release();
+    }
 
 #ifdef _DEBUG
 
