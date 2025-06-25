@@ -925,6 +925,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             transform.rotate.y += 0.01f;
             
+
             // カメラの位置をz=-10.0fに設定
             Transform cameraTransform {
                 {
