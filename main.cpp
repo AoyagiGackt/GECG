@@ -18,6 +18,8 @@
 #include <format>
 #include <string>
 #include <vector>
+#include <numbers>
+using namespace std::numbers;
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -773,6 +775,60 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     Matrix4x4* transformationMatrixDataSprite = nullptr;
     transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
     *transformationMatrixDataSprite = MakeIdentity4x4();
+
+    const uint32_t kSubdivision = 10;
+    uint32_t latIndex = 0;
+    uint32_t lonIndex = 0;
+
+    float u = 0.0f;
+    float v = 0.0f;
+
+    uint32_t startIndex = (latIndex * kSubdivision + lonIndex) * 6;
+
+    u = float(latIndex) / float(kSubdivision);
+    v = 1.0f - float(lonIndex) / float(kSubdivision);
+
+    const float klonEvery = static_cast<float>(pi) * 2.0f / float(kSubdivision);
+
+    const float klatEvery = static_cast<float>(pi) / float(kSubdivision);
+    for (latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+        float lat = static_cast<float>(-pi) / 2.0f + klatEvery * latIndex;
+        for (lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+            uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
+            float lon = klonEvery * lonIndex;
+            vertexData[start].position.x = cos(lat) * cos(lon);
+            vertexData[start].position.y = sin(lat);
+            vertexData[start].position.z = cos(lat) * cos(lon);
+            vertexData[start].position.w = 1.0f;
+            vertexData[start].texcoord = { u, v };
+            // 残りの５つの頂点を計算
+            vertexData[start + 1].position.x = cos(lat) * cos(lon + klonEvery);
+            vertexData[start + 1].position.y = sin(lat);
+            vertexData[start + 1].position.z = cos(lat) * cos(lon + klonEvery);
+            vertexData[start + 1].position.w = 1.0f;
+            vertexData[start + 1].texcoord = { u, v };
+            vertexData[start + 2].position.x = cos(lat + klatEvery) * cos(lon);
+            vertexData[start + 2].position.y = sin(lat + klatEvery);
+            vertexData[start + 2].position.z = cos(lat + klatEvery) * cos(lon);
+            vertexData[start + 2].position.w = 1.0f;
+            vertexData[start + 2].texcoord = { u, v };
+            vertexData[start + 3].position.x = cos(lat + klatEvery) * cos(lon);
+            vertexData[start + 3].position.y = sin(lat + klatEvery);
+            vertexData[start + 3].position.z = cos(lat + klatEvery) * cos(lon);
+            vertexData[start + 3].position.w = 1.0f;
+            vertexData[start + 3].texcoord = { u, v };
+            vertexData[start + 4].position.x = cos(lat + klatEvery) * cos(lon + klonEvery);
+            vertexData[start + 4].position.y = sin(lat + klatEvery);
+            vertexData[start + 4].position.z = cos(lat + klatEvery) * cos(lon + klonEvery);
+            vertexData[start + 4].position.w = 1.0f;
+            vertexData[start + 4].texcoord = { u, v };
+            vertexData[start + 5].position.x = cos(lat) * cos(lon + klonEvery);
+            vertexData[start + 5].position.y = sin(lat);
+            vertexData[start + 5].position.z = cos(lat) * cos(lon + klonEvery);
+            vertexData[start + 5].position.w = 1.0f;
+            vertexData[start + 5].texcoord = { u, v };
+        }
+    }
 
     Transform transformSprite {
         {
