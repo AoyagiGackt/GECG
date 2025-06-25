@@ -681,27 +681,57 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     *materialData = Vector4 { 1.0f, 1.0f, 1.0f, 1.0f };
 
+    // --- 頂点バッファ生成前に定義 ---
+    const uint32_t kSubdivision = 32; // 分割数（大きいほど滑らか）
+    const uint32_t kSphereVertexCount = kSubdivision * kSubdivision * 6;
+
     // 頂点バッファ用リソースを作成
-    ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(VertexData) * 6);
+    ID3D12Resource* vertexResource = CreateBufferResouse(device, sizeof(VertexData) * kSphereVertexCount);
 
     // 頂点データを書き込む
     VertexData* vertexData = nullptr;
     vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-    vertexData[0] = { { -0.5f, -0.5f, 0.0f, 1.0f }, { 0.0f, 1.0f } }; // 左下
-    vertexData[1] = { { 0.0f, 0.5f, 0.0f, 1.0f }, { 0.5f, 0.0f } }; // 上
-    vertexData[2] = { { 0.5f, -0.5f, 0.0f, 1.0f }, { 1.0f, 1.0f } }; // 右下
-    vertexData[3].position = { -0.5f, -0.5f, 0.5f, 1.0f };
-    vertexData[3].texcoord = { 0.0f, 1.0f }; // 左下
-    vertexData[4].position = { 0.0f, 0.0f, 0.0f, 1.0f };
-    vertexData[4].texcoord = { 0.5f, 0.0f }; // 上
-    vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
-    vertexData[5].texcoord = { 1.0f, 1.0f }; // 右下
+
+    // 球体メッシュ生成
+    const float kRadius = 1.0f;
+    const float kPi = std::numbers::pi_v<float>;
+    const float kTwoPi = kPi * 2.0f;
+    uint32_t vertexIdx = 0;
+    for (uint32_t lat = 0; lat < kSubdivision; ++lat) {
+        float lat0 = kPi * (float(lat) / kSubdivision - 0.5f); // -π/2 ～ +π/2
+        float lat1 = kPi * (float(lat + 1) / kSubdivision - 0.5f);
+        for (uint32_t lon = 0; lon < kSubdivision; ++lon) {
+            float lon0 = kTwoPi * float(lon) / kSubdivision;
+            float lon1 = kTwoPi * float(lon + 1) / kSubdivision;
+
+            // 4点の球面座標
+            Vector4 p00 = { kRadius * cos(lat0) * cos(lon0), kRadius * sin(lat0), kRadius * cos(lat0) * sin(lon0), 1.0f };
+            Vector4 p01 = { kRadius * cos(lat0) * cos(lon1), kRadius * sin(lat0), kRadius * cos(lat0) * sin(lon1), 1.0f };
+            Vector4 p10 = { kRadius * cos(lat1) * cos(lon0), kRadius * sin(lat1), kRadius * cos(lat1) * sin(lon0), 1.0f };
+            Vector4 p11 = { kRadius * cos(lat1) * cos(lon1), kRadius * sin(lat1), kRadius * cos(lat1) * sin(lon1), 1.0f };
+
+            // テクスチャ座標
+            Vector2 uv00 = { float(lon) / kSubdivision, 1.0f - float(lat) / kSubdivision };
+            Vector2 uv01 = { float(lon + 1) / kSubdivision, 1.0f - float(lat) / kSubdivision };
+            Vector2 uv10 = { float(lon) / kSubdivision, 1.0f - float(lat + 1) / kSubdivision };
+            Vector2 uv11 = { float(lon + 1) / kSubdivision, 1.0f - float(lat + 1) / kSubdivision };
+
+            // 2三角形
+            vertexData[vertexIdx++] = { p00, uv00 };
+            vertexData[vertexIdx++] = { p10, uv10 };
+            vertexData[vertexIdx++] = { p11, uv11 };
+
+            vertexData[vertexIdx++] = { p00, uv00 };
+            vertexData[vertexIdx++] = { p11, uv11 };
+            vertexData[vertexIdx++] = { p01, uv01 };
+        }
+    }
     vertexResource->Unmap(0, nullptr);
 
-    // 頂点バッファビューを作成
+    // 頂点バッファビュー
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
     vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-    vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+    vertexBufferView.SizeInBytes = sizeof(VertexData) * kSphereVertexCount;
     vertexBufferView.StrideInBytes = sizeof(VertexData);
 
     // ビューポート
@@ -775,60 +805,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     Matrix4x4* transformationMatrixDataSprite = nullptr;
     transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
     *transformationMatrixDataSprite = MakeIdentity4x4();
-
-    const uint32_t kSubdivision = 10;
-    uint32_t latIndex = 0;
-    uint32_t lonIndex = 0;
-
-    float u = 0.0f;
-    float v = 0.0f;
-
-    uint32_t startIndex = (latIndex * kSubdivision + lonIndex) * 6;
-
-    u = float(latIndex) / float(kSubdivision);
-    v = 1.0f - float(lonIndex) / float(kSubdivision);
-
-    const float klonEvery = static_cast<float>(pi) * 2.0f / float(kSubdivision);
-
-    const float klatEvery = static_cast<float>(pi) / float(kSubdivision);
-    for (latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-        float lat = static_cast<float>(-pi) / 2.0f + klatEvery * latIndex;
-        for (lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-            uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
-            float lon = klonEvery * lonIndex;
-            vertexData[start].position.x = cos(lat) * cos(lon);
-            vertexData[start].position.y = sin(lat);
-            vertexData[start].position.z = cos(lat) * cos(lon);
-            vertexData[start].position.w = 1.0f;
-            vertexData[start].texcoord = { u, v };
-            // 残りの５つの頂点を計算
-            vertexData[start + 1].position.x = cos(lat) * cos(lon + klonEvery);
-            vertexData[start + 1].position.y = sin(lat);
-            vertexData[start + 1].position.z = cos(lat) * cos(lon + klonEvery);
-            vertexData[start + 1].position.w = 1.0f;
-            vertexData[start + 1].texcoord = { u, v };
-            vertexData[start + 2].position.x = cos(lat + klatEvery) * cos(lon);
-            vertexData[start + 2].position.y = sin(lat + klatEvery);
-            vertexData[start + 2].position.z = cos(lat + klatEvery) * cos(lon);
-            vertexData[start + 2].position.w = 1.0f;
-            vertexData[start + 2].texcoord = { u, v };
-            vertexData[start + 3].position.x = cos(lat + klatEvery) * cos(lon);
-            vertexData[start + 3].position.y = sin(lat + klatEvery);
-            vertexData[start + 3].position.z = cos(lat + klatEvery) * cos(lon);
-            vertexData[start + 3].position.w = 1.0f;
-            vertexData[start + 3].texcoord = { u, v };
-            vertexData[start + 4].position.x = cos(lat + klatEvery) * cos(lon + klonEvery);
-            vertexData[start + 4].position.y = sin(lat + klatEvery);
-            vertexData[start + 4].position.z = cos(lat + klatEvery) * cos(lon + klonEvery);
-            vertexData[start + 4].position.w = 1.0f;
-            vertexData[start + 4].texcoord = { u, v };
-            vertexData[start + 5].position.x = cos(lat) * cos(lon + klonEvery);
-            vertexData[start + 5].position.y = sin(lat);
-            vertexData[start + 5].position.z = cos(lat) * cos(lon + klonEvery);
-            vertexData[start + 5].position.w = 1.0f;
-            vertexData[start + 5].texcoord = { u, v };
-        }
-    }
 
     Transform transformSprite {
         {
@@ -988,7 +964,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvStartHandleGPU);
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
-            commandList->DrawInstanced(6, 1, 0, 0);
+            commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
             commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
             commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
             commandList->DrawInstanced(6, 1, 0, 0);
