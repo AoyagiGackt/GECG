@@ -13,6 +13,7 @@ struct VertexShaderInput
 {
     float4 position : POSITION0;
     float2 texcoord : TEXCOORD0;
+    float3 normal : NORMALO;
 };
 
 VertexShaderOutput main(VertexShaderInput input)

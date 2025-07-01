@@ -16,9 +16,9 @@
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 #include <format>
+#include <numbers>
 #include <string>
 #include <vector>
-#include <numbers>
 using namespace std::numbers;
 
 /*———————————–——————–——————–——————–——————–
@@ -151,7 +151,12 @@ struct Vector2 {
     float x;
     float y;
 };
-;
+
+struct VertexData {
+    Vector4 position;
+    Vector2 texcoord;
+    Vector3 normal;
+};
 
 struct VertexData {
     Vector4 position;
@@ -227,7 +232,7 @@ ID3D12Resource* CreateBufferResouse(ID3D12Device* device, size_t sizeInBytes)
     D3D12_RESOURCE_DESC vertexResourceDesc {};
     // バッファリソース。テクスチャの場合はまた別の設定をする
     vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    vertexResourceDesc.Width = sizeInBytes; 
+    vertexResourceDesc.Width = sizeInBytes;
     // バッファの場合はこれらは1にする決まり
     vertexResourceDesc.Height = 1;
     vertexResourceDesc.DepthOrArraySize = 1;
@@ -602,7 +607,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     assert(SUCCEEDED(hr));
 
-    D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
+    D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
     inputElementDescs[0].SemanticName = "POSITION";
     inputElementDescs[0]
         .SemanticIndex
@@ -613,6 +618,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     inputElementDescs[1].SemanticIndex = 0;
     inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
     inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+    inputElementDescs[2].SemanticName = "NORMAL";
+    inputElementDescs[2].SemanticIndex = 0;
+    inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+    inputElementDescs[2].AlignedByteOffset =D3D12_APPEND_ALIGNED_ELEMENT;
 
     D3D12_INPUT_LAYOUT_DESC inputLayoutDesc {};
     inputLayoutDesc.pInputElementDescs = inputElementDescs;
@@ -787,7 +796,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // tuika
     VertexData* vertexDataSprite = nullptr;
     vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-    vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f }; 
+    vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };
     vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
     vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };
     vertexDataSprite[1].texcoord = { 0.0f, 0.0f };
@@ -795,7 +804,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexDataSprite[2].texcoord = { 1.0f, 1.0f };
 
     vertexDataSprite[3].position = { 0.0f, 0.0f, 0.0f, 1.0f };
-    vertexDataSprite[3].texcoord = { 0.0f, 0.0f }; 
+    vertexDataSprite[3].texcoord = { 0.0f, 0.0f };
     vertexDataSprite[4].position = { 640.0f, 0.0f, 0.0f, 1.0f };
     vertexDataSprite[4].texcoord = { 1.0f, 0.0f };
     vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f };
@@ -862,7 +871,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         srvHandleCPU.ptr += srvIncrement;
         srvHandleGPU.ptr += srvIncrement;
     }
-
 
     // ImGuiの初期化
     IMGUI_CHECKVERSION();
@@ -971,7 +979,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
             transform.rotate.y += 0.01f;
-            
 
             // カメラの位置をz=-10.0fに設定
             Transform cameraTransform {
@@ -1005,9 +1012,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(
                 0.0f, 0.0f,
-                float(kClientWidth) ,float(kClientHeight), 
-                0.0f, 100.0f
-            );
+                float(kClientWidth), float(kClientHeight),
+                0.0f, 100.0f);
 
             Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
             *transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
