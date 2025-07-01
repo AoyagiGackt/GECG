@@ -173,24 +173,22 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
     return resource;
 }
 
+struct Vector3 {
+    float x, y, z;
+};
+
 struct Vector4 {
     float x, y, z, w;
 };
 
 struct Vector2 {
-    float x;
-    float y;
+    float x, y;
 };
 
 struct VertexData {
     Vector4 position;
     Vector2 texcoord;
     Vector3 normal;
-};
-
-struct VertexData {
-    Vector4 position;
-    Vector2 texcoord;
 };
 
 struct Material {
@@ -751,7 +749,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 頂点データを書き込む
     VertexData* vertexData = nullptr;
     vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-
+    
     // 球体メッシュ生成
     const float kRadius = 1.0f;
     const float kPi = std::numbers::pi_v<float>;
@@ -786,27 +784,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             vertexData[vertexIdx++] = { p01, uv01 };
         }
     }
-
+    
     vertexData[index].normal.x = vertexData[index].position.x;
     vertexData[index].normal.y = vertexData[index].position.y;
     vertexData[index].normal.z = vertexData[index].position.z;
     vertexDataSprite[0].normal = { 0.0f, 0.0f, -1.0f };
 
-    // Lightingを有効にする
-    materialDataSprite->enableLighting = false;
-
-    // Sprite用のマテリアルリソースを作る
-    ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
-    // ... Mapしてデータを書き込む。色は白を設定しておくと良い ….
-    // SpriteはLightingしないのでfalseを設定する
-    materialDataSprite->enableLighting = false;
-
     // デフォルト値はとりあえず以下のようにしておく
     directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
     directionalLightData->direction = { 0.0f, -1.0f;
     directionalLightData->intensity = 1.0f;
+    
+
+    // Sprite用のマテリアルリソースを作る
+    ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
 
     vertexResource->Unmap(0, nullptr);
+
+    // Lightingを有効にする
+    materialDataSprite->enableLighting = false;
 
     // 頂点バッファビュー
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
