@@ -163,6 +163,22 @@ struct VertexData {
     Vector2 texcoord;
 };
 
+struct Material {
+    Vector4 color;
+    int32_t enableLighting;
+};
+
+struct TransformationMatrix {
+    Matrix4x4 WVP;
+    Matrix4x4 World;
+};
+
+struct DirectionalLight {
+    Vector4 color;
+    Vector3 direction;
+    float intensity;
+};
+
 IDxcBlob* CompileShader(
     // Comilerするファイルへのパス
     const std::wstring& filePath,
@@ -574,6 +590,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRanges;
     rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRanges);
+    rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[3].Descriptor.ShaderRegister = 1;
+
+    // レジスタ番号1を使う
     descriptionRootSignature.pParameters = rootParameters;
     descriptionRootSignature.NumParameters = _countof(rootParameters);
 
@@ -621,7 +642,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     inputElementDescs[2].SemanticName = "NORMAL";
     inputElementDescs[2].SemanticIndex = 0;
     inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-    inputElementDescs[2].AlignedByteOffset =D3D12_APPEND_ALIGNED_ELEMENT;
+    inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
     D3D12_INPUT_LAYOUT_DESC inputLayoutDesc {};
     inputLayoutDesc.pInputElementDescs = inputElementDescs;
@@ -735,6 +756,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             vertexData[vertexIdx++] = { p01, uv01 };
         }
     }
+
+    vertexData[index].normal.x = vertexData[index].position.x;
+    vertexData[index].normal.y = vertexData[index].position.y;
+    vertexData[index].normal.z = vertexData[index].position.z;
+    vertexDataSprite[0].normal = { 0.0f, 0.0f, -1.0f };
+
+    // Lightingを有効にする
+    materialDataSprite->enableLighting = false;
+
+    // Sprite用のマテリアルリソースを作る
+    ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
+    // ... Mapしてデータを書き込む。色は白を設定しておくと良い ….
+    // SpriteはLightingしないのでfalseを設定する
+    materialDataSprite->enableLighting = false;
+
+    // デフォルト値はとりあえず以下のようにしておく
+    directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    directionalLightData->direction = { 0.0f, -1.0f;
+    directionalLightData->intensity = 1.0f;
+
     vertexResource->Unmap(0, nullptr);
 
     // 頂点バッファビュー
@@ -1033,7 +1074,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetPipelineState(graphicsPipelineState);
             commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
             commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
             commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[sphereTextureIndex]);
             commandList->RSSetViewports(1, &viewport);
