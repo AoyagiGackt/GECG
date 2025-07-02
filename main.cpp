@@ -785,23 +785,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         }
     }
     
-    vertexData[index].normal.x = vertexData[index].position.x;
-    vertexData[index].normal.y = vertexData[index].position.y;
-    vertexData[index].normal.z = vertexData[index].position.z;
-    vertexDataSprite[0].normal = { 0.0f, 0.0f, -1.0f };
+    for (uint32_t i = 0; i < vertexIdx; ++i) {
+        vertexData[i].normal.x = vertexData[i].position.x;
+        vertexData[i].normal.y = vertexData[i].position.y;
+        vertexData[i].normal.z = vertexData[i].position.z;
+    }
 
     // デフォルト値はとりあえず以下のようにしておく
     directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
     directionalLightData->direction = { 0.0f, -1.0f;
     directionalLightData->intensity = 1.0f;
     
-
     // Sprite用のマテリアルリソースを作る
     ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
 
     vertexResource->Unmap(0, nullptr);
 
     // Lightingを有効にする
+    Material* materialDataSprite = nullptr;
+    materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
+
     materialDataSprite->enableLighting = false;
 
     // 頂点バッファビュー
@@ -865,6 +868,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
     vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };
     vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
+    vertexDataSprite[0].normal = { 0.0f, 0.0f, -1.0f };
     vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };
     vertexDataSprite[1].texcoord = { 0.0f, 0.0f };
     vertexDataSprite[2].position = { 640.0f, 360.0f, 0.0f, 1.0f };
