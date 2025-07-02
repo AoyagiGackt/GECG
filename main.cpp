@@ -607,7 +607,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     descriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
     descriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-    D3D12_ROOT_PARAMETER rootParameters[4] = {}; // 修正: 3→4
+    D3D12_ROOT_PARAMETER rootParameters[3] = {};
     rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[0].Descriptor.ShaderRegister = 0;
@@ -618,7 +618,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRanges;
     rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRanges);
-    rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // 追加
+    rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[3].Descriptor.ShaderRegister = 1;
 
@@ -739,14 +739,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     *materialData = Vector4 { 1.0f, 1.0f, 1.0f, 1.0f };
 
-    // --- 追加: DirectionalLight用リソースとデータ ---
-    ID3D12Resource* directionalLightResource = CreateBufferResource(device, sizeof(DirectionalLight));
-    DirectionalLight* directionalLightData = nullptr;
-    directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
-    directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-    directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
-    directionalLightData->intensity = 1.0f;
-
     // --- 頂点バッファ生成前に定義 ---
     const uint32_t kSubdivision = 32; // 分割数（大きいほど滑らか）
     const uint32_t kSphereVertexCount = kSubdivision * kSubdivision * 6;
@@ -801,7 +793,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // デフォルト値はとりあえず以下のようにしておく
     directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-    directionalLightData->direction = { 0.0f, -1.0f ,0.0f};
+    directionalLightData->direction = { 0.0f, -1.0f, 0.0f};
     directionalLightData->intensity = 1.0f;
     
     // Sprite用のマテリアルリソースを作る
@@ -1115,7 +1107,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
             commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[sphereTextureIndex]);
-            commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress()); // 追加
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
             commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
@@ -1236,10 +1227,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     rootSignature->Release();
 
-    // --- 追加: DirectionalLightリソースの解放 ---
-    directionalLightResource->Unmap(0, nullptr);
-    directionalLightResource->Release();
-
     // --- 追加: テクスチャリソースとmipImagesの解放 ---
     textureResouce->Release();
     mipImages.Release();
@@ -1269,7 +1256,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     CoUninitialize();
 
-    DestroyWindow(hwnd); // 修正: CloseWindow → DestroyWindow
+    CloseWindow(hwnd);
 
     // リソースリークチェック
     IDXGIDebug1* debug;
