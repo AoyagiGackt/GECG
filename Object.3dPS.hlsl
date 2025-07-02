@@ -10,7 +10,6 @@ struct Material
 };
 
 ConstantBuffer<Material> gMaterial : register(b0);
-ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 
 struct DirectionalLight
 {
@@ -18,6 +17,8 @@ struct DirectionalLight
     float3 direction;
     float intensity;
 };
+
+ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 
 struct PixelShaderOutput
 {
