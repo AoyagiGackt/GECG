@@ -793,7 +793,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // デフォルト値はとりあえず以下のようにしておく
     directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-    directionalLightData->direction = { 0.0f, -1.0f;
+    directionalLightData->direction = { 0.0f, -1.0f };
     directionalLightData->intensity = 1.0f;
     
     // Sprite用のマテリアルリソースを作る
