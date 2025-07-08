@@ -12,16 +12,9 @@ ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
 
 struct VertexShaderInput
 {
-    float4 position : SV_POSITION;
+    float4 position : POSITION0; // èCê≥: SV_POSITION Å® POSITION0
     float2 texcoord : TEXCOORD0;
-    float3 normal : NORMALO;
-};
-
-struct VertexShaderOutput
-{
-    float4 position : SV_POSITION;
-    float2 texcoord : TEXCOORD0;
-    float3 normal : NORMALO;
+    float3 normal : NORMAL0; // èCê≥: NORMALO Å® NORMAL0
 };
 
 VertexShaderOutput main(VertexShaderInput input)
