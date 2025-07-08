@@ -8,6 +8,7 @@
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
+#include "ResourceObject.h"
 #include <Windows.h>
 #include <cassert>
 #include <cstdint>
@@ -19,7 +20,6 @@
 #include <numbers>
 #include <string>
 #include <vector>
-using namespace std::numbers;
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -29,6 +29,13 @@ using namespace std::numbers;
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dxcompiler.lib")
+
+/*———————————–——————–——————–——————–——————–
+*
+———————————–——————–——————–——————–——————–*/
+
+using namespace std::numbers;
+using Microsoft::WRL::ComPtr;
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
