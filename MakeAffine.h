@@ -6,6 +6,10 @@ struct Matrix4x4 {
     float m[4][4];
 };
 
+struct Matrix3x3 {
+    float m[3][3];
+};
+
 struct Vector3 {
     float x;
     float y;
@@ -154,6 +158,24 @@ Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float botto
         0.0f, 0.0f, 1.0f / (farClip-nearClip), 0.0f,
         (left + right) / (left - right), (top + bottom) / (bottom - top), nearClip / (nearClip-farClip),1.0f,
     };
+}
+
+Matrix4x4 MakeScaleMatrix(const Vector3& scale)
+{
+    Matrix4x4 result = MakeIdentity4x4();
+    result.m[0][0] = scale.x;
+    result.m[1][1] = scale.y;
+    result.m[2][2] = scale.z;
+    return result;
+}
+
+Matrix4x4 MakeTranslateMatrix(const Vector3& translate)
+{
+    Matrix4x4 result = MakeIdentity4x4();
+    result.m[3][0] = translate.x;
+    result.m[3][1] = translate.y;
+    result.m[3][2] = translate.z;
+    return result;
 }
 
 Matrix4x4 Inverse(const Matrix4x4& m)

@@ -190,6 +190,8 @@ struct VertexData {
 struct Material {
     Vector4 color;
     int enableLighting;
+    float padding[3];
+    Matrix4x4 uvTransform;
 };
 
 struct TransformationMatrix {
@@ -728,11 +730,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     ID3D12Resource* materialResource = CreateBufferResouse(device, sizeof(Vector4) * 3);
 
-    Vector4* materialData = nullptr;
-
+    Material* materialData = nullptr;
     materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-
-    *materialData = Vector4 { 1.0f, 1.0f, 1.0f, 1.0f };
+    materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    materialData->uvTransform = MakeIdentity4x4();
 
     // --- 頂点バッファ生成前に定義 ---
     const uint32_t kSubdivision = 32; // 分割数（大きいほど滑らか）
@@ -903,6 +904,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         }
     };
 
+    materialDataSprite->uvTransform = MakeIdentity4x4();
+
+    Transform uvTransformSprite {
+        {
+            1.0f,
+            1.0f,
+            1.0f,
+        },
+        {
+            0.0f,
+            0.0f,
+            0.0f,
+        },
+        {
+            0.0f,
+            0.0f,
+            0.0f,
+        }
+    };
+
     std::vector<std::string> textureFiles = {
         "Resources/uvChecker.png",
         "Resources/monsterBall.png",
@@ -1024,13 +1045,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             ImGui::ShowDemoWindow();
 
-            // ImGui::Begin("Sprite Transform");
+            ImGui::Begin("Sprite");
 
-            // ImGui::DragFloat3("Position", &transformSprite.translate.x);
-            // ImGui::DragFloat3("Rotation", &transformSprite.rotate.x);
-            // ImGui::DragFloat3("Scale", &transformSprite.scale.x);
+            ImGui::DragFloat3("Position", &transformSprite.translate.x);
+            ImGui::DragFloat3("Rotation", &transformSprite.rotate.x);
+            ImGui::DragFloat3("Scale", &transformSprite.scale.x);
+            ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+            ImGui::DragFloat2("UV Scale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+            ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
 
-            // ImGui::End();
+            ImGui::End();
 
             // 球の回転
             ImGui::Begin("Sphere");
@@ -1104,6 +1128,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             wvpData->WVP = worldViewProjectionMatrix;
             wvpData->World = worldMatrix;
 
+            Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
+            uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
+            uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
+            materialData->uvTransform = uvTransformMatrix;
+
             Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
             Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
 
@@ -1139,10 +1168,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
 
             // スプライト描画
-            // commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-            // commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-            // commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
-            // commandList->DrawInstanced(6, 1, 0, 0);
+            commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+            commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
+            commandList->DrawInstanced(6, 1, 0, 0);
 
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
