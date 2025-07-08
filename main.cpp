@@ -191,7 +191,7 @@ struct Material {
     Vector4 color;
     int enableLighting;
     float padding[3];
-    Matrix3x3 uvTransform;
+    Matrix4x4 uvTransform;
 };
 
 struct TransformationMatrix {
@@ -730,11 +730,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     ID3D12Resource* materialResource = CreateBufferResouse(device, sizeof(Vector4) * 3);
 
-    Vector4* materialData = nullptr;
-
+    Material* materialData = nullptr;
     materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-
-    *materialData = Vector4 { 1.0f, 1.0f, 1.0f, 1.0f };
+    materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    materialData->enableLighting = true; // または false
+    materialData->uvTransform = MakeIdentity4x4(); // 何かしらの行列
 
     // --- 頂点バッファ生成前に定義 ---
     const uint32_t kSubdivision = 32; // 分割数（大きいほど滑らか）
@@ -888,6 +888,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     *transformationMatrixDataSprite = MakeIdentity4x4();
 
     Transform transformSprite {
+        {
+            1.0f,
+            1.0f,
+            1.0f,
+        },
+        {
+            0.0f,
+            0.0f,
+            0.0f,
+        },
+        {
+            0.0f,
+            0.0f,
+            0.0f,
+        }
+    };
+
+    materialDataSprite->uvTransform = MakeIdentity4x4();
+
+    Transform uvTransformSprite {
         {
             1.0f,
             1.0f,
