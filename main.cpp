@@ -722,10 +722,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         IID_PPV_ARGS(&graphicsPipelineState));
     assert(SUCCEEDED(hr));
 
-    ID3D12Resource* wvpResource = CreateBufferResouse(device, sizeof(Matrix4x4));
-    Matrix4x4* wvpData = nullptr;
+    ID3D12Resource* wvpResource = CreateBufferResouse(device, sizeof(TransformationMatrix));
+    TransformationMatrix* wvpData = nullptr;
     wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
-    *wvpData = MakeIdentity4x4();
 
     ID3D12Resource* materialResource = CreateBufferResouse(device, sizeof(Vector4) * 3);
 
@@ -1071,12 +1070,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             };
 
             Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-            *wvpData = worldMatrix;
             Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
             Matrix4x4 viewMatrix = Inverse(cameraMatrix);
             Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
             Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-            *wvpData = worldViewProjectionMatrix;
+            wvpData->WVP = worldViewProjectionMatrix;
+            wvpData->World = worldMatrix;
 
             Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
             Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
@@ -1092,6 +1091,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
             directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
             directionalLightData->intensity = 1.0f;
+
+            materialDataSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+            materialDataSprite->enableLighting = true;
 
             D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
             commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
@@ -1117,10 +1119,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
 
             // スプライト描画
-            commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-            commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-            commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
-            commandList->DrawInstanced(6, 1, 0, 0);
+            //commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+            //commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+            //commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
+            //commandList->DrawInstanced(6, 1, 0, 0);
 
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
