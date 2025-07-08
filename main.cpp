@@ -733,8 +733,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     Material* materialData = nullptr;
     materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
     materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-    materialData->enableLighting = true; // または false
-    materialData->uvTransform = MakeIdentity4x4(); // 何かしらの行列
+    materialData->uvTransform = MakeIdentity4x4();
 
     // --- 頂点バッファ生成前に定義 ---
     const uint32_t kSubdivision = 32; // 分割数（大きいほど滑らか）
@@ -1051,6 +1050,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::DragFloat3("Position", &transformSprite.translate.x);
             ImGui::DragFloat3("Rotation", &transformSprite.rotate.x);
             ImGui::DragFloat3("Scale", &transformSprite.scale.x);
+            ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+            ImGui::DragFloat2("UV Scale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+            ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
 
             ImGui::End();
 
@@ -1125,6 +1127,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
             wvpData->WVP = worldViewProjectionMatrix;
             wvpData->World = worldMatrix;
+
+            Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
+            uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
+            uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
+            materialData->uvTransform = uvTransformMatrix;
 
             Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
             Matrix4x4 viewMatrixSprite = MakeIdentity4x4();

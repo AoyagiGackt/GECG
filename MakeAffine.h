@@ -160,6 +160,24 @@ Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float botto
     };
 }
 
+Matrix4x4 MakeScaleMatrix(const Vector3& scale)
+{
+    Matrix4x4 result = MakeIdentity4x4();
+    result.m[0][0] = scale.x;
+    result.m[1][1] = scale.y;
+    result.m[2][2] = scale.z;
+    return result;
+}
+
+Matrix4x4 MakeTranslateMatrix(const Vector3& translate)
+{
+    Matrix4x4 result = MakeIdentity4x4();
+    result.m[3][0] = translate.x;
+    result.m[3][1] = translate.y;
+    result.m[3][2] = translate.z;
+    return result;
+}
+
 Matrix4x4 Inverse(const Matrix4x4& m)
 {
     float determinant = +m.m[0][0] * m.m[1][1] * m.m[2][2] * m.m[3][3]
