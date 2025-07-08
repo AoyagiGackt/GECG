@@ -1024,13 +1024,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             ImGui::ShowDemoWindow();
 
-            // ImGui::Begin("Sprite Transform");
+            ImGui::Begin("Sprite");
 
-            // ImGui::DragFloat3("Position", &transformSprite.translate.x);
-            // ImGui::DragFloat3("Rotation", &transformSprite.rotate.x);
-            // ImGui::DragFloat3("Scale", &transformSprite.scale.x);
+            ImGui::DragFloat3("Position", &transformSprite.translate.x);
+            ImGui::DragFloat3("Rotation", &transformSprite.rotate.x);
+            ImGui::DragFloat3("Scale", &transformSprite.scale.x);
 
-            // ImGui::End();
+            ImGui::End();
 
             // 球の回転
             ImGui::Begin("Sphere");
@@ -1139,10 +1139,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
 
             // スプライト描画
-            // commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-            // commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-            // commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
-            // commandList->DrawInstanced(6, 1, 0, 0);
+            commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+            commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
+            commandList->DrawInstanced(6, 1, 0, 0);
 
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
