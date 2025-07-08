@@ -744,7 +744,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 頂点データを書き込む
     VertexData* vertexData = nullptr;
     vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-    
+
     // 球体メッシュ生成
     const float kRadius = 1.0f;
     const float kPi = std::numbers::pi_v<float>;
@@ -779,7 +779,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             vertexData[vertexIdx++] = { p01, uv01 };
         }
     }
-    
+
     for (uint32_t i = 0; i < vertexIdx; ++i) {
         vertexData[i].normal.x = vertexData[i].position.x;
         vertexData[i].normal.y = vertexData[i].position.y;
@@ -792,9 +792,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // デフォルト値はとりあえず以下のようにしておく
     directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-    directionalLightData->direction = { 0.0f, -1.0f, 0.0f};
+    directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
     directionalLightData->intensity = 1.0f;
-    
+
     // Sprite用のマテリアルリソースを作る
     ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
 
@@ -976,6 +976,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     static int kyu = 0;
     static int sphereTextureIndex = 0;
 
+    directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
+    directionalLightData->intensity = 1.0f;
+
+    materialDataSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    materialDataSprite->enableLighting = true;
+
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
         // windowsにメッセージが来てたら最優先で処理させる
@@ -1017,17 +1024,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             ImGui::ShowDemoWindow();
 
-            ImGui::Begin("Sprite Transform");
+            // ImGui::Begin("Sprite Transform");
 
-            ImGui::DragFloat3("Position", &transformSprite.translate.x);
-            ImGui::DragFloat3("Rotation", &transformSprite.rotate.x);
-            ImGui::DragFloat3("Scale", &transformSprite.scale.x);
+            // ImGui::DragFloat3("Position", &transformSprite.translate.x);
+            // ImGui::DragFloat3("Rotation", &transformSprite.rotate.x);
+            // ImGui::DragFloat3("Scale", &transformSprite.scale.x);
 
-            ImGui::End();
+            // ImGui::End();
 
-            ImGui::Begin("texture Selector");
+            // 球の回転
+            ImGui::Begin("Sphere");
+            ImGui::DragFloat3("Rotation", &transform.rotate.x, 0.01f);
+
             ImGui::Combo("texture", &sphereTextureIndex, "texture1\0texture2\0");
             ImGui::End();
+
+            // 光源方向
+            ImGui::Begin("Light");
+            ImGui::DragFloat3("Direction", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
+            ImGui::End();
+            // 光源方向の正規化
+            {
+                float& x = directionalLightData->direction.x;
+                float& y = directionalLightData->direction.y;
+                float& z = directionalLightData->direction.z;
+                float len = sqrtf(x * x + y * y + z * z);
+                if (len > 0.0001f) {
+                    x /= len;
+                    y /= len;
+                    z /= len;
+                }
+            }
 
             ImGui::Render();
 
@@ -1048,7 +1075,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
             barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
-            transform.rotate.y += 0.01f;
+            transform.rotate.y += 0.00f;
 
             // カメラの位置をz=-10.0fに設定
             Transform cameraTransform {
@@ -1088,13 +1115,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
             *transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
 
-            directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-            directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
-            directionalLightData->intensity = 1.0f;
-
-            materialDataSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-            materialDataSprite->enableLighting = true;
-
             D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
             commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
             commandList->ClearDepthStencilView(
@@ -1119,10 +1139,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
 
             // スプライト描画
-            //commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-            //commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-            //commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
-            //commandList->DrawInstanced(6, 1, 0, 0);
+            // commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+            // commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+            // commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
+            // commandList->DrawInstanced(6, 1, 0, 0);
 
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
