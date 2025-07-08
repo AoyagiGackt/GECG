@@ -32,12 +32,14 @@ PixelShaderOutput main(VertexShaderOutput input)
     output.color = gMaterial.color * textureColor;
     if (gMaterial.enableLighting != 0)
     { //LightingÇ∑ÇÈèÍçá
-        float cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
+        float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
+        float cos = pow(NdotL * 0.5f + 0.5f, 2.0f); // <- Ç±Ç±Ç≈powÇégÇ§
         output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
     }
     else
     { //LightingÇµÇ»Ç¢èÍçáÅBëOâÒÇ‹Ç≈Ç∆ìØÇ∂ââéZ
         output.color = gMaterial.color * textureColor;
     }
+    
     return output;
 }
