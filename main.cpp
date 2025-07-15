@@ -212,6 +212,18 @@ struct DirectionalLight {
     float intensity;
 };
 
+struct D3D12ResourceLeakChecker {
+    ~D3D12ResourceLeakChecker()
+    {
+        ComPtr<IDXGIDebug1> debug;
+        if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
+            debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+            debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
+            debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
+        }
+    }
+};
+
 IDxcBlob* CompileShader(
     // Comilerするファイルへのパス
     const std::wstring& filePath,
@@ -415,8 +427,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 #endif // DEBUG
 
+    D3D12ResourceLeakChecker leakCheck;
+
     // DXGIファクトリーの生成
-    IDXGIFactory7* dxgiFactory = nullptr;
+    ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 
     HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
 
@@ -443,7 +457,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 適切なアダプタが見つからなかったので起動できない
     assert(useAdapter != nullptr);
 
-    ID3D12Device* device = nullptr;
+    ComPtr<ID3D12Device> device = nullptr;
 
     // 機能レベルとログ出力用の文字列
     D3D_FEATURE_LEVEL featureLevels[] = {
@@ -1258,6 +1272,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 #endif
 
+    /*
     // --- ここからリソース解放処理 ---
     materialResourceSprite->Release();
     directionalLightResource->Release();
@@ -1318,7 +1333,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     debugController->Release();
 
 #endif // _DEBUG
-
+*/
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
@@ -1330,10 +1345,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // リソースリークチェック
     IDXGIDebug1* debug;
     if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
+        /*
         debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
         debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
         debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
         debug->Release();
+        */
     }
     return 0;
 }
