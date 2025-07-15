@@ -230,7 +230,7 @@ IDxcBlob* CompileShader(
     // Compilerに使用するProfile
     const wchar_t* profile,
     // 初期化で生成したものを3つ
-    IDxcUtils* dxcUtils, IDxcCompiler3* dxcCompiler, IDxcIncludeHandler* includeHandler)
+    ComPtr<IDxcUtils> dxcUtils, ComPtr<IDxcCompiler3> dxcCompiler, IDxcIncludeHandler* includeHandler)
 {
     // 1.hlslファイルを読む
     Log(ConvertString(std::format(L"Begin CompileShader, path:{}, profile:{}", filePath, profile)));
@@ -601,8 +601,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     assert(fenceEvent != nullptr);
 
     // dxcCompilerを初期化
-    IDxcUtils* dxcUtils = nullptr;
-    IDxcCompiler3* dxcCompiler = nullptr;
+    ComPtr<IDxcUtils> dxcUtils = nullptr;
+    ComPtr<IDxcCompiler3> dxcCompiler = nullptr;
     hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
     assert(SUCCEEDED(hr));
     hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
@@ -1339,7 +1339,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     CloseWindow(hwnd);
 
     // リソースリークチェック
-    IDXGIDebug1* debug;
+    ComPtr<IDXGIDebug1> debug;
     if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
         /*
         debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
