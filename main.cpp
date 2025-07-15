@@ -32,7 +32,7 @@
 #pragma comment(lib, "dxcompiler.lib")
 
 /*———————————–——————–——————–——————–——————–
-*
+*using宣言
 ———————————–——————–——————–——————–——————–*/
 
 using namespace std::numbers;
