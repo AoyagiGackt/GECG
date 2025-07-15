@@ -366,6 +366,13 @@ ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+    D3D12ResourceLeakChecker leakCheck;
+
+    // DXGIファクトリーの生成
+    ComPtr<IDXGIFactory7> dxgiFactory;
+
+    ComPtr<ID3D12Device> device;
+
     CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
     WNDCLASS wc = {};
@@ -427,11 +434,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 #endif // DEBUG
 
-    D3D12ResourceLeakChecker leakCheck;
-
-    // DXGIファクトリーの生成
-    ComPtr<IDXGIFactory7> dxgiFactory;
-
     HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
 
     assert(SUCCEEDED(hr));
@@ -456,8 +458,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // 適切なアダプタが見つからなかったので起動できない
     assert(useAdapter != nullptr);
-
-    ComPtr<ID3D12Device> device;
 
     // 機能レベルとログ出力用の文字列
     D3D_FEATURE_LEVEL featureLevels[] = {
@@ -541,9 +541,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // スワップ効果
     // コマンドキュー、ウィンドウハンドル、スワップチェーンの設定
     hr = dxgiFactory->CreateSwapChainForHwnd(
-    commandQueue.Get(), hwnd, &swapChainDesc, nullptr, nullptr,
-    reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf())
-);
+        commandQueue.Get(), hwnd, &swapChainDesc, nullptr, nullptr,
+        reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
 
     assert(SUCCEEDED(hr));
 
@@ -1237,7 +1236,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     Log("Complete create D3D12Device!!!\n"); // 初期化完了のログを出す
 
 #ifdef _DEBUG
-    ID3D12InfoQueue* infoQueue = nullptr;
+    ComPtr<ID3D12InfoQueue> infoQueue = nullptr;
     if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue)))) {
         // デバッグレイヤーのメッセージを全て出力する
         infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
@@ -1263,73 +1262,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         // 指定したメッセージの表示を無力化する
         infoQueue->PushStorageFilter(&filter);
 
-        // 解放
-        // infoQueue->Release();
     }
 #endif
 
-    /*
-    // --- ここからリソース解放処理 ---
-    materialResourceSprite->Release();
-    directionalLightResource->Release();
-    dsvDescriptorHeap->Release();
-    depthStencilResource->Release();
-    transformationMatrixResource->Release();
-    vertexResourceSprite->Release();
-    srvDescriptorHeap->Release();
-    CloseHandle(fenceEvent);
-    fence->Release();
-    rtvDescriptorHeap->Release();
-    swapChainResoures[0]->Release();
-    swapChainResoures[1]->Release();
-    swapChain->Release();
-    commandList->Release();
-    commandAllocator->Release();
-    commandQueue->Release();
-    device->Release();
-    useAdapter->Release();
-    dxgiFactory->Release();
-
-    graphicsPipelineState->Release();
-    signatureBlob->Release();
-    if (errorBlob) {
-        errorBlob->Release();
-    }
-
-    pixelShaderBlob->Release();
-    vertexShaderBlob->Release();
-
-    wvpResource->Release();
-    vertexResource->Release();
-    materialResource->Release();
-
-    transformationMatrixResourceSprite->Release();
-
-    rootSignature->Release();
-
-    // --- 追加: テクスチャリソースとmipImagesの解放 ---
-    textureResouce->Release();
-    mipImages.Release();
-
-    // --- 追加: dxc関連の解放 ---
-    includeHandler->Release();
-    dxcCompiler->Release();
-    dxcUtils->Release();
-
-    // --- 追加: テクスチャリソースとmipImagesListの解放 ---
-    for (auto tex : textureResources) {
-        tex->Release();
-    }
-    for (auto& mip : mipImagesList) {
-        mip.Release();
-    }
-
-#ifdef _DEBUG
-
-    debugController->Release();
-
-#endif // _DEBUG
-*/
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
@@ -1339,7 +1274,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     CloseWindow(hwnd);
 
     // リソースリークチェック
-    ComPtr<IDXGIDebug1> debug;
+    IDXGIDebug1* debug;
     if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
         /*
         debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
@@ -1348,5 +1283,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         debug->Release();
         */
     }
+
     return 0;
 }
