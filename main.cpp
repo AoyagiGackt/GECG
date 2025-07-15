@@ -10,7 +10,6 @@
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
 #include <Windows.h>
-#include <wrl.h>
 #include <cassert>
 #include <cstdint>
 #include <d3d12.h>
@@ -21,6 +20,7 @@
 #include <numbers>
 #include <string>
 #include <vector>
+#include <wrl.h>
 
 /*———————————–——————–——————–——————–——————–
 *libのリンク
@@ -1262,7 +1262,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
         // 指定したメッセージの表示を無力化する
         infoQueue->PushStorageFilter(&filter);
-
     }
 #endif
 
