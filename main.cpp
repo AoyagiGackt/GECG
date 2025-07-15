@@ -745,11 +745,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         IID_PPV_ARGS(&graphicsPipelineState));
     assert(SUCCEEDED(hr));
 
-    ID3D12Resource* wvpResource = CreateBufferResouse(device.Get(), sizeof(TransformationMatrix));
+    ComPtr<ID3D12Resource> wvpResource = CreateBufferResouse(device.Get(), sizeof(TransformationMatrix));
     TransformationMatrix* wvpData = nullptr;
     wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
 
-    ID3D12Resource* materialResource = CreateBufferResouse(device.Get(), sizeof(Vector4) * 3);
+    ComPtr<ID3D12Resource> materialResource = CreateBufferResouse(device.Get(), sizeof(Vector4) * 3);
 
     Material* materialData = nullptr;
     materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
@@ -761,7 +761,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     const uint32_t kSphereVertexCount = kSubdivision * kSubdivision * 6;
 
     // 頂点バッファ用リソースを作成
-    ID3D12Resource* vertexResource = CreateBufferResouse(device.Get(), sizeof(VertexData) * kSphereVertexCount);
+    ComPtr<ID3D12Resource> vertexResource = CreateBufferResouse(device.Get(), sizeof(VertexData) * kSphereVertexCount);
 
     // 頂点データを書き込む
     VertexData* vertexData = nullptr;
@@ -855,22 +855,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
 
     Matrix4x4* transformationMatrixData = nullptr;
-    ID3D12Resource* transformationMatrixResource = CreateBufferResouse(device.Get(), sizeof(Matrix4x4));
+    ComPtr<ID3D12Resource> transformationMatrixResource = CreateBufferResouse(device.Get(), sizeof(Matrix4x4));
     transformationMatrixResource->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData));
 
-    ID3D12Resource* depthStencilResource = CreateDepthStencilTextureResource(device.Get(), kClientWidth, kClientHeight);
+    ComPtr<ID3D12Resource> depthStencilResource = CreateDepthStencilTextureResource(device.Get(), kClientWidth, kClientHeight);
     ID3D12DescriptorHeap* dsvDescriptorHeap = CreateDescriptorHeap(
         device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
     D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
     dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
     dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
     device->CreateDepthStencilView(
-        depthStencilResource,
+        depthStencilResource.Get(),
         &dsvDesc,
         dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
     // Sprite用の瓦点リソースを作る
-    ID3D12Resource* vertexResourceSprite = CreateBufferResouse(device.Get(), sizeof(VertexData) * 6);
+    ComPtr<ID3D12Resource> vertexResourceSprite = CreateBufferResouse(device.Get(), sizeof(VertexData) * 6);
 
     // 瓦点バッファビューを作成する
     D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite {};
@@ -902,7 +902,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f };
     vertexDataSprite[5].texcoord = { 1.0f, 1.0f };
 
-    ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResouse(device.Get(), sizeof(Matrix4x4));
+    ComPtr<ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResouse(device.Get(), sizeof(Matrix4x4));
     Matrix4x4* transformationMatrixDataSprite = nullptr;
     transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
     *transformationMatrixDataSprite = MakeIdentity4x4();
