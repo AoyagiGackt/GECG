@@ -122,7 +122,7 @@ ComPtr<ID3D12Resource> CreateTextureResourse(ID3D12Device* device, const DirectX
     heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
     heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
 
-    ID3D12Resource* resource = nullptr;
+    ComPtr<ID3D12Resource> resource = nullptr;
     HRESULT hr = device->CreateCommittedResource(
         &heapProperties,
         D3D12_HEAP_FLAG_NONE,
@@ -167,7 +167,7 @@ ComPtr<ID3D12Resource> CreateBufferResource(ID3D12Device* device, size_t sizeInB
     resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
     // リソースの作成
-    ID3D12Resource* resource = nullptr;
+    ComPtr<ID3D12Resource> resource = nullptr;
     HRESULT hr = device->CreateCommittedResource(
         &heapProperties,
         D3D12_HEAP_FLAG_NONE,
@@ -284,7 +284,7 @@ IDxcBlob* CompileShader(
     return shaderBlob;
 }
 
-ID3D12Resource* CreateBufferResouse(ID3D12Device* device, size_t sizeInBytes)
+ComPtr<ID3D12Resource>* CreateBufferResouse(ID3D12Device* device, size_t sizeInBytes)
 {
     // 生成したShaderのリソースを解放する
     D3D12_HEAP_PROPERTIES uploadHeapProperties {};
@@ -302,7 +302,7 @@ ID3D12Resource* CreateBufferResouse(ID3D12Device* device, size_t sizeInBytes)
     // バッファの場合はこれにする決まり
     vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     // 実際に頂点リソースを作る
-    ID3D12Resource* vertexResource = nullptr;
+    ComPtr<ID3D12Resource> vertexResource = nullptr;
     HRESULT hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE,
         &vertexResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
         IID_PPV_ARGS(&vertexResource));
@@ -331,7 +331,7 @@ ID3D12DescriptorHeap* CreateDescriptorHeap(
     return descriptorHeap;
 }
 
-ID3D12Resource* CreateDepthStencilTextureResource(
+ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(
     ID3D12Device* device, int32_t width, int32_t height)
 {
     // 深度ステンシルテクスチャの設定
@@ -351,7 +351,7 @@ ID3D12Resource* CreateDepthStencilTextureResource(
     D3D12_CLEAR_VALUE depthClearValue {};
     depthClearValue.DepthStencil.Depth = 1.0f;
     depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    ID3D12Resource* resource = nullptr;
+    ComPtr<ID3D12Resource> resource = nullptr;
     HRESULT hr = device->CreateCommittedResource(
         &heapProperties,
         D3D12_HEAP_FLAG_NONE,
@@ -558,7 +558,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 
     // スワップチェーンからリソースを引っ張ってくる
-    ID3D12Resource* swapChainResoures[2] = { nullptr };
+    ComPtr<ID3D12Resource> swapChainResoures[2] = { nullptr };
 
     // スワップチェーンのリソースを取得する
     hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResoures[0]));
