@@ -10,6 +10,7 @@
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
 #include <Windows.h>
+#include <wrl.h>
 #include <cassert>
 #include <cstdint>
 #include <d3d12.h>
