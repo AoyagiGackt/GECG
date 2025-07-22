@@ -1,6 +1,6 @@
-/*———————————–——————–——————–——————–——————–
-*include
-———————————–——————–——————–——————–——————–*/
+// --------------------------------------------------
+// include
+// --------------------------------------------------
 
 #include "MakeAffine.h"
 #include "ResourceObject.h"
@@ -23,9 +23,9 @@
 #include <vector>
 #include <wrl.h>
 
-/*———————————–——————–——————–——————–——————–
-*libのリンク
-———————————–——————–——————–——————–——————–*/
+// --------------------------------------------------
+// ライブラリのリンク
+// --------------------------------------------------
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -33,9 +33,9 @@
 #pragma comment(lib, "dxcompiler.lib")
 #pragma comment(lib, "xinput.lib")
 
-/*———————————–——————–——————–——————–——————–
-*using宣言
-———————————–——————–——————–——————–——————–*/
+// --------------------------------------------------
+// using declarations
+// --------------------------------------------------
 
 using namespace std::numbers;
 using Microsoft::WRL::ComPtr;
@@ -62,6 +62,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 }
+
+// --------------------------------------------------
+// 関数、構造体定義
+// --------------------------------------------------
 
 // 文字列を出す
 void Log(const std::string& message)
@@ -366,6 +370,10 @@ ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(
     assert(SUCCEEDED(hr));
     return resource;
 }
+
+// --------------------------------------------------
+// メイン関数
+// --------------------------------------------------
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -1041,6 +1049,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     materialDataSprite->color = { 1.0f, 1.0f, 1.0f };
     materialDataSprite->enableLighting = true;
 
+    // --------------------------------------------------
+    // メインループ
+    // --------------------------------------------------
+
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
         // windowsにメッセージが来てたら最優先で処理させる
@@ -1372,6 +1384,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 #endif
 
+    // --------------------------------------------------
+    // 終了
+    // --------------------------------------------------
+
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
@@ -1379,6 +1395,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     CoUninitialize();
 
     CloseWindow(hwnd);
+
+    // --------------------------------------------------
+    // デバッグ用リソースリークチェック
+    // --------------------------------------------------
 
     // リソースリークチェック
     IDXGIDebug1* debug;
