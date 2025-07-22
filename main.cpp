@@ -891,7 +891,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 1頂点あたりのリイズ
     vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
 
-    // tuika
     VertexData* vertexDataSprite = nullptr;
     vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
     vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };
