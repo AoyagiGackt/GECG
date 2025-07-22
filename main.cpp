@@ -198,7 +198,8 @@ struct VertexData {
 struct Material {
     Vector4 color;
     int enableLighting;
-    float padding[3];
+    int shadingType; // 0: Lambert, 1: HalfLambert
+    float padding[2];
     Matrix4x4 uvTransform;
 };
 
@@ -1060,6 +1061,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // TransitionBarrierを張る
             commandList->ResourceBarrier(1, &barrier);
 
+            static int sphereShadingType = 0; // 0: Lambert, 1: HalfLambert
+            static bool sphereEnableLighting = false;
+
             ImGui::ShowDemoWindow();
 
             ImGui::Begin("Sprite");
@@ -1075,15 +1079,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             // 球の回転
             ImGui::Begin("Sphere");
+            ImGui::DragFloat3("Position", &transform.translate.x, 0.1f);
             ImGui::DragFloat3("Rotation", &transform.rotate.x, 0.01f);
-
+            ImGui::DragFloat3("Scale", &transform.scale.x, 0.01f, 0.1f, 10.0f);
+            ImGui::ColorEdit4("Color", &materialDataSprite->color.x);
             ImGui::Combo("texture", &sphereTextureIndex, "texture1\0texture2\0");
+            ImGui::Checkbox("Enable Lighting", &sphereEnableLighting);
+            const char* shadingTypes[] = { "Lambert", "HalfLambert" };
+            ImGui::Combo("Shading", &sphereShadingType, shadingTypes, IM_ARRAYSIZE(shadingTypes));
             ImGui::End();
 
             // 光源方向
             ImGui::Begin("Light");
             ImGui::DragFloat3("Direction", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
             ImGui::End();
+
+            materialDataSprite->enableLighting = sphereEnableLighting;
+            materialDataSprite->shadingType = sphereShadingType;
+
             // 光源方向の正規化
             {
                 float& x = directionalLightData->direction.x;

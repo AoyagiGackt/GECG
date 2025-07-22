@@ -7,6 +7,8 @@ struct Material
 {
     float4 color;
     int enableLighting;
+    int shadingType; // 0: Lambert, 1: HalfLambert
+    float2 padding;
     float4x4 uvTransform;
 };
 
@@ -31,16 +33,28 @@ PixelShaderOutput main(VertexShaderOutput input)
     PixelShaderOutput output;
     float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
-    output.color = gMaterial.color * textureColor;
+
+    float4 baseColor = gMaterial.color * textureColor;
+
     if (gMaterial.enableLighting != 0)
-    { //LightingÇ∑ÇÈèÍçá
+    {
         float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
-        float cos = pow(NdotL * 0.5f + 0.5f, 2.0f); // <- Ç±Ç±Ç≈powÇégÇ§
-        output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
+
+        float lighting = 1.0f;
+        if (gMaterial.shadingType == 0)
+        { // Lambert
+            lighting = max(NdotL, 0.0f);
+        }
+        else
+        { // HalfLambert
+            lighting = NdotL * 0.5f + 0.5f;
+        }
+
+        output.color = baseColor * gDirectionalLight.color * lighting * gDirectionalLight.intensity;
     }
     else
-    { //LightingÇµÇ»Ç¢èÍçáÅBëOâÒÇ‹Ç≈Ç∆ìØÇ∂ââéZ
-        output.color = gMaterial.color * textureColor;
+    {
+        output.color = baseColor;
     }
     
     return output;
