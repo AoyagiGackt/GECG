@@ -9,8 +9,8 @@
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
-#include <Xinput.h>
 #include <Windows.h>
+#include <Xinput.h>
 #include <cassert>
 #include <cstdint>
 #include <d3d12.h>
@@ -1038,7 +1038,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
     directionalLightData->intensity = 1.0f;
 
-    materialDataSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    materialDataSprite->color = { 1.0f, 1.0f, 1.0f };
     materialDataSprite->enableLighting = true;
 
     // ウィンドウの×ボタンが押されるまでループ
@@ -1112,40 +1112,79 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             ImGui::Begin("Main Control");
 
-            // --- Sprite セクション ---
-            ImGui::Text("Sprite"); // 見出し
+            // --- Sprite ---
+            ImGui::Text("Sprite");
             ImGui::Separator();
             ImGui::DragFloat3("Sprite Position", &transformSprite.translate.x);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the position of the sprite (X, Y, Z)");
+
             ImGui::DragFloat3("Sprite Rotation", &transformSprite.rotate.x);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the rotation of the sprite (angles for X, Y, Z axes)");
+
             ImGui::DragFloat3("Sprite Scale", &transformSprite.scale.x);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the scale of the sprite (multipliers for X, Y, Z axes)");
+
             ImGui::DragFloat2("Sprite UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the translation (offset) of the sprite's UV coordinates");
+
             ImGui::DragFloat2("Sprite UV Scale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the scale of the sprite's UV coordinates");
+
             ImGui::SliderAngle("Sprite UVRotate", &uvTransformSprite.rotate.z);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Rotate the sprite's UV coordinates");
 
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
 
-            // --- Sphere セクション ---
+            // --- Sphere  ---
             ImGui::Text("Sphere");
             ImGui::Separator();
             ImGui::DragFloat3("Sphere Position", &transform.translate.x, 0.1f);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the position of the sphere (X, Y, Z)");
+
             ImGui::DragFloat3("Sphere Rotation", &transform.rotate.x, 0.01f);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the rotation of the sphere (angles for X, Y, Z axes)");
+
             ImGui::DragFloat3("Sphere Scale", &transform.scale.x, 0.01f, 0.1f, 10.0f);
-            ImGui::ColorEdit4("Sphere Color", &materialDataSprite->color.x);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the scale of the sphere (multipliers for X, Y, Z axes)");
+
+            ImGui::ColorEdit3("Sphere Color", &materialDataSprite->color.x);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the sphere's color (RGB)");
+
             ImGui::Combo("Sphere Texture", &sphereTextureIndex, "texture1\0texture2\0");
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Select the texture image for the sphere");
+
             ImGui::Checkbox("Enable Lighting", &sphereEnableLighting);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Enable or disable lighting effects on the sphere");
+
             const char* shadingTypes[] = { "Lambert", "HalfLambert" };
             ImGui::Combo("Sphere Shading", &sphereShadingType, shadingTypes, IM_ARRAYSIZE(shadingTypes));
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Select the shading method for the sphere");
 
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
 
-            // --- Light セクション ---
+            // --- Light ---
             ImGui::Text("Light");
             ImGui::Separator();
             ImGui::DragFloat3("Light Direction", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the direction of the light (X, Y, Z). This affects how objects are illuminated.");
 
             ImGui::End();
 
