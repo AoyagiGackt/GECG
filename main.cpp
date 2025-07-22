@@ -1184,7 +1184,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::Separator();
             ImGui::DragFloat3("Light Direction", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the direction of the light (X, Y, Z). This affects how objects are illuminated.");
+                ImGui::SetTooltip("Change the direction of the light (X, Y, Z)");
 
             ImGui::End();
 
