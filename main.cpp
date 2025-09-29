@@ -1,6 +1,6 @@
-/*———————————–——————–——————–——————–——————–
-*include
-———————————–——————–——————–——————–——————–*/
+// --------------------------------------------------
+// include
+// --------------------------------------------------
 
 #include "MakeAffine.h"
 #include "ResourceObject.h"
@@ -10,6 +10,7 @@
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
 #include <Windows.h>
+#include <Xinput.h>
 #include <cassert>
 #include <cstdint>
 #include <d3d12.h>
@@ -22,18 +23,19 @@
 #include <vector>
 #include <wrl.h>
 
-/*———————————–——————–——————–——————–——————–
-*libのリンク
-———————————–——————–——————–——————–——————–*/
+// --------------------------------------------------
+// ライブラリのリンク
+// --------------------------------------------------
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dxcompiler.lib")
+#pragma comment(lib, "xinput.lib")
 
-/*———————————–——————–——————–——————–——————–
-*using宣言
-———————————–——————–——————–——————–——————–*/
+// --------------------------------------------------
+// using declarations
+// --------------------------------------------------
 
 using namespace std::numbers;
 using Microsoft::WRL::ComPtr;
@@ -60,6 +62,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 }
+
+// --------------------------------------------------
+// 関数、構造体定義
+// --------------------------------------------------
 
 // 文字列を出す
 void Log(const std::string& message)
@@ -198,7 +204,8 @@ struct VertexData {
 struct Material {
     Vector4 color;
     int enableLighting;
-    float padding[3];
+    int shadingType; // 0: Lambert, 1: HalfLambert
+    float padding[2];
     Matrix4x4 uvTransform;
 };
 
@@ -363,6 +370,10 @@ ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(
     assert(SUCCEEDED(hr));
     return resource;
 }
+
+// --------------------------------------------------
+// メイン関数
+// --------------------------------------------------
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -880,7 +891,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 1頂点あたりのリイズ
     vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
 
-    // tuika
     VertexData* vertexDataSprite = nullptr;
     vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
     vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };
@@ -992,6 +1002,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
         srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // ゲームパッドナビ有効化
+
+    ImGui::StyleColorsDark();
+    ImGuiStyle& style = ImGui::GetStyle();
+
+    // 「ナビゲーション枠」（選択中の項目の枠など）の色
+    style.Colors[ImGuiCol_NavHighlight] = ImVec4(1.0f, 0.3f, 0.0f, 1.0f); // オレンジ
+
+    // 「Header」系はリストやComboの選択部分
+    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.8f, 0.8f, 0.2f, 1.0f); // 黄色
+    style.Colors[ImGuiCol_HeaderActive] = ImVec4(1.0f, 0.6f, 0.0f, 1.0f); // 濃いオレンジ
+
+    // 「ボタン」や「フレーム」部分も派手にしたいなら
+    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.8f, 0.5f, 0.3f, 1.0f); // 薄いオレンジ
+    style.Colors[ImGuiCol_ButtonActive] = ImVec4(1.0f, 0.3f, 0.2f, 1.0f); // 赤っぽい
+
     DirectX::ScratchImage mipImages = LoadTexture("Resources/uvChecker.png");
     const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
     ComPtr<ID3D12Resource> textureResouce = CreateTextureResourse(device.Get(), metadata);
@@ -1018,8 +1045,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
     directionalLightData->intensity = 1.0f;
 
-    materialDataSprite->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    materialDataSprite->color = { 1.0f, 1.0f, 1.0f };
     materialDataSprite->enableLighting = true;
+
+    // --------------------------------------------------
+    // メインループ
+    // --------------------------------------------------
 
     // ウィンドウの×ボタンが押されるまでループ
     while (msg.message != WM_QUIT) {
@@ -1060,30 +1091,117 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // TransitionBarrierを張る
             commandList->ResourceBarrier(1, &barrier);
 
+            // コントローラー
+            XINPUT_STATE state;
+            ZeroMemory(&state, sizeof(XINPUT_STATE));
+            DWORD dwResult = XInputGetState(0, &state); // 0は1Pコントローラー
+
+            if (dwResult == ERROR_SUCCESS) {
+                // 十字キー
+                io.AddKeyEvent(ImGuiKey_GamepadDpadUp, (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) != 0);
+                io.AddKeyEvent(ImGuiKey_GamepadDpadDown, (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) != 0);
+                io.AddKeyEvent(ImGuiKey_GamepadDpadLeft, (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) != 0);
+                io.AddKeyEvent(ImGuiKey_GamepadDpadRight, (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) != 0);
+
+                // 決定（A）、戻る（B）
+                io.AddKeyEvent(ImGuiKey_GamepadFaceDown, (state.Gamepad.wButtons & XINPUT_GAMEPAD_A) != 0); // 決定
+                io.AddKeyEvent(ImGuiKey_GamepadFaceRight, (state.Gamepad.wButtons & XINPUT_GAMEPAD_B) != 0); // 戻る
+
+                // 左スティックで数値変更（例：左右で数値増減）
+                float lx = state.Gamepad.sThumbLX / 32767.0f;
+                float ly = state.Gamepad.sThumbLY / 32767.0f;
+                io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickLeft, lx < -0.3f, lx); // 左
+                io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickRight, lx > 0.3f, lx); // 右
+                io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickUp, ly > 0.3f, ly); // 上
+                io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickDown, ly < -0.3f, ly); // 下
+            }
+
+            static int sphereShadingType = 0; // 0: Lambert, 1: HalfLambert
+            static bool sphereEnableLighting = false;
+
             ImGui::ShowDemoWindow();
 
-            ImGui::Begin("Sprite");
+            ImGui::Begin("Main Control");
 
-            ImGui::DragFloat3("Position", &transformSprite.translate.x);
-            ImGui::DragFloat3("Rotation", &transformSprite.rotate.x);
-            ImGui::DragFloat3("Scale", &transformSprite.scale.x);
-            ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-            ImGui::DragFloat2("UV Scale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-            ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
+            // --- Sprite ---
+            ImGui::Text("Sprite");
+            ImGui::Separator();
+            ImGui::DragFloat3("Sprite Position", &transformSprite.translate.x);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the position of the sprite (X, Y, Z)");
+
+            ImGui::DragFloat3("Sprite Rotation", &transformSprite.rotate.x);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the rotation of the sprite (angles for X, Y, Z axes)");
+
+            ImGui::DragFloat3("Sprite Scale", &transformSprite.scale.x);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the scale of the sprite (multipliers for X, Y, Z axes)");
+
+            ImGui::DragFloat2("Sprite UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the translation (offset) of the sprite's UV coordinates");
+
+            ImGui::DragFloat2("Sprite UV Scale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the scale of the sprite's UV coordinates");
+
+            ImGui::SliderAngle("Sprite UVRotate", &uvTransformSprite.rotate.z);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Rotate the sprite's UV coordinates");
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            // --- Sphere  ---
+            ImGui::Text("Sphere");
+            ImGui::Separator();
+            ImGui::DragFloat3("Sphere Position", &transform.translate.x, 0.1f);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the position of the sphere (X, Y, Z)");
+
+            ImGui::DragFloat3("Sphere Rotation", &transform.rotate.x, 0.01f);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the rotation of the sphere (angles for X, Y, Z axes)");
+
+            ImGui::DragFloat3("Sphere Scale", &transform.scale.x, 0.01f, 0.1f, 10.0f);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the scale of the sphere (multipliers for X, Y, Z axes)");
+
+            ImGui::ColorEdit3("Sphere Color", &materialDataSprite->color.x);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the sphere's color (RGB)");
+
+            ImGui::Combo("Sphere Texture", &sphereTextureIndex, "texture1\0texture2\0");
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Select the texture image for the sphere");
+
+            ImGui::Checkbox("Enable Lighting", &sphereEnableLighting);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Enable or disable lighting effects on the sphere");
+
+            const char* shadingTypes[] = { "Lambert", "HalfLambert" };
+            ImGui::Combo("Sphere Shading", &sphereShadingType, shadingTypes, IM_ARRAYSIZE(shadingTypes));
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Select the shading method for the sphere");
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            // --- Light ---
+            ImGui::Text("Light");
+            ImGui::Separator();
+            ImGui::DragFloat3("Light Direction", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Change the direction of the light (X, Y, Z)");
 
             ImGui::End();
 
-            // 球の回転
-            ImGui::Begin("Sphere");
-            ImGui::DragFloat3("Rotation", &transform.rotate.x, 0.01f);
+            materialDataSprite->enableLighting = sphereEnableLighting;
+            materialDataSprite->shadingType = sphereShadingType;
 
-            ImGui::Combo("texture", &sphereTextureIndex, "texture1\0texture2\0");
-            ImGui::End();
-
-            // 光源方向
-            ImGui::Begin("Light");
-            ImGui::DragFloat3("Direction", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
-            ImGui::End();
             // 光源方向の正規化
             {
                 float& x = directionalLightData->direction.x;
@@ -1265,6 +1383,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 #endif
 
+    // --------------------------------------------------
+    // 終了
+    // --------------------------------------------------
+
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
@@ -1272,6 +1394,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     CoUninitialize();
 
     CloseWindow(hwnd);
+
+    // --------------------------------------------------
+    // デバッグ用リソースリークチェック
+    // --------------------------------------------------
 
     // リソースリークチェック
     IDXGIDebug1* debug;
