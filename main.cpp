@@ -705,6 +705,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     D3D12_BLEND_DESC blendDesc {};
 
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+    // ついかしたところ
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+
 
     D3D12_RASTERIZER_DESC rasterizerDesc {};
     rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
@@ -1047,6 +1056,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     materialDataSprite->color = { 1.0f, 1.0f, 1.0f };
     materialDataSprite->enableLighting = true;
+	
+    // 透明度
+    materialDataSprite->color.w = 1.0f;
 
     // --------------------------------------------------
     // メインループ
@@ -1196,6 +1208,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::DragFloat3("Light Direction", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Change the direction of the light (X, Y, Z)");
+
+            // 透明度
+            ImGui::SliderFloat("Sphere Alpha", &materialDataSprite->color.w, 0.0f, 1.0f, "%.2f");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Change the sphere's transparency (alpha)");
+
+            // 明るさ
+            ImGui::SliderFloat("Light Intensity", &directionalLightData->intensity, 0.0f, 5.0f, "%.2f");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Change the intensity (brightness) of the light");
 
             ImGui::End();
 
