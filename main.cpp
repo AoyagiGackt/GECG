@@ -1176,6 +1176,52 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             static int sphereShadingType = 0; // 0: Lambert, 1: HalfLambert
             static bool sphereEnableLighting = false;
 
+            // ブレンドモード
+			static int prevBlendMode = -1;
+
+			if (blendMode != prevBlendMode) {
+				// BlendDesc
+				blendDesc.RenderTarget[0].BlendEnable = TRUE;
+				switch (blendMode) {
+				case 0:
+					blendDesc.RenderTarget[0].BlendEnable = FALSE;
+					break;
+				case 1:
+					blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+					blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+					blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+					break;
+				case 2:
+					blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+					blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+					blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+					break;
+				case 3:
+					blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+					blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+					blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
+					break;
+				case 4:
+					blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+					blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
+					blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+					break;
+				case 5:
+					blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
+					blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+					blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+					break;
+				}
+
+				blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+				blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+				blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+
+				graphicsPipelineStateDesc.BlendState = blendDesc;
+				device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
+				prevBlendMode = blendMode;
+			}
+
             ImGui::ShowDemoWindow();
 
             ImGui::Begin("Main Control");
@@ -1248,7 +1294,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Select the shading method for the sphere");
 
-            static int blendMode = 1; // なし, ふつう, 加算, 減算, 乗算, スクリーン
+            // ぶれんどもーど
 			const char* blendModeNames[] = {"None", "Normal", "Add", "Subtract", "Multiply", "Screen"};
 			ImGui::Combo("Blend Mode", &blendMode, blendModeNames, IM_ARRAYSIZE(blendModeNames));
 			if (ImGui::IsItemHovered())
