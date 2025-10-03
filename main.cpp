@@ -220,6 +220,23 @@ struct DirectionalLight {
     float intensity;
 };
 
+enum BlendMode {
+    // ブレンドなし
+    kBlendModeNone,
+	// 通常
+    kBlendModeNormal,
+    // 加算
+    kBlendModeAdd,
+	// 減算
+    kBlendModeSubtract,
+	// 乗算
+    kBlendModeMultiply,
+	// スクリーン
+    kBlendModeScreen,
+    // 利用しない
+    kCountOfBlendMode,
+};
+
 struct D3D12ResourceLeakChecker {
     ~D3D12ResourceLeakChecker()
     {
@@ -707,10 +724,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
     // ついかしたところ
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
-	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	int blendMode = kBlendModeNormal;
+
+    // ブレンドモードによって設定を変える
+    switch (blendMode) {
+	case 0: // なし
+		blendDesc.RenderTarget[0].BlendEnable = FALSE;
+		break;
+	case 1: // ふつう
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		break;
+	case 2: // 加算
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		break;
+	case 3: // 減算
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
+		break;
+	case 4: // 乗算
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		break;
+	case 5: // スクリーン
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		break;
+	}
+
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 
@@ -1012,21 +1060,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
     ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // ゲームパッドナビ有効化
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();
 
-    // 「ナビゲーション枠」（選択中の項目の枠など）の色
     style.Colors[ImGuiCol_NavHighlight] = ImVec4(1.0f, 0.3f, 0.0f, 1.0f); // オレンジ
 
-    // 「Header」系はリストやComboの選択部分
     style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.8f, 0.8f, 0.2f, 1.0f); // 黄色
     style.Colors[ImGuiCol_HeaderActive] = ImVec4(1.0f, 0.6f, 0.0f, 1.0f); // 濃いオレンジ
 
-    // 「ボタン」や「フレーム」部分も派手にしたいなら
     style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.8f, 0.5f, 0.3f, 1.0f); // 薄いオレンジ
-    style.Colors[ImGuiCol_ButtonActive] = ImVec4(1.0f, 0.3f, 0.2f, 1.0f); // 赤っぽい
+    style.Colors[ImGuiCol_ButtonActive] = ImVec4(1.0f, 0.3f, 0.2f, 1.0f); // 赤
 
     DirectX::ScratchImage mipImages = LoadTexture("Resources/uvChecker.png");
     const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
@@ -1185,6 +1230,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Change the sphere's color (RGB)");
 
+            // 透明度 
+            ImGui::SliderFloat("Sphere Alpha", &materialDataSprite->color.w, 0.0f, 1.0f, "%.2f");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Change the sphere's transparency (alpha)");
+
             ImGui::Combo("Sphere Texture", &sphereTextureIndex, "texture1\0texture2\0");
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Select the texture image for the sphere");
@@ -1198,6 +1248,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Select the shading method for the sphere");
 
+            static int blendMode = 1; // なし, ふつう, 加算, 減算, 乗算, スクリーン
+			const char* blendModeNames[] = {"None", "Normal", "Add", "Subtract", "Multiply", "Screen"};
+			ImGui::Combo("Blend Mode", &blendMode, blendModeNames, IM_ARRAYSIZE(blendModeNames));
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Change the blend mode for the sphere");
+
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
@@ -1208,11 +1264,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::DragFloat3("Light Direction", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Change the direction of the light (X, Y, Z)");
-
-            // 透明度
-            ImGui::SliderFloat("Sphere Alpha", &materialDataSprite->color.w, 0.0f, 1.0f, "%.2f");
-			if (ImGui::IsItemHovered())
-				ImGui::SetTooltip("Change the sphere's transparency (alpha)");
 
             // 明るさ
             ImGui::SliderFloat("Light Intensity", &directionalLightData->intensity, 0.0f, 5.0f, "%.2f");

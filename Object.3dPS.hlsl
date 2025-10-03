@@ -50,7 +50,9 @@ PixelShaderOutput main(VertexShaderOutput input)
             lighting = NdotL * 0.5f + 0.5f;
         }
 
+        // 前のコード
         //output.color = baseColor * gDirectionalLight.color * lighting * gDirectionalLight.intensity;
+        
         output.color = gMaterial.color * textureColor * gDirectionalLight.color * lighting * gDirectionalLight.intensity;
         output.color.rgb = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb  * gDirectionalLight.intensity;
         output.color.a = gMaterial.color.a * textureColor.a;
