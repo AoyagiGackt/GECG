@@ -1226,6 +1226,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             ImGui::Begin("Main Control");
 
+            /*
             // --- Sprite ---
             ImGui::Text("Sprite");
             ImGui::Separator();
@@ -1256,6 +1257,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
+            */
 
             // --- Sphere  ---
             ImGui::Text("Sphere");
@@ -1421,12 +1423,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->RSSetScissorRects(1, &scissorRect);
             commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
 
+            /*
             // スプライト描画
             commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
             commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
             commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
             commandList->DrawInstanced(6, 1, 0, 0);
+            */
 
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 
