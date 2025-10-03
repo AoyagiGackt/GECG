@@ -18,6 +18,9 @@
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 #include <format>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 #include <numbers>
 #include <string>
 #include <vector>
@@ -209,6 +212,15 @@ struct Material {
     Matrix4x4 uvTransform;
 };
 
+struct MaterialData {
+	std::string textureFilePath;
+};
+
+struct ModelData {
+	std::vector<VertexData> vertices;
+	MaterialData material;
+};
+
 struct TransformationMatrix {
     Matrix4x4 WVP;
     Matrix4x4 World;
@@ -387,6 +399,82 @@ ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(
     assert(SUCCEEDED(hr));
     return resource;
 }
+
+MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName) {
+	MaterialData materialData;
+	std::string line;
+	std::ifstream file(directoryPath + "/" + fileName);
+	assert(file.is_open());
+	while (std::getline(file, line)) {
+		std::string identifer;
+		std::istringstream s(line);
+		s >> identifer;
+
+		// identifierに応じた処理を行う
+		if (identifer == "map_kd") {
+			std::string textureFilename;
+			s >> textureFilename;
+			materialData.textureFilePath = directoryPath + "/" + textureFilename;
+		}
+	}
+	return materialData;
+}
+
+ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName) {
+	ModelData modelData;
+	VertexData triangle[3];
+	std::vector<Vector4> positions;
+	std::vector<Vector2> texcoords;
+	std::string line;
+	std::ifstream fileStream(directoryPath + "/" + fileName);
+	assert(fileStream.is_open());
+
+	while (std::getline(fileStream, line)) {
+		std::string identifer;
+		std::istringstream s(line);
+		s >> identifer;
+		if (identifer == "v") {
+			Vector4 position;
+			s >> position.x >> position.y >> position.z;
+			position.y *= -1.0f; // Z軸を反転
+			position.w = 1.0f;
+			positions.push_back(position);
+		} else if (identifer == "vt") {
+			Vector2 texcoord;
+			s >> texcoord.x >> texcoord.y;
+			texcoords.push_back(texcoord);
+		} else if (identifer == "f") {
+			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
+				std::string vertexDefinition;
+				s >> vertexDefinition;
+				std::istringstream v(vertexDefinition);
+				std::string idxStr;
+				uint32_t posIdx = 0, texIdx = 0;
+				// 位置
+				if (std::getline(v, idxStr, '/'))
+					posIdx = std::stoi(idxStr);
+				// UV
+				if (std::getline(v, idxStr, '/'))
+					texIdx = std::stoi(idxStr);
+				Vector4 position = positions[posIdx - 1];
+				Vector2 texcoord = texcoords[texIdx - 1];
+				VertexData vertex = {position, texcoord};
+				modelData.vertices.push_back(vertex);
+				triangle[faceVertex] = {position, texcoord};
+				texcoord.y = 1.0f - texcoord.y;
+			}
+			modelData.vertices.push_back(triangle[2]);
+			modelData.vertices.push_back(triangle[1]);
+			modelData.vertices.push_back(triangle[0]);
+		} else if (identifer == "mtllib") {
+			std::string materialFileName;
+			s >> materialFileName;
+			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFileName);
+		}
+	}
+	return modelData;
+}
+
 
 // --------------------------------------------------
 // メイン関数
@@ -820,6 +908,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
     materialData->uvTransform = MakeIdentity4x4();
 
+     // modelDataを読み込む
+	//ModelData modelData = LoadObjFile("Resources", "fence.obj");
+
     // --- 頂点バッファ生成前に定義 ---
     const uint32_t kSubdivision = 32; // 分割数（大きいほど滑らか）
     const uint32_t kSphereVertexCount = kSubdivision * kSubdivision * 6;
@@ -1226,6 +1317,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             ImGui::Begin("Main Control");
 
+            /*
             // --- Sprite ---
             ImGui::Text("Sprite");
             ImGui::Separator();
@@ -1256,6 +1348,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
+            */
 
             // --- Sphere  ---
             ImGui::Text("Sphere");
@@ -1421,12 +1514,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->RSSetScissorRects(1, &scissorRect);
             commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
 
+            /*
             // スプライト描画
             commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
             commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
             commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
             commandList->DrawInstanced(6, 1, 0, 0);
+            */
 
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 
