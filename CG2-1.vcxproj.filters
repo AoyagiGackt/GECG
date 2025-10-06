@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="engin\base\main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
@@ -41,11 +41,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="engin\shaders\object3d\Object3d.VS.hlsl" />
-    <FxCompile Include="engin\shaders\object3d\Object.3dPS.hlsl" />
+    <FxCompile Include="Resources\shaders\object3d\Object3dVS.hlsl" />
+    <FxCompile Include="Resources\shaders\object3d\Object3dPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="engin\Math\MakeAffine.h">
+    <ClInclude Include="engin\math\h\MakeAffine.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -72,7 +72,7 @@
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="engin\Graphics\ResourceObject.h">
+    <ClInclude Include="engin\graphics\h\ResourceObject.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -80,6 +80,6 @@
     <Text Include="externals\imgui\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="engin\shaders\object3d\Object3d.hlsli" />
+    <None Include="Resources\shaders\object3d\Object3d.hlsli" />
   </ItemGroup>
 </Project>

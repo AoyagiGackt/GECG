@@ -4,11 +4,11 @@
 
 #include "MakeAffine.h"
 #include "ResourceObject.h"
-#include "externals/DirectXTex/DirectXTex.h"
-#include "externals/DirectXTex/d3dx12.h"
-#include "externals/imgui/imgui.h"
-#include "externals/imgui/imgui_impl_dx12.h"
-#include "externals/imgui/imgui_impl_win32.h"
+#include "DirectXTex.h"
+#include "d3dx12.h"
+#include "imgui.h"
+#include "imgui_impl_dx12.h"
+#include "imgui_impl_win32.h"
 #include <Windows.h>
 #include <Xinput.h>
 #include <cassert>
@@ -711,11 +711,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
     // Shaderをコンパイルする
-    IDxcBlob* vertexShaderBlob = CompileShader(L"Object3d.VS.hlsl",
+    IDxcBlob* vertexShaderBlob = CompileShader(L"Resources/shaders/object3d/Object3dVS.hlsl",
         L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
     assert(vertexShaderBlob != nullptr);
 
-    IDxcBlob* pixelShaderBlob = CompileShader(L"Object.3dPS.hlsl",
+    IDxcBlob* pixelShaderBlob = CompileShader(L"Resources/shaders/object3d/Object3dPS.hlsl",
         L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
     assert(pixelShaderBlob != nullptr);
 
