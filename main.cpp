@@ -232,6 +232,17 @@ struct DirectionalLight {
     float intensity;
 };
 
+// 3Dベクトルの外積
+inline Vector3 Cross(const Vector3& a, const Vector3& b)
+{
+    return {
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x
+    };
+}
+
+
 enum BlendMode {
     // ブレンドなし
     kBlendModeNone,
@@ -1126,6 +1137,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     };
 
     std::vector<std::string> textureFiles = {
+        "Resources/fence.png",
         "Resources/uvChecker.png",
         "Resources/monsterBall.png",
     };
@@ -1190,7 +1202,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.8f, 0.5f, 0.3f, 1.0f); // 薄いオレンジ
     style.Colors[ImGuiCol_ButtonActive] = ImVec4(1.0f, 0.3f, 0.2f, 1.0f); // 赤
 
-    DirectX::ScratchImage mipImages = LoadTexture("Resources/uvChecker.png");
+    DirectX::ScratchImage mipImages = LoadTexture("Resources/fence.png");
     const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
     ComPtr<ID3D12Resource> textureResouce = CreateTextureResourse(device.Get(), metadata);
     UploadTextureData(textureResouce.Get(), mipImages);
@@ -1400,7 +1412,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Change the sphere's transparency (alpha)");
 
-            ImGui::Combo("Sphere Texture", &sphereTextureIndex, "texture1\0texture2\0");
+            ImGui::Combo("Sphere Texture", &sphereTextureIndex, "texture1\0texture2\0texture3\0");
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Select the texture image for the sphere");
 
@@ -1540,8 +1552,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->RSSetScissorRects(1, &scissorRect);
             // commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
             commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
-            commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-            commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
             /*
             // スプライト描画
