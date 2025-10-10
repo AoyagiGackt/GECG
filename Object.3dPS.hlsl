@@ -62,17 +62,19 @@ PixelShaderOutput main(VertexShaderOutput input)
         output.color = baseColor;
     }
     
-    
+    // output.colorのα値が0のときピクセルを棄却
     if (output.color.a == 0.0f)
     {
         discard;
     }
     
+    // textureColorのα値が0のときピクセルを棄却
     if (textureColor.a == 0.0f)
     {
         discard;
     }
     
+    // textureColorのα値が0.5以下のときピクセルを棄却
     if (textureColor.a <= 0.5f)
     {
         discard;
