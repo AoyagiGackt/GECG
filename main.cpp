@@ -1388,48 +1388,48 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::Spacing();
             */
 
-            // --- Sphere  ---
-            ImGui::Text("Sphere");
+            // --- Obj  ---
+            ImGui::Text("Obj");
             ImGui::Separator();
-            ImGui::DragFloat3("Sphere Position", &transform.translate.x, 0.1f);
+            ImGui::DragFloat3("Obj Position", &transform.translate.x, 0.1f);
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the position of the sphere (X, Y, Z)");
+                ImGui::SetTooltip("Change the position of the Obj (X, Y, Z)");
 
-            ImGui::DragFloat3("Sphere Rotation", &transform.rotate.x, 0.01f);
+            ImGui::DragFloat3("Obj Rotation", &transform.rotate.x, 0.01f);
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the rotation of the sphere (angles for X, Y, Z axes)");
+                ImGui::SetTooltip("Change the rotation of the Obj (angles for X, Y, Z axes)");
 
-            ImGui::DragFloat3("Sphere Scale", &transform.scale.x, 0.01f, 0.1f, 10.0f);
+            ImGui::DragFloat3("Obj Scale", &transform.scale.x, 0.01f, 0.1f, 10.0f);
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the scale of the sphere (multipliers for X, Y, Z axes)");
+                ImGui::SetTooltip("Change the scale of the Obj (multipliers for X, Y, Z axes)");
 
-            ImGui::ColorEdit3("Sphere Color", &materialDataSprite->color.x);
+            ImGui::ColorEdit3("Obj Color", &materialDataSprite->color.x);
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the sphere's color (RGB)");
+                ImGui::SetTooltip("Change the Obj's color (RGB)");
 
             // 透明度
-            ImGui::SliderFloat("Sphere Alpha", &materialDataSprite->color.w, 0.0f, 1.0f, "%.2f");
+            ImGui::SliderFloat("Obj Alpha", &materialDataSprite->color.w, 0.0f, 1.0f, "%.2f");
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the sphere's transparency (alpha)");
+                ImGui::SetTooltip("Change the Obj transparency (alpha)");
 
-            ImGui::Combo("Sphere Texture", &sphereTextureIndex, "texture1\0texture2\0texture3\0");
+            ImGui::Combo("Obj Texture", &sphereTextureIndex, "texture1\0texture2\0texture3\0");
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Select the texture image for the sphere");
+                ImGui::SetTooltip("Select the texture image for the Obj");
 
             ImGui::Checkbox("Enable Lighting", &sphereEnableLighting);
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Enable or disable lighting effects on the sphere");
+                ImGui::SetTooltip("Enable or disable lighting effects on the Obj");
 
             const char* shadingTypes[] = { "Lambert", "HalfLambert" };
-            ImGui::Combo("Sphere Shading", &sphereShadingType, shadingTypes, IM_ARRAYSIZE(shadingTypes));
+            ImGui::Combo("Obj Shading", &sphereShadingType, shadingTypes, IM_ARRAYSIZE(shadingTypes));
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Select the shading method for the sphere");
+                ImGui::SetTooltip("Select the shading method for the Obj");
 
             // ぶれんどもーど
             const char* blendModeNames[] = { "None", "Normal", "Add", "Subtract", "Multiply", "Screen" };
             ImGui::Combo("Blend Mode", &blendMode, blendModeNames, IM_ARRAYSIZE(blendModeNames));
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the blend mode for the sphere");
+                ImGui::SetTooltip("Change the blend mode for the Obj");
 
             ImGui::Spacing();
             ImGui::Separator();
