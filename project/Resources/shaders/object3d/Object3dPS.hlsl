@@ -50,11 +50,34 @@ PixelShaderOutput main(VertexShaderOutput input)
             lighting = NdotL * 0.5f + 0.5f;
         }
 
-        output.color = baseColor * gDirectionalLight.color * lighting * gDirectionalLight.intensity;
+        // 前のコード
+        //output.color = baseColor * gDirectionalLight.color * lighting * gDirectionalLight.intensity;
+        
+        output.color = gMaterial.color * textureColor * gDirectionalLight.color * lighting * gDirectionalLight.intensity;
+        output.color.rgb = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb  * gDirectionalLight.intensity;
+        output.color.a = gMaterial.color.a * textureColor.a;
     }
     else
     {
         output.color = baseColor;
+    }
+    
+    // output.colorのα値が0のときピクセルを棄却
+    if (output.color.a == 0.0f)
+    {
+        discard;
+    }
+    
+    // textureColorのα値が0のときピクセルを棄却
+    if (textureColor.a == 0.0f)
+    {
+        discard;
+    }
+    
+    // textureColorのα値が0.5以下のときピクセルを棄却
+    if (textureColor.a <= 0.5f)
+    {
+        discard;
     }
     
     return output;
