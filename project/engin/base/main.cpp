@@ -1255,6 +1255,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 }
             };
 
+
             Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
             Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
             Matrix4x4 viewMatrix = Inverse(cameraMatrix);
