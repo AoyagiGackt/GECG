@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <cmath>
 
@@ -24,7 +24,7 @@ struct Transform {
 
 Transform transform = {
     { 1.0f, 1.0f, 1.0f }, // scale
-    { 2.4f, 0.0f, 0.0f }, // rotate
+    { 0.0f, 0.0f, 0.0f }, // rotate
     { 0.0f, 0.0f, 0.0f } // translate
 };
 
