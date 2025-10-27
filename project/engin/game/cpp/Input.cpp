@@ -1,21 +1,22 @@
-#include "Input.h"
-
+ï»¿#include "Input.h"
+/*
 void Input::Initialize() {
-    // DirectInput‚ÌƒCƒ“ƒXƒ^ƒ“ƒX¶¬
+    // DirectInputã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ç”Ÿæˆ
     ComPtr<IDirectInput8> directInput = nullptr;
     result = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)SdirectInput, nullptr);
     assert(SUCCEEDED(result));
-    // ƒL[ƒ{[ƒhƒfƒoƒCƒX¶¬
+    // ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ãƒ‡ãƒã‚¤ã‚¹ç”Ÿæˆ
     ComPtr<IDirectInputDevice8> keyboard;
     result = directInput->CreateDevice(GUID_SysKeyboard, keyboard, NULL);
     assert(SUCCEEDED(result));
-    // “ü—Íƒf[ƒ^Œ`®‚ÌƒZƒbƒg
+    // å…¥åŠ›ãƒ‡ãƒ¼ã‚¿å½¢å¼ã®ã‚»ãƒƒãƒˆ
     result = keyboard->SetDataFormat(&c_dfDIKeyboard);
     assert(SUCCEEDED(result));
-    // ”r‘¼§ŒäƒŒƒxƒ‹‚ÌƒZƒbƒg
+    // æ’ä»–åˆ¶å¾¡ãƒ¬ãƒ™ãƒ«ã®ã‚»ãƒƒãƒˆ
     result = keyboard->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
     assert(SUCCEEDED(result));
 }
 
 void Input::Update() {
 }
+*/

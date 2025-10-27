@@ -1050,13 +1050,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     materialDataSprite->enableLighting = true;
 
     // ポインタ
-    Input* input = nullptr;
+    //Input* input = nullptr;
 
     // 入力の初期化
-    input = new Input();
-    input->Initialize();
+    //input = new Input();
+    //input->Initialize();
 
-    delete input;
+    //delete input;
 
     // --------------------------------------------------
     // メインループ

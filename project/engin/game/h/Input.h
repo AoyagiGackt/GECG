@@ -1,9 +1,24 @@
-#pragma once
+ï»¿#pragma once
+
+#include <windows.h>
+#include <dinput.h>
+#include <wrl.h>
+#include <array>
+/*
 class Input {
-public: // ƒƒ“ƒoŠÖ”
-    // ‰Šú‰»
+public: // ãƒ¡ãƒ³ãƒé–¢æ•°
+    // åˆæœŸåŒ–
     void Initialize();
-    // XV
+    // æ›´æ–°
     void Update();
 
+private:
+    Microsoft::WRL::ComPtr<IDirectInput8> directInput_;
+    Microsoft::WRL::ComPtr<IDirectInputDevice8> keyboard_;
+
+    HINSTANCE hInstance_ = nullptr;
+    HWND hwnd_ = nullptr;
+
+    std::array<BYTE, 256> keyStates_ {};
 };
+*/
