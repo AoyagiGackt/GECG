@@ -1,1 +1,1 @@
-[![DebugBuild](https://github.com/AoyagiGackt/GECG/actions/workflows/DebugBuild_.yml/badge.svg)](https://github.com/AoyagiGackt/GECG/actions/workflows/DebugBuild_.yml)
+[![DebugBuild](https://github.com/AoyagiGackt/GECG/actions/workflows/DebugBuild.yml/badge.svg)](https://github.com/AoyagiGackt/GECG/actions/workflows/DebugBuild.yml)
