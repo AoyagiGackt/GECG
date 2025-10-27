@@ -1,13 +1,13 @@
 name: DebugBuild
 
 on:
-push:
-branches:
--master
+  push:
+    branches:
+       -master
 
 env:
 # リポジトリのルートディレクトリを基点としたソリューションファイルのパス
-SOLUTION_FILE_PATH: project/CG2.sln
+SOLUTION_FILE_PATH: project/CG2-1.sln
 # Visual Studio の構成(Debug / Release)
 CONFIGURATION: Debug
 
