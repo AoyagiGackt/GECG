@@ -1,9 +1,9 @@
 name: DebugBuild
 
 on:
-  push:
+ push:
     branches:
-      - master
+     - master
 
 env:
   # リポジトリのルートディレクトリを基点としたソリューションファイルのパス
@@ -12,10 +12,10 @@ env:
   CONFIGURATION: Debug
 
 jobs:
-  build:
-    runs-on: windows-2022
+ build:
+   runs-on: windows-2022
 
-    steps:
+   steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Add MSBuild to PATH
