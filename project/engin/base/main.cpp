@@ -2,9 +2,10 @@
 // include
 // --------------------------------------------------
 
+#include "DirectXTex.h"
+#include "Input.h"
 #include "MakeAffine.h"
 #include "ResourceObject.h"
-#include "DirectXTex.h"
 #include "d3dx12.h"
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
@@ -1048,6 +1049,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     materialDataSprite->color = { 1.0f, 1.0f, 1.0f };
     materialDataSprite->enableLighting = true;
 
+    // ポインタ
+    Input* input = nullptr;
+
+    // 入力の初期化
+    input = new Input();
+    input->Initialize();
+
+    delete input;
+
     // --------------------------------------------------
     // メインループ
     // --------------------------------------------------
@@ -1255,7 +1265,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 }
             };
 
-
             Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
             Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
             Matrix4x4 viewMatrix = Inverse(cameraMatrix);
@@ -1384,7 +1393,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 #endif
 
-
     // --------------------------------------------------
     // 終了
     // --------------------------------------------------
@@ -1396,7 +1404,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     CoUninitialize();
 
     CloseWindow(hwnd);
-
 
     // --------------------------------------------------
     // デバッグ用リソースリークチェック
