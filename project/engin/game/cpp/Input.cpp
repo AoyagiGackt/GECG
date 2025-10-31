@@ -1,14 +1,18 @@
 ﻿#include "Input.h"
+#include <cassert>
 using namespace Microsoft::WRL;
 
-void Input::Initialize() {
+void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
+{
+    HRESULT result;
+
     // DirectInputのインスタンス生成
     ComPtr<IDirectInput8> directInput = nullptr;
-    result = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)SdirectInput, nullptr);
+    result = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
     assert(SUCCEEDED(result));
     // キーボードデバイス生成
     ComPtr<IDirectInputDevice8> keyboard;
-    result = directInput->CreateDevice(GUID_SysKeyboard, keyboard, NULL);
+    result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
     assert(SUCCEEDED(result));
     // 入力データ形式のセット
     result = keyboard->SetDataFormat(&c_dfDIKeyboard);
