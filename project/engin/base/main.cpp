@@ -2,9 +2,10 @@
 // include
 // --------------------------------------------------
 
+#include "DirectXTex.h"
+#include "Input.h"
 #include "MakeAffine.h"
 #include "ResourceObject.h"
-#include "DirectXTex.h"
 #include "d3dx12.h"
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
@@ -18,10 +19,7 @@
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 #include <format>
-#include <fstream>
-#include <iostream>
 #include <numbers>
-#include <sstream>
 #include <string>
 #include <vector>
 #include <wrl.h>
@@ -212,15 +210,6 @@ struct Material {
     Matrix4x4 uvTransform;
 };
 
-struct MaterialData {
-    std::string textureFilePath;
-};
-
-struct ModelData {
-    std::vector<VertexData> vertices;
-    MaterialData material;
-};
-
 struct TransformationMatrix {
     Matrix4x4 WVP;
     Matrix4x4 World;
@@ -230,34 +219,6 @@ struct DirectionalLight {
     Vector4 color;
     Vector3 direction;
     float intensity;
-};
-
-// 3Dベクトルの外積
-inline Vector3 Cross(const Vector3& a, const Vector3& b)
-{
-    return {
-        a.y * b.z - a.z * b.y,
-        a.z * b.x - a.x * b.z,
-        a.x * b.y - a.y * b.x
-    };
-}
-
-
-enum BlendMode {
-    // ブレンドなし
-    kBlendModeNone,
-    // 通常
-    kBlendModeNormal,
-    // 加算
-    kBlendModeAdd,
-    // 減算
-    kBlendModeSubtract,
-    // 乗算
-    kBlendModeMultiply,
-    // スクリーン
-    kBlendModeScreen,
-    // 利用しない
-    kCountOfBlendMode,
 };
 
 struct D3D12ResourceLeakChecker {
@@ -409,83 +370,6 @@ ComPtr<ID3D12Resource> CreateDepthStencilTextureResource(
         IID_PPV_ARGS(&resource));
     assert(SUCCEEDED(hr));
     return resource;
-}
-
-MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& fileName)
-{
-    MaterialData materialData;
-    std::string line;
-    std::ifstream file(directoryPath + "/" + fileName);
-    assert(file.is_open());
-    while (std::getline(file, line)) {
-        std::string identifer;
-        std::istringstream s(line);
-        s >> identifer;
-
-        // identifierに応じた処理を行う
-        if (identifer == "map_kd" || identifer == "map_Kd") {
-            std::string textureFilename;
-            s >> textureFilename;
-            materialData.textureFilePath = directoryPath + "/" + textureFilename;
-        }
-    }
-    return materialData;
-}
-
-ModelData LoadObjFile(const std::string& directoryPath, const std::string& fileName)
-{
-    ModelData modelData;
-    VertexData triangle[3];
-    std::vector<Vector4> positions;
-    std::vector<Vector2> texcoords;
-    std::string line;
-    std::ifstream fileStream(directoryPath + "/" + fileName);
-    assert(fileStream.is_open());
-
-    while (std::getline(fileStream, line)) {
-        std::string identifer;
-        std::istringstream s(line);
-        s >> identifer;
-        if (identifer == "v") {
-            Vector4 position;
-            s >> position.x >> position.y >> position.z;
-            position.y *= -1.0f; // Z軸を反転
-            position.w = 1.0f;
-            positions.push_back(position);
-        } else if (identifer == "vt") {
-            Vector2 texcoord;
-            s >> texcoord.x >> texcoord.y;
-            texcoord.y = 1.0f - texcoord.y;
-            texcoords.push_back(texcoord);
-        } else if (identifer == "f") {
-            for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
-                std::string vertexDefinition;
-                s >> vertexDefinition;
-                std::istringstream v(vertexDefinition);
-                std::string idxStr;
-                uint32_t posIdx = 0, texIdx = 0;
-                // 位置
-                if (std::getline(v, idxStr, '/'))
-                    posIdx = std::stoi(idxStr);
-                // UV
-                if (std::getline(v, idxStr, '/'))
-                    texIdx = std::stoi(idxStr);
-                Vector4 position = positions[posIdx - 1];
-                Vector2 texcoord = texcoords[texIdx - 1];
-                VertexData vertex = { position, texcoord };
-                // modelData.vertices.push_back(vertex);
-                triangle[faceVertex] = { position, texcoord };
-            }
-            modelData.vertices.push_back(triangle[2]);
-            modelData.vertices.push_back(triangle[1]);
-            modelData.vertices.push_back(triangle[0]);
-        } else if (identifer == "mtllib") {
-            std::string materialFileName;
-            s >> materialFileName;
-            modelData.material = LoadMaterialTemplateFile(directoryPath, materialFileName);
-        }
-    }
-    return modelData;
 }
 
 // --------------------------------------------------
@@ -822,45 +706,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     D3D12_BLEND_DESC blendDesc {};
 
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-    // ついかしたところ
-    blendDesc.RenderTarget[0].BlendEnable = TRUE;
-    int blendMode = kBlendModeNormal;
-
-    // ブレンドモードによって設定を変える
-    switch (blendMode) {
-    case 0: // なし
-        blendDesc.RenderTarget[0].BlendEnable = FALSE;
-        break;
-    case 1: // ふつう
-        blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-        blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-        blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-        break;
-    case 2: // 加算
-        blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-        blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-        blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-        break;
-    case 3: // 減算
-        blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-        blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-        blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
-        break;
-    case 4: // 乗算
-        blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
-        blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
-        blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-        break;
-    case 5: // スクリーン
-        blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
-        blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-        blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-        break;
-    }
-
-    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-    blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-    blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 
     D3D12_RASTERIZER_DESC rasterizerDesc {};
     rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
@@ -919,43 +764,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
     materialData->uvTransform = MakeIdentity4x4();
 
-    // modelDataを読み込む
-    ModelData modelData = LoadObjFile("Resources/fence", "fence.obj");
-
     // --- 頂点バッファ生成前に定義 ---
     const uint32_t kSubdivision = 32; // 分割数（大きいほど滑らか）
     const uint32_t kSphereVertexCount = kSubdivision * kSubdivision * 6;
 
     // 頂点バッファ用リソースを作成
-    // ComPtr<ID3D12Resource> vertexResource = CreateBufferResouse(device.Get(), sizeof(VertexData) * kSphereVertexCount);
-    ComPtr<ID3D12Resource> vertexResource = CreateBufferResouse(device.Get(), sizeof(VertexData) * modelData.vertices.size());
+    ComPtr<ID3D12Resource> vertexResource = CreateBufferResouse(device.Get(), sizeof(VertexData) * kSphereVertexCount);
 
     // 頂点データを書き込む
     VertexData* vertexData = nullptr;
     vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 
-    // 頂点コピー
-    memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
-    // 面法線を付与（3頂点ごと）
-    for (size_t i = 0; i + 2 < modelData.vertices.size(); i += 3) {
-        const Vector4& p0 = vertexData[i + 0].position;
-        const Vector4& p1 = vertexData[i + 1].position;
-        const Vector4& p2 = vertexData[i + 2].position;
-        Vector3 e1 { p1.x - p0.x, p1.y - p0.y, p1.z - p0.z };
-        Vector3 e2 { p2.x - p0.x, p2.y - p0.y, p2.z - p0.z };
-        Vector3 n = Cross(e1, e2);
-        float len = sqrtf(n.x * n.x + n.y * n.y + n.z * n.z);
-        if (len > 1e-6f) {
-            n.x /= len;
-            n.y /= len;
-            n.z /= len;
-        }
-        vertexData[i + 0].normal = vertexData[i + 1].normal = vertexData[i + 2].normal = n;
-    }
-
-    vertexResource->Unmap(0, nullptr);
-
-    /*
     // 球体メッシュ生成
     const float kRadius = 1.0f;
     const float kPi = std::numbers::pi_v<float>;
@@ -997,8 +816,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         vertexData[i].normal.z = vertexData[i].position.z;
     }
 
-    */
-
     ComPtr<ID3D12Resource> directionalLightResource = CreateBufferResource(device.Get(), sizeof(DirectionalLight));
     DirectionalLight* directionalLightData = nullptr;
     directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
@@ -1022,8 +839,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 頂点バッファビュー
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
     vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-    // vertexBufferView.SizeInBytes = sizeof(VertexData) * kSphereVertexCount;
-    vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());
+    vertexBufferView.SizeInBytes = sizeof(VertexData) * kSphereVertexCount;
     vertexBufferView.StrideInBytes = sizeof(VertexData);
 
     // ビューポート
@@ -1137,7 +953,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     };
 
     std::vector<std::string> textureFiles = {
-        "Resources/fence.png",
         "Resources/uvChecker.png",
         "Resources/monsterBall.png",
     };
@@ -1189,20 +1004,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
     ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // ゲームパッドナビ有効化
 
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();
 
+    // 「ナビゲーション枠」（選択中の項目の枠など）の色
     style.Colors[ImGuiCol_NavHighlight] = ImVec4(1.0f, 0.3f, 0.0f, 1.0f); // オレンジ
 
+    // 「Header」系はリストやComboの選択部分
     style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.8f, 0.8f, 0.2f, 1.0f); // 黄色
     style.Colors[ImGuiCol_HeaderActive] = ImVec4(1.0f, 0.6f, 0.0f, 1.0f); // 濃いオレンジ
 
+    // 「ボタン」や「フレーム」部分も派手にしたいなら
     style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.8f, 0.5f, 0.3f, 1.0f); // 薄いオレンジ
-    style.Colors[ImGuiCol_ButtonActive] = ImVec4(1.0f, 0.3f, 0.2f, 1.0f); // 赤
+    style.Colors[ImGuiCol_ButtonActive] = ImVec4(1.0f, 0.3f, 0.2f, 1.0f); // 赤っぽい
 
-    DirectX::ScratchImage mipImages = LoadTexture("Resources/fence.png");
+    DirectX::ScratchImage mipImages = LoadTexture("Resources/uvChecker.png");
     const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
     ComPtr<ID3D12Resource> textureResouce = CreateTextureResourse(device.Get(), metadata);
     UploadTextureData(textureResouce.Get(), mipImages);
@@ -1231,8 +1049,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     materialDataSprite->color = { 1.0f, 1.0f, 1.0f };
     materialDataSprite->enableLighting = true;
 
-    // 透明度
-    materialDataSprite->color.w = 1.0f;
+    // ポインタ
+    Input* input = nullptr;
+
+    // 入力の初期化
+    input = new Input();
+    input->Initialize(wc.hInstance, hwnd);
 
     // --------------------------------------------------
     // メインループ
@@ -1305,57 +1127,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             static int sphereShadingType = 0; // 0: Lambert, 1: HalfLambert
             static bool sphereEnableLighting = false;
 
-            // ブレンドモード
-            static int prevBlendMode = -1;
-
-            if (blendMode != prevBlendMode) {
-                // BlendDesc
-                blendDesc.RenderTarget[0].BlendEnable = TRUE;
-                switch (blendMode) {
-                case 0:
-                    blendDesc.RenderTarget[0].BlendEnable = FALSE;
-                    break;
-                case 1:
-                    blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-                    blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-                    blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-                    break;
-                case 2:
-                    blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-                    blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-                    blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-                    break;
-                case 3:
-                    blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-                    blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-                    blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
-                    break;
-                case 4:
-                    blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
-                    blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
-                    blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-                    break;
-                case 5:
-                    blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
-                    blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-                    blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-                    break;
-                }
-
-                blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-                blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-                blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-
-                graphicsPipelineStateDesc.BlendState = blendDesc;
-                device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
-                prevBlendMode = blendMode;
-            }
-
             ImGui::ShowDemoWindow();
 
             ImGui::Begin("Main Control");
 
-            /*
             // --- Sprite ---
             ImGui::Text("Sprite");
             ImGui::Separator();
@@ -1386,50 +1161,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
-            */
 
-            // --- Obj  ---
-            ImGui::Text("Obj");
+            // --- Sphere  ---
+            ImGui::Text("Sphere");
             ImGui::Separator();
-            ImGui::DragFloat3("Obj Position", &transform.translate.x, 0.1f);
+            ImGui::DragFloat3("Sphere Position", &transform.translate.x, 0.1f);
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the position of the Obj (X, Y, Z)");
+                ImGui::SetTooltip("Change the position of the sphere (X, Y, Z)");
 
-            ImGui::DragFloat3("Obj Rotation", &transform.rotate.x, 0.01f);
+            ImGui::DragFloat3("Sphere Rotation", &transform.rotate.x, 0.01f);
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the rotation of the Obj (angles for X, Y, Z axes)");
+                ImGui::SetTooltip("Change the rotation of the sphere (angles for X, Y, Z axes)");
 
-            ImGui::DragFloat3("Obj Scale", &transform.scale.x, 0.01f, 0.1f, 10.0f);
+            ImGui::DragFloat3("Sphere Scale", &transform.scale.x, 0.01f, 0.1f, 10.0f);
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the scale of the Obj (multipliers for X, Y, Z axes)");
+                ImGui::SetTooltip("Change the scale of the sphere (multipliers for X, Y, Z axes)");
 
-            ImGui::ColorEdit3("Obj Color", &materialDataSprite->color.x);
+            ImGui::ColorEdit3("Sphere Color", &materialDataSprite->color.x);
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the Obj's color (RGB)");
+                ImGui::SetTooltip("Change the sphere's color (RGB)");
 
-            // 透明度
-            ImGui::SliderFloat("Obj Alpha", &materialDataSprite->color.w, 0.0f, 1.0f, "%.2f");
+            ImGui::Combo("Sphere Texture", &sphereTextureIndex, "texture1\0texture2\0");
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the Obj transparency (alpha)");
-
-            ImGui::Combo("Obj Texture", &sphereTextureIndex, "texture1\0texture2\0texture3\0");
-            if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Select the texture image for the Obj");
+                ImGui::SetTooltip("Select the texture image for the sphere");
 
             ImGui::Checkbox("Enable Lighting", &sphereEnableLighting);
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Enable or disable lighting effects on the Obj");
+                ImGui::SetTooltip("Enable or disable lighting effects on the sphere");
 
             const char* shadingTypes[] = { "Lambert", "HalfLambert" };
-            ImGui::Combo("Obj Shading", &sphereShadingType, shadingTypes, IM_ARRAYSIZE(shadingTypes));
+            ImGui::Combo("Sphere Shading", &sphereShadingType, shadingTypes, IM_ARRAYSIZE(shadingTypes));
             if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Select the shading method for the Obj");
-
-            // ぶれんどもーど
-            const char* blendModeNames[] = { "None", "Normal", "Add", "Subtract", "Multiply", "Screen" };
-            ImGui::Combo("Blend Mode", &blendMode, blendModeNames, IM_ARRAYSIZE(blendModeNames));
-            if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the blend mode for the Obj");
+                ImGui::SetTooltip("Select the shading method for the sphere");
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -1441,11 +1204,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::DragFloat3("Light Direction", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Change the direction of the light (X, Y, Z)");
-
-            // 明るさ
-            ImGui::SliderFloat("Light Intensity", &directionalLightData->intensity, 0.0f, 5.0f, "%.2f");
-            if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Change the intensity (brightness) of the light");
 
             ImGui::End();
 
@@ -1505,7 +1263,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 }
             };
 
-
             Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
             Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
             Matrix4x4 viewMatrix = Inverse(cameraMatrix);
@@ -1551,17 +1308,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
             commandList->RSSetViewports(1, &viewport);
             commandList->RSSetScissorRects(1, &scissorRect);
-            // commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
-            commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+            commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
 
-            /*
             // スプライト描画
             commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
             commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
             commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
             commandList->DrawInstanced(6, 1, 0, 0);
-            */
 
             ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 
@@ -1637,7 +1391,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 #endif
 
-
     // --------------------------------------------------
     // 終了
     // --------------------------------------------------
@@ -1647,9 +1400,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ImGui::DestroyContext();
 
     CoUninitialize();
-
+    
     CloseWindow(hwnd);
 
+    //delete input;
 
     // --------------------------------------------------
     // デバッグ用リソースリークチェック
