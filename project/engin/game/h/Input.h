@@ -5,6 +5,8 @@
 #include <wrl.h>
 #include <array>
 
+using namespace Microsoft::WRL;
+
 class Input {
 public: // メンバ関数
     // 初期化
@@ -13,8 +15,8 @@ public: // メンバ関数
     void Update();
 
 private:
-    Microsoft::WRL::ComPtr<IDirectInput8> directInput_;
-    Microsoft::WRL::ComPtr<IDirectInputDevice8> keyboard_;
+    ComPtr<IDirectInput8> directInput_;
+    ComPtr<IDirectInputDevice8> keyboard_;
 
     HINSTANCE hInstance_ = nullptr;
     HWND hwnd_ = nullptr;

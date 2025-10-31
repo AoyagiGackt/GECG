@@ -1050,13 +1050,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     materialDataSprite->enableLighting = true;
 
     // ポインタ
-    //Input* input = nullptr;
+    Input* input = nullptr;
 
     // 入力の初期化
-    //input = new Input();
-    //input->Initialize();
-
-    //delete input;
+    input = new Input();
+    input->Initialize(wc.hInstance, hwnd);
 
     // --------------------------------------------------
     // メインループ
@@ -1402,8 +1400,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ImGui::DestroyContext();
 
     CoUninitialize();
-
+    
     CloseWindow(hwnd);
+
+    //delete input;
 
     // --------------------------------------------------
     // デバッグ用リソースリークチェック
