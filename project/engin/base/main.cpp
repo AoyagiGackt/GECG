@@ -1099,6 +1099,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // TransitionBarrierを張る
             commandList->ResourceBarrier(1, &barrier);
 
+            // 入力の更新
+            input->Update();
+
             // コントローラー
             XINPUT_STATE state;
             ZeroMemory(&state, sizeof(XINPUT_STATE));
