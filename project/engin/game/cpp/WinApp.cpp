@@ -1,6 +1,5 @@
 ﻿#include "WinApp.h"
 #include "imgui.h"
-#include <cstdint>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -28,8 +27,6 @@ void WinApp::Initialize()
 {
     HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
 
-    WNDCLASS wc = {};
-
     // ウィンドクラスプロシージャ
     wc.lpfnWndProc = WindowProc;
 
@@ -44,10 +41,6 @@ void WinApp::Initialize()
 
     // ウィンドクラスの登録
     RegisterClassW(&wc);
-
-     // クライアント領域のサイズ
-    const int32_t kClientWidth = 1280;
-    const int32_t kClientHeight = 720;
 
     // ウィンドウサイズを表す構造体にクライアント領域を入れる
     RECT wrc = { 0, 0, kClientWidth, kClientHeight };
