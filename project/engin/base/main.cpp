@@ -1102,6 +1102,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // 入力の更新
             input->Update();
 
+            const float kMoveSpeed = 0.1f; // オブジェクトの移動速度
+
+            // Wキーで上
+            if (input->PushKey(DIK_W)) {
+                transform.translate.y += kMoveSpeed;
+            }
+            // Sキーで下
+            if (input->PushKey(DIK_S)) {
+                transform.translate.y -= kMoveSpeed;
+            }
+            // Aキーで左へ
+            if (input->PushKey(DIK_A)) {
+                transform.translate.x -= kMoveSpeed;
+            }
+            // Dキーで右へ
+            if (input->PushKey(DIK_D)) {
+                transform.translate.x += kMoveSpeed;
+            }
+
             // コントローラー
             XINPUT_STATE state;
             ZeroMemory(&state, sizeof(XINPUT_STATE));

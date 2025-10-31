@@ -16,12 +16,17 @@ public: // メンバ関数
     // 更新
     void Update();
 
+    bool PushKey(BYTE keyNumber);
+    bool TriggerKey(BYTE keyNumber);
+
 private:
     ComPtr<IDirectInput8> directInput_;
     ComPtr<IDirectInputDevice8> keyboard_;
 
     HINSTANCE hInstance_ = nullptr;
     HWND hwnd_ = nullptr;
+    BYTE key[256] = {};
+    BYTE keyPre[256] = {};
 
     std::array<BYTE, 256> keyStates_ {};
     std::array<BYTE, 256> prevKeyStates_ {};
