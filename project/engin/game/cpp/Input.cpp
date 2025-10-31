@@ -1,5 +1,6 @@
 ﻿#include "Input.h"
-/*
+using namespace Microsoft::WRL;
+
 void Input::Initialize() {
     // DirectInputのインスタンス生成
     ComPtr<IDirectInput8> directInput = nullptr;
@@ -19,4 +20,3 @@ void Input::Initialize() {
 
 void Input::Update() {
 }
-*/

@@ -4,7 +4,7 @@
 #include <dinput.h>
 #include <wrl.h>
 #include <array>
-/*
+
 class Input {
 public: // メンバ関数
     // 初期化
@@ -21,4 +21,3 @@ private:
 
     std::array<BYTE, 256> keyStates_ {};
 };
-*/
