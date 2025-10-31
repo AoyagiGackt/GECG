@@ -4,9 +4,9 @@
 
 #include "DirectXTex.h"
 #include "Input.h"
-#include "WinApp.h"
 #include "MakeAffine.h"
 #include "ResourceObject.h"
+#include "WinApp.h"
 #include "d3dx12.h"
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
@@ -395,8 +395,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     winApp->Initialize();
 
     CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-
-    MSG msg {};
 
 #ifdef _DEBUG
     ComPtr<ID3D12Debug1> debugController = nullptr;
@@ -1024,11 +1022,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // --------------------------------------------------
 
     // ウィンドウの×ボタンが押されるまでループ
-    while (msg.message != WM_QUIT) {
+    while (true) {
+
         // windowsにメッセージが来てたら最優先で処理させる
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
+        if (winApp->ProcessMessage()) {
+            // ゲームループを抜ける
+            break;
         } else {
 
             ImGui_ImplDX12_NewFrame();
@@ -1383,7 +1382,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
-    
+
     // WindowsAPIの終了処理
     winApp->Finalize();
 
