@@ -1017,7 +1017,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // 入力の初期化
     input = new Input();
-    input->Initialize(winApp->GetHInstance(), winApp->GetHwnd());
+    input->Initialize(winApp);
 
     // --------------------------------------------------
     // メインループ
@@ -1383,13 +1383,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
-
-    CoUninitialize();
     
+    // WindowsAPIの終了処理
+    winApp->Finalize();
+
     // delete input;
     // delete winApp
-
-    CloseWindow(winApp->GetHwnd());
 
     // --------------------------------------------------
     // デバッグ用リソースリークチェック

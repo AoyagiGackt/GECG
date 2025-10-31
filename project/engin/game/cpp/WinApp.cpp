@@ -47,12 +47,8 @@ void WinApp::Initialize()
 
     // クライアント領域をもとに実際のサイズにwrcを変更
     AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
-}
 
-void WinApp::Update()
-{
-    // ウィンドウの生成
-    HWND hwnd = CreateWindow(
+    hwnd = CreateWindow(
         wc.lpszClassName, // 利用するクラス名
         L"CG2", // タイトルバーの文字
         WS_OVERLAPPEDWINDOW, // よく見るウィンドウスタイル
@@ -68,4 +64,15 @@ void WinApp::Update()
 
     // ウィンドウを表示する
     ShowWindow(hwnd, SW_SHOW);
+}
+
+void WinApp::Update()
+{
+   
+}
+
+void WinApp::Finalize()
+{
+    CloseWindow(hwnd);
+    CoUninitialize();
 }

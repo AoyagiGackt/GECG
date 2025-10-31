@@ -4,6 +4,7 @@
 #include <dinput.h>
 #include <windows.h>
 #include <wrl.h>
+#include "WinApp.h"
 
 class Input {
 public: // メンバ関数
@@ -12,7 +13,7 @@ public: // メンバ関数
     using ComPtr = Microsoft::WRL::ComPtr<T>;
 
     // 初期化
-    void Initialize(HINSTANCE hInstance, HWND hwnd);
+    void Initialize(WinApp* winApp);
     // 更新
     void Update();
 
@@ -30,4 +31,6 @@ private:
 
     std::array<BYTE, 256> keyStates_ {};
     std::array<BYTE, 256> prevKeyStates_ {};
+
+    WinApp* winApp_ = nullptr;
 };
