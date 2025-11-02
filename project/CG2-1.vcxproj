@@ -148,7 +148,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="engin\game\cpp\DirectXCommon.cpp" />
+    <ClCompile Include="engin\game\cpp\Logger.cpp" />
     <ClCompile Include="engin\game\cpp\WinApp.cpp" />
+    <ClCompile Include="engin\game\h\Logger.h" />
     <ClCompile Include="externals\imgui\imgui.cpp" />
     <ClCompile Include="externals\imgui\imgui_demo.cpp" />
     <ClCompile Include="externals\imgui\imgui_draw.cpp" />

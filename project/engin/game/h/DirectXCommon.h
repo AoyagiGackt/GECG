@@ -1,4 +1,7 @@
 #pragma once
+#include <d3dx12.h>
+#include <dxcapi.h>
+#include <wrl.h>
 
 // DirectXŠî”Õ
 class DirectXCommon {

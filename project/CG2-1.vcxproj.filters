@@ -48,6 +48,12 @@
     <ClCompile Include="engin\game\cpp\DirectXCommon.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="engin\game\cpp\Logger.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="engin\game\h\Logger.h">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\object3d\Object3dVS.hlsl" />
