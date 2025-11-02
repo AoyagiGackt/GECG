@@ -3,6 +3,7 @@
 // --------------------------------------------------
 
 #include "DirectXTex.h"
+#include "DirectXCommon.h"
 #include "Input.h"
 #include "MakeAffine.h"
 #include "ResourceObject.h"
