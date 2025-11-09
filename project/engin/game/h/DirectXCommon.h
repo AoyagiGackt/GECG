@@ -1,11 +1,11 @@
-#pragma once
+ï»¿#pragma once
 #include <d3dx12.h>
 #include <dxcapi.h>
 #include <wrl.h>
 
-// DirectXŠî”Õ
+// DirectXåŸºç›¤
 class DirectXCommon {
-public: // ƒƒ“ƒoŠÖ”
-	// ‰Šú‰»
+public: // ãƒ¡ãƒ³ãƒé–¢æ•°
+	// åˆæœŸåŒ–
 	void Initialize();
 };
