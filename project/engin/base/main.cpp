@@ -2,10 +2,12 @@
 // include
 // --------------------------------------------------
 
+#include "DirectXCommon.h"
 #include "DirectXTex.h"
 #include "Input.h"
 #include "MakeAffine.h"
 #include "ResourceObject.h"
+#include "WinApp.h"
 #include "d3dx12.h"
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
@@ -386,54 +388,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     ComPtr<ID3D12Device> device;
 
+    // ポインタ
+    WinApp* winApp = nullptr;
+
+    // windowsAPIの初期化
+    winApp = new WinApp();
+    winApp->Initialize();
+
     CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-
-    WNDCLASS wc = {};
-
-    // ウィンドクラスプロシージャ
-    wc.lpfnWndProc = WindowProc;
-
-    // ウィンドクラス名
-    wc.lpszClassName = L"CG2WindowClass";
-
-    // インスタンスハンドル
-    wc.hInstance = GetModuleHandleW(nullptr);
-
-    // カーソル
-    wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-
-    // ウィンドクラスの登録
-    RegisterClassW(&wc);
-
-    // クライアント領域のサイズ
-    const int32_t kClientWidth = 1280;
-    const int32_t kClientHeight = 720;
-
-    // ウィンドウサイズを表す構造体にクライアント領域を入れる
-    RECT wrc = { 0, 0, kClientWidth, kClientHeight };
-
-    // クライアント領域をもとに実際のサイズにwrcを変更
-    AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
-
-    // ウィンドウの生成
-    HWND hwnd = CreateWindow(
-        wc.lpszClassName, // 利用するクラス名
-        L"CG2", // タイトルバーの文字
-        WS_OVERLAPPEDWINDOW, // よく見るウィンドウスタイル
-        CW_USEDEFAULT, // 表示x座標(Windowsに任せる)
-        CW_USEDEFAULT, // 表示y座標(WindowsOSに任せる)
-        wrc.right - wrc.left, // ウィンドウ横幅
-        wrc.bottom - wrc.top, // ウィンドウ縦幅
-        nullptr, // 親ウィンドウハンドル
-        nullptr, // メニューハンドル
-        wc.hInstance, // インスタンスハンドル
-        nullptr // オプション
-    );
-
-    // ウィンドウを表示する
-    ShowWindow(hwnd, SW_SHOW);
-
-    MSG msg {};
 
 #ifdef _DEBUG
     ComPtr<ID3D12Debug1> debugController = nullptr;
@@ -545,8 +507,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 
     // スワップチェーンの設定
-    swapChainDesc.Width = kClientWidth; // 画面の幅
-    swapChainDesc.Height = kClientHeight; // 画面の高さ
+    swapChainDesc.Width = WinApp::kClientWidth; // 画面の幅
+    swapChainDesc.Height = WinApp::kClientHeight; // 画面の高さ
     swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // 色の形式
     swapChainDesc.SampleDesc.Count = 1; // マルチサンプリングしない
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 描画のターゲットとして利用する
@@ -554,7 +516,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // スワップ効果
     // コマンドキュー、ウィンドウハンドル、スワップチェーンの設定
     hr = dxgiFactory->CreateSwapChainForHwnd(
-        commandQueue.Get(), hwnd, &swapChainDesc, nullptr, nullptr,
+        commandQueue.Get(), winApp->GetHwnd(), &swapChainDesc, nullptr, nullptr,
         reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
 
     assert(SUCCEEDED(hr));
@@ -845,8 +807,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // ビューポート
     D3D12_VIEWPORT viewport {};
     // クライアント領域のサイズと一緒にして画面全体に表示
-    viewport.Width = kClientWidth;
-    viewport.Height = kClientHeight;
+    viewport.Width = WinApp::kClientWidth;
+    viewport.Height = WinApp::kClientHeight;
     viewport.TopLeftX = 0;
     viewport.TopLeftY = 0;
     viewport.MinDepth = 0.0f;
@@ -856,17 +818,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     D3D12_RECT scissorRect {};
     // 基本的にビューポートと同じ矩形が構成されるようにする
     scissorRect.left = 0;
-    scissorRect.right = kClientWidth;
+    scissorRect.right = WinApp::kClientWidth;
     scissorRect.top = 0;
-    scissorRect.bottom = kClientHeight;
+    scissorRect.bottom = WinApp::kClientHeight;
 
-    Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+    Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWidth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
 
     Matrix4x4* transformationMatrixData = nullptr;
     ComPtr<ID3D12Resource> transformationMatrixResource = CreateBufferResouse(device.Get(), sizeof(Matrix4x4));
     transformationMatrixResource->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData));
 
-    ComPtr<ID3D12Resource> depthStencilResource = CreateDepthStencilTextureResource(device.Get(), kClientWidth, kClientHeight);
+    ComPtr<ID3D12Resource> depthStencilResource = CreateDepthStencilTextureResource(device.Get(), WinApp::kClientWidth, WinApp::kClientHeight);
     ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = CreateDescriptorHeap(
         device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
     D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
@@ -995,7 +957,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
-    ImGui_ImplWin32_Init(hwnd);
+    ImGui_ImplWin32_Init(winApp->GetHwnd());
     ImGui_ImplDX12_Init(device.Get(),
         swapChainDesc.BufferCount,
         rtvDesc.Format,
@@ -1054,18 +1016,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // 入力の初期化
     input = new Input();
-    input->Initialize(wc.hInstance, hwnd);
+    input->Initialize(winApp);
 
     // --------------------------------------------------
     // メインループ
     // --------------------------------------------------
 
     // ウィンドウの×ボタンが押されるまでループ
-    while (msg.message != WM_QUIT) {
+    while (true) {
+
         // windowsにメッセージが来てたら最優先で処理させる
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
+        if (winApp->ProcessMessage()) {
+            // ゲームループを抜ける
+            break;
         } else {
 
             ImGui_ImplDX12_NewFrame();
@@ -1098,6 +1061,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             // TransitionBarrierを張る
             commandList->ResourceBarrier(1, &barrier);
+
+            // 入力の更新
+            input->Update();
+
+            const float kMoveSpeed = 0.1f; // オブジェクトの移動速度
+
+            // Wキーで上
+            if (input->PushKey(DIK_W)) {
+                transform.translate.y += kMoveSpeed;
+            }
+            // Sキーで下
+            if (input->PushKey(DIK_S)) {
+                transform.translate.y -= kMoveSpeed;
+            }
+            // Aキーで左へ
+            if (input->PushKey(DIK_A)) {
+                transform.translate.x -= kMoveSpeed;
+            }
+            // Dキーで右へ
+            if (input->PushKey(DIK_D)) {
+                transform.translate.x += kMoveSpeed;
+            }
 
             // コントローラー
             XINPUT_STATE state;
@@ -1266,7 +1251,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
             Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
             Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-            Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+            Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWidth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
             Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
             wvpData->WVP = worldViewProjectionMatrix;
             wvpData->World = worldMatrix;
@@ -1281,7 +1266,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(
                 0.0f, 0.0f,
-                float(kClientWidth), float(kClientHeight),
+                float(WinApp::kClientWidth), float(WinApp::kClientHeight),
                 0.0f, 100.0f);
 
             Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
@@ -1399,11 +1384,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 
-    CoUninitialize();
-
-    CloseWindow(hwnd);
+    // WindowsAPIの終了処理
+    winApp->Finalize();
 
     // delete input;
+    // delete winApp
 
     // --------------------------------------------------
     // デバッグ用リソースリークチェック
