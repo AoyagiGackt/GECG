@@ -160,6 +160,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
     <ClCompile Include="engin\base\main.cpp" />
     <ClCompile Include="engin\game\cpp\Input.cpp" />
+    <ClCompile Include="engin\game\cpp\StringUtlity.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\object3d\Object3dPS.hlsl">
@@ -193,6 +194,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engin\math\h\MakeAffine.h" />
     <ClInclude Include="engin\graphics\h\ResourceObject.h" />
     <ClInclude Include="engin\game\h\Input.h" />
+    <ClInclude Include="engin\game\h\StringUtlity.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
