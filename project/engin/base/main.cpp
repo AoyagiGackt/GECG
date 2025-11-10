@@ -734,8 +734,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
     ImGui_ImplWin32_Init(winApp->GetHwnd());
-    ImGui_ImplDX12_Init(
-        device,
+    ImGui_ImplDX12_Init(device,
         dxCommon->GetBufferCount(),
         dxCommon->GetBackBufferFormat(),
         srvDescriptorHeap,
