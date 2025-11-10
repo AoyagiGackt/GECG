@@ -997,7 +997,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 nullptr // 深度ステンシルビューのハンドル
             );
 
-            ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap.Get() };
+            ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
             commandList->SetDescriptorHeaps(1, descriptorHeaps);
 
             // 今回はRenderTargetからPresentにする
