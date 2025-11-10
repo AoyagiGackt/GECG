@@ -2,12 +2,14 @@
 // include
 // --------------------------------------------------
 
-#include "DirectXTex.h"
+#include "WinApp.h"
 #include "DirectXCommon.h"
 #include "Input.h"
+#include "Logger.h"
+#include "StringUtlity.h"
+#include "DirectXTex.h"
 #include "MakeAffine.h"
 #include "ResourceObject.h"
-#include "WinApp.h"
 #include "d3dx12.h"
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
@@ -43,71 +45,14 @@
 using namespace std::numbers;
 using Microsoft::WRL::ComPtr;
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-// ウィンドウプロシージャ
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam)) {
-        return true;
-    }
-
-    // メッセージに応じてゲーム固有の処理を行う
-    switch (uMsg) {
-        // ウィンドウが破棄された
-    case WM_DESTROY:
-        // OSに対して、アプリの終了を伝える
-        PostQuitMessage(0);
-        return 0;
-
-    default:
-        // 標準のメッセージ処理を行う
-        return DefWindowProc(hwnd, uMsg, wParam, lParam);
-    }
-}
-
 // --------------------------------------------------
 // 関数、構造体定義
 // --------------------------------------------------
 
-// 文字列を出す
-void Log(const std::string& message)
-{
-    OutputDebugStringA(message.c_str());
-}
-
-std::wstring ConvertString(const std::string& str)
-{
-    if (str.empty()) {
-        return std::wstring();
-    }
-    auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), NULL, 0);
-    if (sizeNeeded == 0) {
-        return std::wstring();
-    }
-    std::wstring result(sizeNeeded, 0);
-    MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), &result[0], sizeNeeded);
-    return result;
-}
-
-std::string ConvertString(const std::wstring& str)
-{
-    if (str.empty()) {
-        return std::string();
-    }
-    auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
-    if (sizeNeeded == 0) {
-        return std::string();
-    }
-    std::string result(sizeNeeded, 0);
-    WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
-    return result;
-}
-
 DirectX ::ScratchImage LoadTexture(const std ::string filePath)
 {
     DirectX::ScratchImage image {};
-    std::wstring filePathW = ConvertString(filePath);
+    std::wstring filePathW = StringUtility::ConvertString(filePath);
     HRESULT hr = DirectX ::LoadFromWICFile(filePathW.c_str(), DirectX ::WIC_FLAGS_FORCE_SRGB, nullptr, image);
     assert(SUCCEEDED(hr));
     DirectX ::ScratchImage mipImages {};
@@ -244,7 +189,7 @@ IDxcBlob* CompileShader(
     ComPtr<IDxcUtils> dxcUtils, ComPtr<IDxcCompiler3> dxcCompiler, IDxcIncludeHandler* includeHandler)
 {
     // 1.hlslファイルを読む
-    Log(ConvertString(std::format(L"Begin CompileShader, path:{}, profile:{}", filePath, profile)));
+    Logger::Log(StringUtility::ConvertString(std::format(L"Begin CompileShader, path:{}, profile:{}", filePath, profile)));
     IDxcBlobEncoding* shaderSource = nullptr;
     HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
     assert(SUCCEEDED(hr));
@@ -280,7 +225,7 @@ IDxcBlob* CompileShader(
     IDxcBlobUtf8* shaderError = nullptr;
     shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
     if (shaderError != nullptr && shaderError->GetStringLength() != 0) {
-        Log(shaderError->GetStringPointer());
+        Logger::Log(shaderError->GetStringPointer());
         assert(false); // エラーが出たので起動できない
     }
 
@@ -288,7 +233,7 @@ IDxcBlob* CompileShader(
     IDxcBlob* shaderBlob = nullptr;
     hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
     assert(SUCCEEDED(hr));
-    Log(ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}", filePath, profile)));
+    Logger::Log(StringUtility::ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}", filePath, profile)));
     // 読み込んだファイルのリソースを解放する
     shaderSource->Release();
     shaderResult->Release();
@@ -399,7 +344,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     DirectXCommon* dxCommon = nullptr;
     dxCommon = new DirectXCommon();
-    dxCommon->Initialize();
+    dxCommon->Initialize(winApp);
+
+    HRESULT hr;
 
     // dxcCompilerを初期化
     ComPtr<IDxcUtils> dxcUtils = nullptr;
@@ -460,7 +407,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     hr = D3D12SerializeRootSignature(&descriptionRootSignature,
         D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
     if (FAILED(hr)) {
-        Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+        Logger::Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
         assert(false);
     }
 
@@ -750,6 +697,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> textureSrvHandlesCPU;
     std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> textureSrvHandlesGPU;
 
+    ID3D12DescriptorHeap* srvDescriptorHeap = dxCommon->GetSrvDescriptorHeap();
+    ID3D12Device* device = dxCommon->GetDevice();
     UINT srvIncrement = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
     D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
@@ -785,10 +734,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
     ImGui_ImplWin32_Init(winApp->GetHwnd());
-    ImGui_ImplDX12_Init(device.Get(),
-        swapChainDesc.BufferCount,
-        rtvDesc.Format,
-        srvDescriptorHeap.Get(),
+    ImGui_ImplDX12_Init(
+        device,
+        dxCommon->GetBufferCount(),
+        dxCommon->GetBackBufferFormat(),
+        srvDescriptorHeap,
         srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
         srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
