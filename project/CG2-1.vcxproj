@@ -151,7 +151,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engin\game\cpp\Logger.cpp" />
     <ClCompile Include="engin\game\cpp\WinApp.cpp" />
     <ClCompile Include="engin\game\h\Logger.h" />
-    <ClCompile Include="engin\game\h\StringUtlity.cpp" />
+    <ClCompile Include="engin\game\cpp\StringUtlity.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp" />
     <ClCompile Include="externals\imgui\imgui_demo.cpp" />
     <ClCompile Include="externals\imgui\imgui_draw.cpp" />
@@ -161,7 +161,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
     <ClCompile Include="engin\base\main.cpp" />
     <ClCompile Include="engin\game\cpp\Input.cpp" />
-    <ClCompile Include="engin\game\cpp\StringUtlity.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\object3d\Object3dPS.hlsl">

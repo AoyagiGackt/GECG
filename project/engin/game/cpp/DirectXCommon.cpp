@@ -6,6 +6,8 @@
 #include <format>
 #include <string>
 
+using Microsoft::WRL::ComPtr;
+
 namespace {
 
 ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(
