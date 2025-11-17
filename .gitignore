@@ -316,3 +316,19 @@ DirectXGame/imgui.ini
 
 # DirectXTex Compiled Shaders
 **/DirectXTex/Shaders/Compiled/
+project/Resources/axis.blend
+project/Resources/fence.png
+project/Resources/multiMaterial.blend
+
+Dumps/
+logs/
+
+externals/DirectXTex/Bin/
+externals/DirectXTex/x64/
+
+DirectXGame/DirectXGame.exe
+DirectXGame/imgui.ini
+
+imgui.ini
+*.dll
+*.pdb
