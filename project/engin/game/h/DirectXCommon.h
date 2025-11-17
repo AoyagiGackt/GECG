@@ -45,6 +45,7 @@ private:
     void CreateDepthBuffer();
     void CreateFence();
 
+
 private:
     Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_;
     Microsoft::WRL::ComPtr<ID3D12Device> device_;
