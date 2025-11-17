@@ -6,6 +6,7 @@
 #include <dxgi1_6.h>
 #include <wrl/client.h>
 #include <chrono>
+#include <thread>
 
 class WinApp;
 
