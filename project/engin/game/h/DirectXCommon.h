@@ -1,9 +1,10 @@
 #pragma once
+#include <Windows.h>
 #include <cassert>
 #include <d3d12.h>
 #include <d3dx12.h>
 #include <dxgi1_6.h>
-#include <wrl.h>
+#include <wrl/client.h>
 
 class WinApp;
 
@@ -12,6 +13,8 @@ class DirectXCommon {
 public: // メンバ関数
     // 初期化
     void Initialize(WinApp* winApp);
+    void PreDraw();
+    void PostDraw();
 
     ID3D12Device* GetDevice() { return device_.Get(); }
     ID3D12GraphicsCommandList* GetCommandList() { return commandList_.Get(); }
