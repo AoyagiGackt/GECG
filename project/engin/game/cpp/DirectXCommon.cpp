@@ -1,4 +1,4 @@
-﻿#include "DirectXCommon.h"
+#include "DirectXCommon.h"
 #include "Input.h"
 #include "Logger.h"
 #include "StringUtlity.h"

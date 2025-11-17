@@ -57,6 +57,7 @@
     <ClCompile Include="engin\game\cpp\StringUtlity.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+
     <ClCompile Include="engin\game\cpp\D3DResourceLeakChecker.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
