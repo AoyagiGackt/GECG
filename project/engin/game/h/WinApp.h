@@ -2,9 +2,9 @@
 #include <Windows.h>
 #include <cstdint>
 
-// WindowsAPI
 class WinApp {
-public: // 静的メンバ関数
+public:
+
     // ウィンドウプロシージャ
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -32,7 +32,7 @@ private:
     // ウィンドウハンドル
     HWND hwnd = nullptr;
     // ウィンドウクラス
-    WNDCLASS wc = {};
+    WNDCLASSW wc = {};
     // WindowsAPI
     WinApp* winApp_ = nullptr;
 };

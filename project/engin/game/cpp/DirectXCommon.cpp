@@ -1,10 +1,12 @@
-﻿#include "DirectXCommon.h"
+#include "DirectXCommon.h"
 #include "Input.h"
 #include "Logger.h"
 #include "StringUtlity.h"
 #include "WinApp.h"
 #include <format>
 #include <string>
+
+using Microsoft::WRL::ComPtr;
 
 namespace {
 
@@ -47,6 +49,88 @@ void DirectXCommon::Initialize(WinApp* winApp)
     CreateFence();
 }
 
+void DirectXCommon::PreDraw()
+{
+    // コマンドアロケータとリストをリセット
+    HRESULT hr = commandAllocator_->Reset();
+    assert(SUCCEEDED(hr));
+    hr = commandList_->Reset(commandAllocator_.Get(), nullptr);
+    assert(SUCCEEDED(hr));
+
+    // リソースバリア
+    UINT backBufferIndex = swapChain_->GetCurrentBackBufferIndex();
+    D3D12_RESOURCE_BARRIER barrier = {};
+    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+    barrier.Transition.pResource = swapChainResoures_[backBufferIndex].Get();
+    barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+    commandList_->ResourceBarrier(1, &barrier);
+
+    // 描画先と深度を設定
+    D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
+    commandList_->OMSetRenderTargets(1, &rtvHandles_[backBufferIndex], false, &dsvHandle);
+
+    // 画面クリア
+    float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青っぽい色
+    commandList_->ClearRenderTargetView(rtvHandles_[backBufferIndex], clearColor, 0, nullptr);
+
+    // 深度クリア
+    commandList_->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+    // ビューポートとシザー矩形の設定
+    D3D12_VIEWPORT viewport = {};
+    viewport.Width = (float)winApp_->kClientWidth;
+    viewport.Height = (float)winApp_->kClientHeight;
+    viewport.TopLeftX = 0;
+    viewport.TopLeftY = 0;
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    commandList_->RSSetViewports(1, &viewport);
+
+    D3D12_RECT scissorRect = {};
+    scissorRect.left = 0;
+    scissorRect.right = winApp_->kClientWidth;
+    scissorRect.top = 0;
+    scissorRect.bottom = winApp_->kClientHeight;
+    commandList_->RSSetScissorRects(1, &scissorRect);
+}
+
+void DirectXCommon::PostDraw()
+{
+    HRESULT hr;
+
+    // リソースバリア
+    UINT backBufferIndex = swapChain_->GetCurrentBackBufferIndex();
+    D3D12_RESOURCE_BARRIER barrier = {};
+    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+    barrier.Transition.pResource = swapChainResoures_[backBufferIndex].Get();
+    barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+    commandList_->ResourceBarrier(1, &barrier);
+
+    // コマンドリストを閉じる
+    hr = commandList_->Close();
+    assert(SUCCEEDED(hr));
+
+    // GPUコマンド実行
+    ID3D12CommandList* commandLists[] = { commandList_.Get() };
+    commandQueue_->ExecuteCommandLists(1, commandLists);
+
+    // フリップ (画面更新)
+    hr = swapChain_->Present(1, 0);
+    assert(SUCCEEDED(hr));
+
+    // フェンス同期
+    fenceValue_++;
+    commandQueue_->Signal(fence_.Get(), fenceValue_);
+
+    if (fence_->GetCompletedValue() < fenceValue_) {
+        fence_->SetEventOnCompletion(fenceValue_, fenceEvent_);
+        WaitForSingleObject(fenceEvent_, INFINITE);
+    }
+}
 // ---------------------------------------------------------------------------------
 // 内部関数
 // ---------------------------------------------------------------------------------
@@ -102,6 +186,8 @@ void DirectXCommon::CreateCommand()
 
     hr = device_->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator_.Get(), nullptr, IID_PPV_ARGS(&commandList_));
     assert(SUCCEEDED(hr));
+
+    commandList_->Close();
 }
 
 void DirectXCommon::CreateDescriptorHeaps()

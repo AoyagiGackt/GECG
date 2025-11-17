@@ -3,7 +3,8 @@
 #include <array>
 #include <dinput.h>
 #include <windows.h>
-#include <wrl.h>
+
+#include <wrl/client.h>
 #include "WinApp.h"
 
 class Input {

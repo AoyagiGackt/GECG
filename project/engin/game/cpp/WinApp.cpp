@@ -20,12 +20,15 @@ LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     }
 
     // 標準のメッセージ処理を行う
-    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
 void WinApp::Initialize()
 {
     HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
+
+    // WNDCLASSWを使用
+    WNDCLASSW wc = {};
 
     // ウィンドクラスプロシージャ
     wc.lpfnWndProc = WindowProc;
@@ -37,18 +40,20 @@ void WinApp::Initialize()
     wc.hInstance = GetModuleHandleW(nullptr);
 
     // カーソル
-    wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+    wc.hCursor = LoadCursorW(nullptr, (LPCWSTR)IDC_ARROW);
 
     // ウィンドクラスの登録
     RegisterClassW(&wc);
 
-    // ウィンドウサイズを表す構造体にクライアント領域を入れる
+    // メンバ変数のwcにコピーしておく
+    this->wc = wc;
+
+
     RECT wrc = { 0, 0, kClientWidth, kClientHeight };
 
-    // クライアント領域をもとに実際のサイズにwrcを変更
     AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
-    hwnd = CreateWindow(
+    hwnd = CreateWindowW(
         wc.lpszClassName, // 利用するクラス名
         L"CG2", // タイトルバーの文字
         WS_OVERLAPPEDWINDOW, // よく見るウィンドウスタイル
@@ -68,7 +73,6 @@ void WinApp::Initialize()
 
 void WinApp::Update()
 {
-   
 }
 
 void WinApp::Finalize()
