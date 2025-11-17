@@ -51,14 +51,13 @@
     <ClCompile Include="engin\game\cpp\Logger.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="engin\game\h\Logger.h">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="engin\game\cpp\StringUtlity.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-
     <ClCompile Include="engin\game\cpp\D3DResourceLeakChecker.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="engin\game\cpp\ImGuiManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -110,6 +109,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="engin\game\h\D3DResourceLeakChecker.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="engin\game\h\ImGuiManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

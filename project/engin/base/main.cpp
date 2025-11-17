@@ -16,6 +16,7 @@
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
 #include "imgui_impl_win32.h"
+#include "ImGuiManager.h"
 #include "D3DResourceLeakChecker.h"
 #include <Xinput.h>
 #include <cassert>
@@ -536,19 +537,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 
     // ImGuiの初期化
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui::StyleColorsDark();
-    ImGui_ImplWin32_Init(winApp->GetHwnd());
-    ImGui_ImplDX12_Init(device,
-        dxCommon->GetBufferCount(),
-        dxCommon->GetBackBufferFormat(),
-        srvDescriptorHeap,
-        srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-        srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+    ImGuiManager* imguiManager = new ImGuiManager();
+    imguiManager->Initialize(winApp, dxCommon);
 
     ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
     static int sphereTextureIndex = 0;
 
@@ -564,9 +556,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         if (winApp->ProcessMessage()) {
             break;
         } else {
-            ImGui_ImplDX12_NewFrame();
-            ImGui_ImplWin32_NewFrame();
-            ImGui::NewFrame();
+            
+            imguiManager->Begin();
+
             dxCommon->PreDraw();
 
             // コマンドリストの取得
@@ -691,7 +683,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
             commandList->DrawInstanced(6, 1, 0, 0);
 
-            ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
+            imguiManager->End();
+            imguiManager->Draw(dxCommon);
 
             // 描画後処理
             dxCommon->PostDraw();
@@ -720,12 +713,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
 #endif
 
-    ImGui_ImplDX12_Shutdown();
-    ImGui_ImplWin32_Shutdown();
-    ImGui::DestroyContext();
-
+    imguiManager->Finalize();
     winApp->Finalize();
+
     delete input;
+    delete imguiManager;
     delete dxCommon;
     delete winApp;
 
