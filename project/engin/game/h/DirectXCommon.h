@@ -7,6 +7,7 @@
 #include <wrl/client.h>
 #include <chrono>
 #include <thread>
+#include <dxcapi.h>
 
 class WinApp;
 
@@ -18,6 +19,7 @@ public: // メンバ関数
     void PreDraw();
     void PostDraw();
 
+    IDxcBlob* CompileShader(const std::wstring& filePath, const wchar_t* profile);
     ID3D12Device* GetDevice() { return device_.Get(); }
     ID3D12GraphicsCommandList* GetCommandList() { return commandList_.Get(); }
     ID3D12CommandQueue* GetCommandQueue() { return commandQueue_.Get(); }
@@ -46,7 +48,7 @@ private:
     void CreateRTV();
     void CreateDepthBuffer();
     void CreateFence();
-
+    void InitializeDXC();
 
 private:
     // FPS固定初期化
@@ -66,6 +68,10 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource_;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap_;
     Microsoft::WRL::ComPtr<ID3D12Fence> fence_;
+    Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils_;
+    Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler_;
+    Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler_;
+
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles_[2];
     uint64_t fenceValue_;
     HANDLE fenceEvent_;
