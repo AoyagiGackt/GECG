@@ -49,6 +49,8 @@ void DirectXCommon::Initialize(WinApp* winApp)
     CreateDepthBuffer();
     // フェンス作成
     CreateFence();
+    // DXCコンパイラ初期化
+    InitializeDXC();
 }
 
 void DirectXCommon::PreDraw()
@@ -136,6 +138,64 @@ void DirectXCommon::PostDraw()
         WaitForSingleObject(fenceEvent_, INFINITE);
     }
 }
+
+IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar_t* profile)
+{
+    // hlslファイルを読む
+    Logger::Log(StringUtility::ConvertString(std::format(L"Begin CompileShader, path:{}, profile:{}", filePath, profile)));
+
+    IDxcBlobEncoding* shaderSource = nullptr;
+    HRESULT hr = dxcUtils_->LoadFile(filePath.c_str(), nullptr, &shaderSource);
+    assert(SUCCEEDED(hr));
+
+    DxcBuffer shaderSourceBuffer;
+    shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
+    shaderSourceBuffer.Size = shaderSource->GetBufferSize();
+    shaderSourceBuffer.Encoding = DXC_CP_UTF8;
+
+    // Compileする
+    LPCWSTR arguments[] = {
+        filePath.c_str(),
+        L"-E",
+        L"main",
+        L"-T",
+        profile,
+        L"-Zi",
+        L"-Qembed_debug",
+        L"-Od",
+        L"-Zpr",
+    };
+
+    IDxcResult* shaderResult = nullptr;
+    hr = dxcCompiler_->Compile(
+        &shaderSourceBuffer,
+        arguments,
+        _countof(arguments),
+        includeHandler_.Get(),
+        IID_PPV_ARGS(&shaderResult));
+    assert(SUCCEEDED(hr));
+
+    // 警告・エラー確認
+    IDxcBlobUtf8* shaderError = nullptr;
+    shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
+    if (shaderError != nullptr && shaderError->GetStringLength() != 0) {
+        Logger::Log(shaderError->GetStringPointer());
+        assert(false);
+    }
+
+    // 結果を受け取る
+    IDxcBlob* shaderBlob = nullptr;
+    hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
+    assert(SUCCEEDED(hr));
+
+    Logger::Log(StringUtility::ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}", filePath, profile)));
+
+    shaderSource->Release();
+    shaderResult->Release();
+
+    return shaderBlob;
+}
+
 // ---------------------------------------------------------------------------------
 // 内部関数
 // ---------------------------------------------------------------------------------
@@ -293,6 +353,22 @@ void DirectXCommon::CreateFence()
 
     fenceEvent_ = CreateEvent(NULL, FALSE, FALSE, NULL);
     assert(fenceEvent_ != nullptr);
+}
+
+void DirectXCommon::InitializeDXC()
+{
+    HRESULT hr;
+    // dxcUtilsの初期化
+    hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils_));
+    assert(SUCCEEDED(hr));
+
+    // dxcCompilerの初期化
+    hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler_));
+    assert(SUCCEEDED(hr));
+
+    // includeHandlerの初期化
+    hr = dxcUtils_->CreateDefaultIncludeHandler(&includeHandler_);
+    assert(SUCCEEDED(hr));
 }
 
 void DirectXCommon::InitializeFixFPS()
