@@ -16,6 +16,7 @@
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
 #include "imgui_impl_win32.h"
+#include "D3DResourceLeakChecker.h"
 #include <Xinput.h>
 #include <cassert>
 #include <cstdint>
@@ -681,7 +682,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[sphereTextureIndex]);
             commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-            commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
+            //commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
 
             // スプライト描画
             commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
@@ -724,9 +725,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ImGui::DestroyContext();
 
     winApp->Finalize();
-    // delete input;
-    // delete winApp;
-    // delete dxCommon;
+    delete input;
+    delete dxCommon;
+    delete winApp;
 
     return 0;
 }

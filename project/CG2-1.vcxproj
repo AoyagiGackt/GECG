@@ -147,6 +147,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="engin\game\cpp\D3DResourceLeakChecker.cpp" />
     <ClCompile Include="engin\game\cpp\DirectXCommon.cpp" />
     <ClCompile Include="engin\game\cpp\Logger.cpp" />
     <ClCompile Include="engin\game\cpp\WinApp.cpp" />
@@ -181,6 +182,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engin\game\h\D3DResourceLeakChecker.h" />
     <ClInclude Include="engin\game\h\DirectXCommon.h" />
     <ClInclude Include="engin\game\h\WinApp.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
