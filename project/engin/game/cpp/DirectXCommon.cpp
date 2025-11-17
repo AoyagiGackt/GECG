@@ -355,6 +355,22 @@ void DirectXCommon::CreateFence()
     assert(fenceEvent_ != nullptr);
 }
 
+void DirectXCommon::InitializeDXC()
+{
+    HRESULT hr;
+    // dxcUtilsの初期化
+    hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils_));
+    assert(SUCCEEDED(hr));
+
+    // dxcCompilerの初期化
+    hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler_));
+    assert(SUCCEEDED(hr));
+
+    // includeHandlerの初期化
+    hr = dxcUtils_->CreateDefaultIncludeHandler(&includeHandler_);
+    assert(SUCCEEDED(hr));
+}
+
 void DirectXCommon::InitializeFixFPS()
 {
     // 現在時間を記録する

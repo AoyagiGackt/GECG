@@ -179,58 +179,6 @@ struct D3D12ResourceLeakChecker {
     }
 };
 
-IDxcBlob* CompileShader(
-    const std::wstring& filePath,
-    const wchar_t* profile,
-    ComPtr<IDxcUtils> dxcUtils, ComPtr<IDxcCompiler3> dxcCompiler, IDxcIncludeHandler* includeHandler)
-{
-    Logger::Log(StringUtility::ConvertString(std::format(L"Begin CompileShader, path:{}, profile:{}", filePath, profile)));
-    IDxcBlobEncoding* shaderSource = nullptr;
-    HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
-    assert(SUCCEEDED(hr));
-    DxcBuffer shaderSourceBuffer;
-    shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
-    shaderSourceBuffer.Size = shaderSource->GetBufferSize();
-    shaderSourceBuffer.Encoding = DXC_CP_UTF8;
-
-    LPCWSTR arguments[] = {
-        filePath.c_str(),
-        L"-E",
-        L"main",
-        L"-T",
-        profile,
-        L"-Zi",
-        L"-Qembed_debug",
-        L"-Od",
-        L"-Zpr",
-    };
-
-    IDxcResult* shaderResult = nullptr;
-    hr = dxcCompiler->Compile(
-        &shaderSourceBuffer,
-        arguments,
-        _countof(arguments),
-        includeHandler,
-        IID_PPV_ARGS(&shaderResult));
-
-    assert(SUCCEEDED(hr));
-
-    IDxcBlobUtf8* shaderError = nullptr;
-    shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
-    if (shaderError != nullptr && shaderError->GetStringLength() != 0) {
-        Logger::Log(shaderError->GetStringPointer());
-        assert(false);
-    }
-
-    IDxcBlob* shaderBlob = nullptr;
-    hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
-    assert(SUCCEEDED(hr));
-    Logger::Log(StringUtility::ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}", filePath, profile)));
-    shaderSource->Release();
-    shaderResult->Release();
-    return shaderBlob;
-}
-
 ComPtr<ID3D12Resource> CreateBufferResouse(ID3D12Device* device, size_t sizeInBytes)
 {
     D3D12_HEAP_PROPERTIES uploadHeapProperties {};
@@ -275,19 +223,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     HRESULT hr;
 
     ID3D12Device* device = dxCommon->GetDevice();
-
-    // dxcCompilerを初期化
-    ComPtr<IDxcUtils> dxcUtils = nullptr;
-    ComPtr<IDxcCompiler3> dxcCompiler = nullptr;
-
-    hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-    assert(SUCCEEDED(hr));
-    hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
-    assert(SUCCEEDED(hr));
-
-    IDxcIncludeHandler* includeHandler = nullptr;
-    hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
-    assert(SUCCEEDED(hr));
 
     D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature {};
     descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
@@ -368,12 +303,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
     rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
-    IDxcBlob* vertexShaderBlob = CompileShader(L"Resources/shaders/object3d/Object3dVS.hlsl",
-        L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+    IDxcBlob* vertexShaderBlob = dxCommon->CompileShader(L"Resources/shaders/object3d/Object3dVS.hlsl", L"vs_6_0");
     assert(vertexShaderBlob != nullptr);
 
-    IDxcBlob* pixelShaderBlob = CompileShader(L"Resources/shaders/object3d/Object3dPS.hlsl",
-        L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+    IDxcBlob* pixelShaderBlob = dxCommon->CompileShader(L"Resources/shaders/object3d/Object3dPS.hlsl", L"ps_6_0");
     assert(pixelShaderBlob != nullptr);
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc {};
