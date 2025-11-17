@@ -5,6 +5,8 @@
 #include <d3dx12.h>
 #include <dxgi1_6.h>
 #include <wrl/client.h>
+#include <chrono>
+#include <thread>
 
 class WinApp;
 
@@ -47,6 +49,11 @@ private:
 
 
 private:
+    // FPS固定初期化
+    void InitializeFixFPS();
+    // FPS固定更新
+    void UpdateFixFPS();
+
     Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_;
     Microsoft::WRL::ComPtr<ID3D12Device> device_;
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue_;
@@ -58,10 +65,12 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResoures_[2];
     Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource_;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap_;
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles_[2];
     Microsoft::WRL::ComPtr<ID3D12Fence> fence_;
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles_[2];
     uint64_t fenceValue_;
     HANDLE fenceEvent_;
+
+    std::chrono::steady_clock::time_point reference_;
 
     WinApp* winApp_ = nullptr;
 };
