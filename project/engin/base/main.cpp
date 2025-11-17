@@ -26,7 +26,7 @@
 #include <numbers>
 #include <string>
 #include <vector>
-#include <wrl.h>
+#include <wrl/client.h>
 
 // --------------------------------------------------
 // ライブラリのリンク
