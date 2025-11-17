@@ -33,6 +33,8 @@ void DirectXCommon::Initialize(WinApp* winApp)
     assert(winApp);
     winApp_ = winApp;
 
+    // FPS固定初期化
+    InitializeFixFPS();
     // デバイス初期化
     InitializeDevice();
     // コマンド関連初期化
@@ -43,7 +45,7 @@ void DirectXCommon::Initialize(WinApp* winApp)
     CreateSwapChain();
     // レンダーターゲットビュー作成
     CreateRTV();
-
+    // 深度バッファ作成
     CreateDepthBuffer();
     // フェンス作成
     CreateFence();
@@ -113,6 +115,9 @@ void DirectXCommon::PostDraw()
     // コマンドリストを閉じる
     hr = commandList_->Close();
     assert(SUCCEEDED(hr));
+
+    // FPS固定
+    UpdateFixFPS();
 
     // GPUコマンド実行
     ID3D12CommandList* commandLists[] = { commandList_.Get() };
