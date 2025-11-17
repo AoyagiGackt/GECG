@@ -3,8 +3,7 @@
 #include <cstdint>
 
 class WinApp {
-public:
-
+public: // 静的メンバ関数
     // ウィンドウプロシージャ
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

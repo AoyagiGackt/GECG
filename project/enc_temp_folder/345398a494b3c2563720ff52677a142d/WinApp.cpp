@@ -43,16 +43,19 @@ void WinApp::Initialize()
     wc.hCursor = LoadCursorW(nullptr, (LPCWSTR)IDC_ARROW);
 
     // ウィンドクラスの登録
+    // RegisterClassW (Unicode版) を使用
     RegisterClassW(&wc);
 
-    // メンバ変数のwcにコピーしておく
+    // メンバ変数のwcにコピーしておく（インスタンスハンドル取得用）
     this->wc = wc;
 
-
+    // ウィンドウサイズを表す構造体にクライアント領域を入れる
     RECT wrc = { 0, 0, kClientWidth, kClientHeight };
 
+    // クライアント領域をもとに実際のサイズにwrcを変更
     AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
+    // ★修正: CreateWindowW (Unicode版) を使用
     hwnd = CreateWindowW(
         wc.lpszClassName, // 利用するクラス名
         L"CG2", // タイトルバーの文字

@@ -6,6 +6,7 @@
 #include "WinApp.h"
 #include "DirectXCommon.h"
 #include "DirectXTex.h"
+#include <wrl/client.h>
 #include "Input.h"
 #include "Logger.h"
 #include "MakeAffine.h"
@@ -26,7 +27,6 @@
 #include <numbers>
 #include <string>
 #include <vector>
-#include <wrl/client.h>
 
 // --------------------------------------------------
 // ライブラリのリンク
@@ -277,6 +277,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // dxcCompilerを初期化
     ComPtr<IDxcUtils> dxcUtils = nullptr;
     ComPtr<IDxcCompiler3> dxcCompiler = nullptr;
+
     hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
     assert(SUCCEEDED(hr));
     hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));

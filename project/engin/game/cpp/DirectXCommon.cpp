@@ -186,6 +186,8 @@ void DirectXCommon::CreateCommand()
 
     hr = device_->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator_.Get(), nullptr, IID_PPV_ARGS(&commandList_));
     assert(SUCCEEDED(hr));
+
+    commandList_->Close();
 }
 
 void DirectXCommon::CreateDescriptorHeaps()
