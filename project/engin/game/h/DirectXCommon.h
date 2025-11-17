@@ -12,9 +12,6 @@ class DirectXCommon {
 public: // メンバ関数
     // 初期化
     void Initialize(WinApp* winApp);
-    void PreDraw();
-    void PostDraw();
-    void Cleanup();
 
     ID3D12Device* GetDevice() { return device_.Get(); }
     ID3D12GraphicsCommandList* GetCommandList() { return commandList_.Get(); }

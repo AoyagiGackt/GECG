@@ -2,6 +2,7 @@
 // include
 // --------------------------------------------------
 
+#include <Windows.h>
 #include "WinApp.h"
 #include "DirectXCommon.h"
 #include "DirectXTex.h"
@@ -14,7 +15,6 @@
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
 #include "imgui_impl_win32.h"
-#include <Windows.h>
 #include <Xinput.h>
 #include <cassert>
 #include <cstdint>
@@ -497,7 +497,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     materialDataSprite->uvTransform = MakeIdentity4x4();
     Transform uvTransformSprite { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 
-    // Transform変数の定義（メインループで使われているため追加）
+    // Transform変数の定義
     Transform transform { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 
     std::vector<std::string> textureFiles = { "Resources/uvChecker.png", "Resources/monsterBall.png" };
@@ -506,7 +506,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> textureSrvHandlesCPU;
     std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> textureSrvHandlesGPU;
 
-    // ★ dxCommonからSRVヒープを取得
+    // dxCommonからSRVヒープを取得
     ID3D12DescriptorHeap* srvDescriptorHeap = dxCommon->GetSrvDescriptorHeap();
     UINT srvIncrement = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
