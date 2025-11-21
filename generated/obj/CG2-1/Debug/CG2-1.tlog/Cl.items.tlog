@@ -12,4 +12,6 @@ C:\Users\gakua\source\repos\GECG\project\externals\imgui\imgui_tables.cpp;C:\Use
 C:\Users\gakua\source\repos\GECG\project\externals\imgui\imgui_widgets.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Debug\imgui_widgets.obj
 C:\Users\gakua\source\repos\GECG\project\engin\base\main.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Debug\main.obj
 C:\Users\gakua\source\repos\GECG\project\engin\game\cpp\Input.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Debug\Input.obj
-C:\Users\gakua\source\repos\GECG\project\engin\game\cpp\ImGuiManager.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Debug\ImGuiManager.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\ImGuiManager.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Debug\ImGuiManager.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\SpriteCommon.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Debug\SpriteCommon.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\Sprite.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Debug\Sprite.obj
