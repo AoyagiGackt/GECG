@@ -451,6 +451,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         srvHandleGPU.ptr += srvIncrement;
     }
 
+    // SpriteCommonの初期化
+    SpriteCommon* spriteCommon = new SpriteCommon();
+    spriteCommon->Initialize(dxCommon);
+
+    // Spriteの生成と初期化
+    Sprite* sprite = new Sprite();
+    sprite->Initialize(spriteCommon);
+
+    sprite->SetTextureHandle(textureSrvHandlesGPU[0]);
+
     // ImGuiの初期化
     ImGuiManager* imguiManager = new ImGuiManager();
     imguiManager->Initialize(winApp, dxCommon);
@@ -481,6 +491,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             // 入力の更新
             input->Update();
+
+            sprite->Update();
 
             const float kMoveSpeed = 0.1f;
             if (input->PushKey(DIK_W))
@@ -516,9 +528,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::ShowDemoWindow();
             ImGui::Begin("Main Control");
             ImGui::Text("Sprite");
-            ImGui::DragFloat3("Sprite Position", &transformSprite.translate.x);
-            ImGui::DragFloat3("Sprite Rotation", &transformSprite.rotate.x);
-            ImGui::DragFloat3("Sprite Scale", &transformSprite.scale.x);
+
+            // クラスから現在の値を取得
+            Vector3 spritePos = sprite->GetTranslate();
+            Vector3 spriteRot = sprite->GetRotate();
+            Vector3 spriteScale = sprite->GetScale();
+
+            // mGuiで一時変数を操作
+            ImGui::DragFloat3("Sprite Position", &spritePos.x);
+            ImGui::DragFloat3("Sprite Rotation", &spriteRot.x);
+            ImGui::DragFloat3("Sprite Scale", &spriteScale.x);
+
+            // 変更した値をクラスにセットし直す
+            sprite->SetTranslate(spritePos);
+            sprite->SetRotate(spriteRot);
+            sprite->SetScale(spriteScale);
             ImGui::DragFloat2("Sprite UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
             ImGui::DragFloat2("Sprite UV Scale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
             ImGui::SliderAngle("Sprite UVRotate", &uvTransformSprite.rotate.z);
@@ -581,22 +605,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             *transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
 
             // 描画コマンド発行
-            commandList->SetGraphicsRootSignature(rootSignature.Get());
-            commandList->SetPipelineState(graphicsPipelineState.Get());
-            commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-            commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-            commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-            commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[sphereTextureIndex]);
-            commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+            //commandList->SetGraphicsRootSignature(rootSignature.Get());
+            //commandList->SetPipelineState(graphicsPipelineState.Get());
+            //commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+            //commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            //commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
+            //commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+            //commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[sphereTextureIndex]);
+            //commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
             // commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
 
             // スプライト描画
-            commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-            commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-            commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-            commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
-            commandList->DrawInstanced(6, 1, 0, 0);
+            spriteCommon->CommonDrawSettings();
+            sprite->Draw();
 
             imguiManager->End();
             imguiManager->Draw(dxCommon);
@@ -630,7 +651,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     imguiManager->Finalize();
     winApp->Finalize();
-
+    delete sprite;
+    delete spriteCommon;
     delete input;
     delete imguiManager;
     delete dxCommon;
