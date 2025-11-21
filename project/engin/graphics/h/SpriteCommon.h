@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "DirectXCommon.h"
 #include <d3d12.h>
 #include <string>
@@ -6,10 +6,10 @@
 
 class SpriteCommon {
 public:
-    // ‰Šú‰»
+    // åˆæœŸåŒ–
     void Initialize(DirectXCommon* dxCommon);
 
-    // ‹¤’Ê•`‰æ
+    // å…±é€šæç”»
     void CommonDrawSettings();
 
     DirectXCommon* GetDxCommon() const { return dxCommon_; }

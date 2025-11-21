@@ -12,6 +12,8 @@
 #include "MakeAffine.h"
 #include "ResourceObject.h"
 #include "StringUtlity.h"
+#include "SpriteCommon.h"
+#include "Sprite.h"
 #include "d3dx12.h"
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
@@ -224,223 +226,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     ID3D12Device* device = dxCommon->GetDevice();
 
-    D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature {};
-    descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+    SpriteCommon* spriteCommon = new SpriteCommon();
+    spriteCommon->Initialize(dxCommon);
 
-    D3D12_DESCRIPTOR_RANGE descriptorRanges[1] = {};
-    descriptorRanges[0].BaseShaderRegister = 0;
-    descriptorRanges[0].NumDescriptors = 1;
-    descriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    descriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-    D3D12_ROOT_PARAMETER rootParameters[4] = {};
-    rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    rootParameters[0].Descriptor.ShaderRegister = 0;
-    rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-    rootParameters[1].Descriptor.ShaderRegister = 0;
-    rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRanges;
-    rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRanges);
-    rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    rootParameters[3].Descriptor.ShaderRegister = 1;
-
-    descriptionRootSignature.pParameters = rootParameters;
-    descriptionRootSignature.NumParameters = _countof(rootParameters);
-
-    D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
-    staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-    staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-    staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
-    staticSamplers[0].ShaderRegister = 0;
-    staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    descriptionRootSignature.pStaticSamplers = staticSamplers;
-    descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
-
-    ID3DBlob* signatureBlob = nullptr;
-    ID3DBlob* errorBlob = nullptr;
-    hr = D3D12SerializeRootSignature(&descriptionRootSignature,
-        D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-    if (FAILED(hr)) {
-        Logger::Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
-        assert(false);
-    }
-
-    ComPtr<ID3D12RootSignature> rootSignature = nullptr;
-    hr = device->CreateRootSignature(0,
-        signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
-        IID_PPV_ARGS(&rootSignature));
-    assert(SUCCEEDED(hr));
-
-    D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
-    inputElementDescs[0].SemanticName = "POSITION";
-    inputElementDescs[0].SemanticIndex = 0;
-    inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-    inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-    inputElementDescs[1].SemanticName = "TEXCOORD";
-    inputElementDescs[1].SemanticIndex = 0;
-    inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-    inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-    inputElementDescs[2].SemanticName = "NORMAL";
-    inputElementDescs[2].SemanticIndex = 0;
-    inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-    inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-    D3D12_INPUT_LAYOUT_DESC inputLayoutDesc {};
-    inputLayoutDesc.pInputElementDescs = inputElementDescs;
-    inputLayoutDesc.NumElements = _countof(inputElementDescs);
-
-    D3D12_BLEND_DESC blendDesc {};
-    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-    D3D12_RASTERIZER_DESC rasterizerDesc {};
-    rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-    rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-
-    IDxcBlob* vertexShaderBlob = dxCommon->CompileShader(L"Resources/shaders/object3d/Object3dVS.hlsl", L"vs_6_0");
-    assert(vertexShaderBlob != nullptr);
-
-    IDxcBlob* pixelShaderBlob = dxCommon->CompileShader(L"Resources/shaders/object3d/Object3dPS.hlsl", L"ps_6_0");
-    assert(pixelShaderBlob != nullptr);
-
-    D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc {};
-    graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();
-    graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
-    graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };
-    graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
-    graphicsPipelineStateDesc.BlendState = blendDesc;
-    graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
-    graphicsPipelineStateDesc.NumRenderTargets = 1;
-    graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-    graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-    graphicsPipelineStateDesc.SampleDesc.Count = 1;
-    graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-
-    D3D12_DEPTH_STENCIL_DESC depthStencilDesc = {};
-    depthStencilDesc.DepthEnable = true;
-    depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-    depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-
-    graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
-    graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-    ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
-    hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-        IID_PPV_ARGS(&graphicsPipelineState));
-    assert(SUCCEEDED(hr));
-
-    ComPtr<ID3D12Resource> wvpResource = CreateBufferResouse(device, sizeof(TransformationMatrix));
-    TransformationMatrix* wvpData = nullptr;
-    wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
-
-    ComPtr<ID3D12Resource> materialResource = CreateBufferResouse(device, sizeof(Vector4) * 3);
-    Material* materialData = nullptr;
-    materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-    materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-    materialData->uvTransform = MakeIdentity4x4();
-
-    const uint32_t kSubdivision = 32;
-    const uint32_t kSphereVertexCount = kSubdivision * kSubdivision * 6;
-
-    ComPtr<ID3D12Resource> vertexResource = CreateBufferResouse(device, sizeof(VertexData) * kSphereVertexCount);
-    VertexData* vertexData = nullptr;
-    vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-
-    const float kRadius = 1.0f;
-    const float kPi = std::numbers::pi_v<float>;
-    const float kTwoPi = kPi * 2.0f;
-    uint32_t vertexIdx = 0;
-    for (uint32_t lat = 0; lat < kSubdivision; ++lat) {
-        float lat0 = kPi * (float(lat) / kSubdivision - 0.5f);
-        float lat1 = kPi * (float(lat + 1) / kSubdivision - 0.5f);
-        for (uint32_t lon = 0; lon < kSubdivision; ++lon) {
-            float lon0 = kTwoPi * float(lon) / kSubdivision;
-            float lon1 = kTwoPi * float(lon + 1) / kSubdivision;
-            Vector4 p00 = { kRadius * cos(lat0) * cos(lon0), kRadius * sin(lat0), kRadius * cos(lat0) * sin(lon0), 1.0f };
-            Vector4 p01 = { kRadius * cos(lat0) * cos(lon1), kRadius * sin(lat0), kRadius * cos(lat0) * sin(lon1), 1.0f };
-            Vector4 p10 = { kRadius * cos(lat1) * cos(lon0), kRadius * sin(lat1), kRadius * cos(lat1) * sin(lon0), 1.0f };
-            Vector4 p11 = { kRadius * cos(lat1) * cos(lon1), kRadius * sin(lat1), kRadius * cos(lat1) * sin(lon1), 1.0f };
-            Vector2 uv00 = { float(lon) / kSubdivision, 1.0f - float(lat) / kSubdivision };
-            Vector2 uv01 = { float(lon + 1) / kSubdivision, 1.0f - float(lat) / kSubdivision };
-            Vector2 uv10 = { float(lon) / kSubdivision, 1.0f - float(lat + 1) / kSubdivision };
-            Vector2 uv11 = { float(lon + 1) / kSubdivision, 1.0f - float(lat + 1) / kSubdivision };
-            vertexData[vertexIdx++] = { p00, uv00 };
-            vertexData[vertexIdx++] = { p10, uv10 };
-            vertexData[vertexIdx++] = { p11, uv11 };
-            vertexData[vertexIdx++] = { p00, uv00 };
-            vertexData[vertexIdx++] = { p11, uv11 };
-            vertexData[vertexIdx++] = { p01, uv01 };
-        }
-    }
-    for (uint32_t i = 0; i < vertexIdx; ++i) {
-        vertexData[i].normal.x = vertexData[i].position.x;
-        vertexData[i].normal.y = vertexData[i].position.y;
-        vertexData[i].normal.z = vertexData[i].position.z;
-    }
-
-    ComPtr<ID3D12Resource> directionalLightResource = CreateBufferResource(device, sizeof(DirectionalLight));
-    DirectionalLight* directionalLightData = nullptr;
-    directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
-    directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-    directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
-    directionalLightData->intensity = 1.0f;
-
-    ComPtr<ID3D12Resource> materialResourceSprite = CreateBufferResource(device, sizeof(Material));
-    vertexResource->Unmap(0, nullptr);
-    Material* materialDataSprite = nullptr;
-    materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
-    materialDataSprite->enableLighting = false;
-
-    D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
-    vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-    vertexBufferView.SizeInBytes = sizeof(VertexData) * kSphereVertexCount;
-    vertexBufferView.StrideInBytes = sizeof(VertexData);
-
-    // Sprite用の頂点リソースを作る
-    ComPtr<ID3D12Resource> vertexResourceSprite = CreateBufferResouse(device, sizeof(VertexData) * 6);
-    D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite {};
-    vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
-    vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
-    vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
-    VertexData* vertexDataSprite = nullptr;
-    vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-    vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };
-    vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
-    vertexDataSprite[0].normal = { 0.0f, 0.0f, -1.0f };
-    vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };
-    vertexDataSprite[1].texcoord = { 0.0f, 0.0f };
-    vertexDataSprite[2].position = { 640.0f, 360.0f, 0.0f, 1.0f };
-    vertexDataSprite[2].texcoord = { 1.0f, 1.0f };
-    vertexDataSprite[3].position = { 0.0f, 0.0f, 0.0f, 1.0f };
-    vertexDataSprite[3].texcoord = { 0.0f, 0.0f };
-    vertexDataSprite[4].position = { 640.0f, 0.0f, 0.0f, 1.0f };
-    vertexDataSprite[4].texcoord = { 1.0f, 0.0f };
-    vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f };
-    vertexDataSprite[5].texcoord = { 1.0f, 1.0f };
-
-    ComPtr<ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResouse(device, sizeof(Matrix4x4));
-    Matrix4x4* transformationMatrixDataSprite = nullptr;
-    transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
-    *transformationMatrixDataSprite = MakeIdentity4x4();
-
-    Transform transformSprite { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
-    materialDataSprite->uvTransform = MakeIdentity4x4();
-    Transform uvTransformSprite { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
-
-    // Transform変数の定義
-    Transform transform { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+    Sprite* sprite = new Sprite();
+    sprite->Initialize(spriteCommon);
 
     std::vector<std::string> textureFiles = { "Resources/uvChecker.png", "Resources/monsterBall.png" };
     std::vector<ComPtr<ID3D12Resource>> textureResources;
     std::vector<DirectX::ScratchImage> mipImagesList;
-    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> textureSrvHandlesCPU;
-    std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> textureSrvHandlesGPU;
 
     // dxCommonからSRVヒープを取得
     ID3D12DescriptorHeap* srvDescriptorHeap = dxCommon->GetSrvDescriptorHeap();
@@ -463,8 +257,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
         srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
         device->CreateShaderResourceView(texRes.Get(), &srvDesc, srvHandleCPU);
-        textureSrvHandlesCPU.push_back(srvHandleCPU);
-        textureSrvHandlesGPU.push_back(srvHandleGPU);
+        if (i == 0) {
+            sprite->SetTextureHandle(srvHandleGPU);
+        }
         srvHandleCPU.ptr += srvIncrement;
         srvHandleGPU.ptr += srvIncrement;
     }
@@ -499,6 +294,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             // 入力の更新
             input->Update();
+
+            // スプライトの更新
+            sprite->Update();
 
             const float kMoveSpeed = 0.1f;
             if (input->PushKey(DIK_W))

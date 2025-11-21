@@ -1,4 +1,4 @@
-#include "Sprite.h"
+ï»¿#include "Sprite.h"
 
 using namespace Microsoft::WRL;
 
@@ -8,7 +8,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon)
     spriteCommon_ = spriteCommon;
     ID3D12Device* device = spriteCommon_->GetDevice();
 
-    // ’¸“_ƒoƒbƒtƒ@‚Ìì¬
+    // é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
     vertexResource_ = CreateBufferResource(device, sizeof(VertexDataSprite) * 6);
 
     vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
@@ -37,14 +37,14 @@ void Sprite::Initialize(SpriteCommon* spriteCommon)
     vertexData[5].texcoord = { 1.0f, 1.0f };
     vertexData[5].normal = { 0.0f, 0.0f, -1.0f };
 
-    // ƒ}ƒeƒŠƒAƒ‹ƒŠƒ\[ƒX‚Ìì¬
+    // ãƒžãƒ†ãƒªã‚¢ãƒ«ãƒªã‚½ãƒ¼ã‚¹ã®ä½œæˆ
     materialResource_ = CreateBufferResource(device, sizeof(MaterialSprite));
     materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
     materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
     materialData_->enableLighting = false;
     materialData_->uvTransform = MakeIdentity4x4();
 
-    // À•W•ÏŠ·s—ñƒŠƒ\[ƒX‚Ìì¬
+    // åº§æ¨™å¤‰æ›è¡Œåˆ—ãƒªã‚½ãƒ¼ã‚¹ã®ä½œæˆ
     transformationMatrixResource_ = CreateBufferResource(device, sizeof(TransformationMatrixSprite));
     transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
     *transformationMatrixData_ = { MakeIdentity4x4(), MakeIdentity4x4() };
@@ -52,7 +52,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon)
 
 void Sprite::Update()
 {
-    // s—ñŒvŽZ
+    // è¡Œåˆ—è¨ˆç®—
     Matrix4x4 worldMatrix = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
     Matrix4x4 viewMatrix = MakeIdentity4x4();
     Matrix4x4 projectionMatrix = MakeOrthographicMatrix(0.0f, 0.0f, 1280.0f, 720.0f, 0.0f, 100.0f);
@@ -66,10 +66,10 @@ void Sprite::Draw()
 {
     ID3D12GraphicsCommandList* commandList = spriteCommon_->GetCommandList();
 
-    // ’¸“_ƒoƒbƒtƒ@‚ÌÝ’è
+    // é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®è¨­å®š
     commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
 
-    // ƒ‹[ƒgƒpƒ‰ƒ[ƒ^‚ÌÝ’è
+    // ãƒ«ãƒ¼ãƒˆãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®è¨­å®š
     // Material
     commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
     // TransformationMatrix
@@ -77,7 +77,7 @@ void Sprite::Draw()
     // Texture
     commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandle_);
 
-    // •`‰æ
+    // æç”»
     commandList->DrawInstanced(6, 1, 0, 0);
 }
 

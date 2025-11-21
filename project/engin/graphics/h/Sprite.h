@@ -1,16 +1,16 @@
-#pragma once
+ï»¿#pragma once
 #include "MakeAffine.h"
 #include "SpriteCommon.h"
 #include <DirectXMath.h>
 
-// ’¸“_ƒf[ƒ^\‘¢‘Ì
+// é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿æ§‹é€ ä½“
 struct VertexDataSprite {
     Vector4 position;
     Vector2 texcoord;
     Vector3 normal;
 };
 
-// ƒ}ƒeƒŠƒAƒ‹\‘¢‘Ì
+// ãƒãƒ†ãƒªã‚¢ãƒ«æ§‹é€ ä½“
 struct MaterialSprite {
     Vector4 color;
     int enableLighting;
@@ -19,7 +19,7 @@ struct MaterialSprite {
     Matrix4x4 uvTransform;
 };
 
-// À•W•ÏŠ·s—ñ\‘¢‘Ì
+// åº§æ¨™å¤‰æ›è¡Œåˆ—æ§‹é€ ä½“
 struct TransformationMatrixSprite {
     Matrix4x4 WVP;
     Matrix4x4 World;
@@ -27,11 +27,11 @@ struct TransformationMatrixSprite {
 
 class Sprite {
 public:
-    // ‰Šú‰»
+    // åˆæœŸåŒ–
     void Initialize(SpriteCommon* spriteCommon);
-    // XV
+    // æ›´æ–°
     void Update();
-    // •`‰æ
+    // æç”»
     void Draw();
 
     const Vector3& GetTranslate() const { return transform_.translate; }
@@ -51,7 +51,7 @@ private:
 private:
     SpriteCommon* spriteCommon_ = nullptr;
 
-    // ƒŠƒ\[ƒX
+    // ãƒªã‚½ãƒ¼ã‚¹
     Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView_ {};
 
@@ -61,9 +61,9 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_;
     TransformationMatrixSprite* transformationMatrixData_ = nullptr;
 
-    // ƒeƒNƒXƒ`ƒƒƒnƒ“ƒhƒ‹
+    // ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒ³ãƒ‰ãƒ«
     D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle_ {};
 
-    // ƒgƒ‰ƒ“ƒXƒtƒH[ƒ€
+    // ãƒˆãƒ©ãƒ³ã‚¹ãƒ•ã‚©ãƒ¼ãƒ 
     Transform transform_ { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 };

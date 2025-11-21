@@ -1,4 +1,4 @@
-#include "SpriteCommon.h"
+ï»¿#include "SpriteCommon.h"
 #include <cassert>
 
 using namespace Microsoft::WRL;
@@ -9,18 +9,18 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
     dxCommon_ = dxCommon;
     ID3D12Device* device = dxCommon_->GetDevice();
 
-    // ƒ‹[ƒgƒVƒOƒlƒ`ƒƒ‚Ìì¬
+    // ãƒ«ãƒ¼ãƒˆã‚·ã‚°ãƒãƒãƒ£ã®ä½œæˆ
     D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature {};
     descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    // ƒfƒBƒXƒNƒŠƒvƒ^ƒŒƒ“ƒW
+    // ãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ãƒ¬ãƒ³ã‚¸
     D3D12_DESCRIPTOR_RANGE descriptorRanges[1] = {};
     descriptorRanges[0].BaseShaderRegister = 0;
     descriptorRanges[0].NumDescriptors = 1;
     descriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
     descriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-    // ƒ‹[ƒgƒpƒ‰ƒ[ƒ^
+    // ãƒ«ãƒ¼ãƒˆãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
     D3D12_ROOT_PARAMETER rootParameters[3] = {};
     // Material
     rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -39,7 +39,7 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
     descriptionRootSignature.pParameters = rootParameters;
     descriptionRootSignature.NumParameters = _countof(rootParameters);
 
-    // ƒTƒ“ƒvƒ‰[İ’è
+    // ã‚µãƒ³ãƒ—ãƒ©ãƒ¼è¨­å®š
     D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
     staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
     staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -52,7 +52,7 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
     descriptionRootSignature.pStaticSamplers = staticSamplers;
     descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
 
-    // ƒVƒŠƒAƒ‰ƒCƒY‚Æì¬
+    // ã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚ºã¨ä½œæˆ
     ComPtr<ID3DBlob> signatureBlob = nullptr;
     ComPtr<ID3DBlob> errorBlob = nullptr;
     HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature,
