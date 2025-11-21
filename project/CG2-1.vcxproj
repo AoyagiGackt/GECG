@@ -184,6 +184,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engin\graphics\h\D3DResourceLeakChecker.h" />
     <ClInclude Include="engin\game\h\D3DResourceLeakChecker.h" />
     <ClInclude Include="engin\game\h\DirectXCommon.h" />
     <ClInclude Include="engin\game\h\WinApp.h" />
