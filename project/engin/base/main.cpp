@@ -212,8 +212,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     Sprite* sprite = new Sprite();
     sprite->Initialize(spriteCommon);
-
-    // 必要ならテクスチャハンドルを設定
     sprite->SetTextureHandle(textureSrvHandlesGPU[0]);
 
     D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature {};
@@ -394,42 +392,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexBufferView.SizeInBytes = sizeof(VertexData) * kSphereVertexCount;
     vertexBufferView.StrideInBytes = sizeof(VertexData);
 
-    // Transform変数の定義
-    Transform transform { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
-
-    std::vector<std::string> textureFiles = { "Resources/uvChecker.png", "Resources/monsterBall.png" };
-    std::vector<ComPtr<ID3D12Resource>> textureResources;
-    std::vector<DirectX::ScratchImage> mipImagesList;
-    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> textureSrvHandlesCPU;
-    std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> textureSrvHandlesGPU;
-
-    // dxCommonからSRVヒープを取得
-    ID3D12DescriptorHeap* srvDescriptorHeap = dxCommon->GetSrvDescriptorHeap();
-    UINT srvIncrement = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
-
-    srvHandleCPU.ptr += srvIncrement;
-    srvHandleGPU.ptr += srvIncrement;
-
-    for (size_t i = 0; i < textureFiles.size(); ++i) {
-        mipImagesList.push_back(LoadTexture(textureFiles[i]));
-        const DirectX::TexMetadata& metadata = mipImagesList.back().GetMetadata();
-        ComPtr<ID3D12Resource> texRes = CreateTextureResourse(device, metadata);
-        UploadTextureData(texRes.Get(), mipImagesList.back());
-        textureResources.push_back(texRes);
-        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc {};
-        srvDesc.Format = metadata.format;
-        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-        srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-        device->CreateShaderResourceView(texRes.Get(), &srvDesc, srvHandleCPU);
-        textureSrvHandlesCPU.push_back(srvHandleCPU);
-        textureSrvHandlesGPU.push_back(srvHandleGPU);
-        srvHandleCPU.ptr += srvIncrement;
-        srvHandleGPU.ptr += srvIncrement;
-    }
-
     // ImGuiの初期化
     ImGuiManager* imguiManager = new ImGuiManager();
     imguiManager->Initialize(winApp, dxCommon);
@@ -550,12 +512,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
             materialData->uvTransform = uvTransformMatrix;
 
-            Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
-            Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-            Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApp::kClientWidth), float(WinApp::kClientHeight), 0.0f, 100.0f);
-            Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
-            *transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
-
             // 描画コマンド発行
             commandList->SetGraphicsRootSignature(rootSignature.Get());
             commandList->SetPipelineState(graphicsPipelineState.Get());
@@ -566,10 +522,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[sphereTextureIndex]);
             commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
             // commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
-
-            // Spriteの更新・描画
-            sprite->Update();
-            sprite->Draw();
 
             imguiManager->End();
             imguiManager->Draw(dxCommon);
