@@ -206,6 +206,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     ID3D12Device* device = dxCommon->GetDevice();
 
+    // DirectXCommon初期化後
+    SpriteCommon* spriteCommon = new SpriteCommon();
+    spriteCommon->Initialize(dxCommon);
+
+    Sprite* sprite = new Sprite();
+    sprite->Initialize(spriteCommon);
+
+    // 必要ならテクスチャハンドルを設定
+    sprite->SetTextureHandle(textureSrvHandlesGPU[0]);
+
     D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature {};
     descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -384,37 +394,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexBufferView.SizeInBytes = sizeof(VertexData) * kSphereVertexCount;
     vertexBufferView.StrideInBytes = sizeof(VertexData);
 
-    // Sprite用の頂点リソースを作る
-    ComPtr<ID3D12Resource> vertexResourceSprite = CreateBufferResouse(device, sizeof(VertexData) * 6);
-    D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite {};
-    vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
-    vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
-    vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
-    VertexData* vertexDataSprite = nullptr;
-    vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-    vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };
-    vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
-    vertexDataSprite[0].normal = { 0.0f, 0.0f, -1.0f };
-    vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };
-    vertexDataSprite[1].texcoord = { 0.0f, 0.0f };
-    vertexDataSprite[2].position = { 640.0f, 360.0f, 0.0f, 1.0f };
-    vertexDataSprite[2].texcoord = { 1.0f, 1.0f };
-    vertexDataSprite[3].position = { 0.0f, 0.0f, 0.0f, 1.0f };
-    vertexDataSprite[3].texcoord = { 0.0f, 0.0f };
-    vertexDataSprite[4].position = { 640.0f, 0.0f, 0.0f, 1.0f };
-    vertexDataSprite[4].texcoord = { 1.0f, 0.0f };
-    vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f };
-    vertexDataSprite[5].texcoord = { 1.0f, 1.0f };
-
-    ComPtr<ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResouse(device, sizeof(Matrix4x4));
-    Matrix4x4* transformationMatrixDataSprite = nullptr;
-    transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
-    *transformationMatrixDataSprite = MakeIdentity4x4();
-
-    Transform transformSprite { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
-    materialDataSprite->uvTransform = MakeIdentity4x4();
-    Transform uvTransformSprite { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
-
     // Transform変数の定義
     Transform transform { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 
@@ -516,12 +495,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::ShowDemoWindow();
             ImGui::Begin("Main Control");
             ImGui::Text("Sprite");
-            ImGui::DragFloat3("Sprite Position", &transformSprite.translate.x);
-            ImGui::DragFloat3("Sprite Rotation", &transformSprite.rotate.x);
-            ImGui::DragFloat3("Sprite Scale", &transformSprite.scale.x);
-            ImGui::DragFloat2("Sprite UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-            ImGui::DragFloat2("Sprite UV Scale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-            ImGui::SliderAngle("Sprite UVRotate", &uvTransformSprite.rotate.z);
+            ImGui::DragFloat3("Sprite Position", &sprite->GetTranslate().x);
+            ImGui::DragFloat3("Sprite Rotation", &sprite->GetRotate().x);
+            ImGui::DragFloat3("Sprite Scale", &sprite->GetScale().x);
             ImGui::Separator();
             ImGui::Text("Sphere");
             ImGui::DragFloat3("Sphere Position", &transform.translate.x, 0.1f);
@@ -591,12 +567,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
             // commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
 
-            // スプライト描画
-            commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-            commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-            commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-            commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
-            commandList->DrawInstanced(6, 1, 0, 0);
+            // Spriteの更新・描画
+            sprite->Update();
+            sprite->Draw();
 
             imguiManager->End();
             imguiManager->Draw(dxCommon);
@@ -631,6 +604,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     imguiManager->Finalize();
     winApp->Finalize();
 
+    delete sprite;
+    delete spriteCommon;
     delete input;
     delete imguiManager;
     delete dxCommon;
