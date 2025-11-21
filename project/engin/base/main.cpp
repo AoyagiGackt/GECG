@@ -206,14 +206,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     ID3D12Device* device = dxCommon->GetDevice();
 
-    // DirectXCommon初期化後
-    SpriteCommon* spriteCommon = new SpriteCommon();
-    spriteCommon->Initialize(dxCommon);
-
-    Sprite* sprite = new Sprite();
-    sprite->Initialize(spriteCommon);
-    sprite->SetTextureHandle(textureSrvHandlesGPU[0]);
-
     D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature {};
     descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -392,6 +384,73 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     vertexBufferView.SizeInBytes = sizeof(VertexData) * kSphereVertexCount;
     vertexBufferView.StrideInBytes = sizeof(VertexData);
 
+    // Sprite用の頂点リソースを作る
+    ComPtr<ID3D12Resource> vertexResourceSprite = CreateBufferResouse(device, sizeof(VertexData) * 6);
+    D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite {};
+    vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
+    vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
+    vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
+    VertexData* vertexDataSprite = nullptr;
+    vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
+    vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };
+    vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
+    vertexDataSprite[0].normal = { 0.0f, 0.0f, -1.0f };
+    vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+    vertexDataSprite[1].texcoord = { 0.0f, 0.0f };
+    vertexDataSprite[2].position = { 640.0f, 360.0f, 0.0f, 1.0f };
+    vertexDataSprite[2].texcoord = { 1.0f, 1.0f };
+    vertexDataSprite[3].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+    vertexDataSprite[3].texcoord = { 0.0f, 0.0f };
+    vertexDataSprite[4].position = { 640.0f, 0.0f, 0.0f, 1.0f };
+    vertexDataSprite[4].texcoord = { 1.0f, 0.0f };
+    vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f };
+    vertexDataSprite[5].texcoord = { 1.0f, 1.0f };
+
+    ComPtr<ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResouse(device, sizeof(Matrix4x4));
+    Matrix4x4* transformationMatrixDataSprite = nullptr;
+    transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
+    *transformationMatrixDataSprite = MakeIdentity4x4();
+
+    Transform transformSprite { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+    materialDataSprite->uvTransform = MakeIdentity4x4();
+    Transform uvTransformSprite { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+
+    // Transform変数の定義
+    Transform transform { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+
+    std::vector<std::string> textureFiles = { "Resources/uvChecker.png", "Resources/monsterBall.png" };
+    std::vector<ComPtr<ID3D12Resource>> textureResources;
+    std::vector<DirectX::ScratchImage> mipImagesList;
+    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> textureSrvHandlesCPU;
+    std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> textureSrvHandlesGPU;
+
+    // dxCommonからSRVヒープを取得
+    ID3D12DescriptorHeap* srvDescriptorHeap = dxCommon->GetSrvDescriptorHeap();
+    UINT srvIncrement = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+
+    srvHandleCPU.ptr += srvIncrement;
+    srvHandleGPU.ptr += srvIncrement;
+
+    for (size_t i = 0; i < textureFiles.size(); ++i) {
+        mipImagesList.push_back(LoadTexture(textureFiles[i]));
+        const DirectX::TexMetadata& metadata = mipImagesList.back().GetMetadata();
+        ComPtr<ID3D12Resource> texRes = CreateTextureResourse(device, metadata);
+        UploadTextureData(texRes.Get(), mipImagesList.back());
+        textureResources.push_back(texRes);
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc {};
+        srvDesc.Format = metadata.format;
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+        device->CreateShaderResourceView(texRes.Get(), &srvDesc, srvHandleCPU);
+        textureSrvHandlesCPU.push_back(srvHandleCPU);
+        textureSrvHandlesGPU.push_back(srvHandleGPU);
+        srvHandleCPU.ptr += srvIncrement;
+        srvHandleGPU.ptr += srvIncrement;
+    }
+
     // ImGuiの初期化
     ImGuiManager* imguiManager = new ImGuiManager();
     imguiManager->Initialize(winApp, dxCommon);
@@ -457,9 +516,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::ShowDemoWindow();
             ImGui::Begin("Main Control");
             ImGui::Text("Sprite");
-            ImGui::DragFloat3("Sprite Position", &sprite->GetTranslate().x);
-            ImGui::DragFloat3("Sprite Rotation", &sprite->GetRotate().x);
-            ImGui::DragFloat3("Sprite Scale", &sprite->GetScale().x);
+            ImGui::DragFloat3("Sprite Position", &transformSprite.translate.x);
+            ImGui::DragFloat3("Sprite Rotation", &transformSprite.rotate.x);
+            ImGui::DragFloat3("Sprite Scale", &transformSprite.scale.x);
+            ImGui::DragFloat2("Sprite UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+            ImGui::DragFloat2("Sprite UV Scale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+            ImGui::SliderAngle("Sprite UVRotate", &uvTransformSprite.rotate.z);
             ImGui::Separator();
             ImGui::Text("Sphere");
             ImGui::DragFloat3("Sphere Position", &transform.translate.x, 0.1f);
@@ -512,6 +574,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
             materialData->uvTransform = uvTransformMatrix;
 
+            Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+            Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
+            Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApp::kClientWidth), float(WinApp::kClientHeight), 0.0f, 100.0f);
+            Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
+            *transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
+
             // 描画コマンド発行
             commandList->SetGraphicsRootSignature(rootSignature.Get());
             commandList->SetPipelineState(graphicsPipelineState.Get());
@@ -522,6 +590,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[sphereTextureIndex]);
             commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
             // commandList->DrawInstanced(kSphereVertexCount, 1, 0, 0);
+
+            // スプライト描画
+            commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+            commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+            commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandlesGPU[0]);
+            commandList->DrawInstanced(6, 1, 0, 0);
 
             imguiManager->End();
             imguiManager->Draw(dxCommon);
@@ -556,8 +631,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     imguiManager->Finalize();
     winApp->Finalize();
 
-    delete sprite;
-    delete spriteCommon;
     delete input;
     delete imguiManager;
     delete dxCommon;
