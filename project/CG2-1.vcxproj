@@ -161,7 +161,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
     <ClCompile Include="engin\base\main.cpp" />
     <ClCompile Include="engin\game\cpp\Input.cpp" />
-    <ClCompile Include="engin\game\cpp\ImGuiManager.cpp" />
+    <ClCompile Include="engin\graphics\cpp\ImGuiManager.cpp" />
+    <ClCompile Include="engin\graphics\cpp\SpriteCommon.cpp" />
+    <ClCompile Include="engin\graphics\cpp\Sprite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\object3d\Object3dPS.hlsl">
@@ -182,6 +184,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engin\graphics\h\D3DResourceLeakChecker.h" />
     <ClInclude Include="engin\game\h\D3DResourceLeakChecker.h" />
     <ClInclude Include="engin\game\h\DirectXCommon.h" />
     <ClInclude Include="engin\game\h\WinApp.h" />
@@ -197,7 +200,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engin\graphics\h\ResourceObject.h" />
     <ClInclude Include="engin\game\h\Input.h" />
     <ClInclude Include="engin\game\h\StringUtlity.h" />
-    <ClInclude Include="engin\game\h\ImGuiManager.h" />
+    <ClInclude Include="engin\graphics\h\ImGuiManager.h" />
+    <ClInclude Include="engin\graphics\h\SpriteCommon.h" />
+    <ClInclude Include="engin\graphics\h\Sprite.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
