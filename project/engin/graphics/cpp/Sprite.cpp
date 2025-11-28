@@ -100,17 +100,15 @@ void Sprite::Update()
     AdjustTextureSize();
 
     // ワールド行列の計算
-    // 1. アンカーポイント分ずらす (原点をアンカー位置へ)
-    // 頂点は0~1なので、サイズ倍する前にアンカー分(0.0~1.0)をマイナスして原点を合わせる
     Matrix4x4 anchorMatrix = MakeTranslateMatrix({ -anchorPoint_.x, -anchorPoint_.y, 0.0f });
 
-    // 2. スケーリング (サイズ設定)
+    // スケーリング
     Matrix4x4 scaleMatrix = MakeScaleMatrix({ size_.x, size_.y, 1.0f });
 
-    // 3. 回転 (Z軸回転)
+    // 回転 (Z軸回転)
     Matrix4x4 rotateMatrix = MakeRotateZMatrix(rotation_);
 
-    // 4. 平行移動 (指定座標へ)
+    // 平行移動 (指定座標へ)
     Matrix4x4 translateMatrix = MakeTranslateMatrix({ position_.x, position_.y, 0.0f });
 
     // 行列の合成: Anchor -> Scale -> Rotate -> Translate
@@ -151,7 +149,6 @@ void Sprite::Draw()
 
 Microsoft::WRL::ComPtr<ID3D12Resource> Sprite::CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
 {
-    // (省略: 以前と同じ実装)
     D3D12_HEAP_PROPERTIES uploadHeapProperties{};
     uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
     D3D12_RESOURCE_DESC resourceDesc{};
