@@ -154,7 +154,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             sprite1->SetTextureLeftTop(texLT);
             sprite1->SetTextureSize(texSz);
 
-            // 更新 (行列計算などはここで行われる)
+            // 更新
             sprite1->Update();
             sprite2->Update(); // 2つ目も更新
 

@@ -71,7 +71,6 @@ void Sprite::AdjustTextureSize() {
     // テクスチャのメタデータを取得
     const auto& metadata = TextureManager::GetInstance()->GetMetaData(textureFilePath_);
     
-    // テクスチャ切り出し範囲の設定 (UV Transform)
     // UV座標空間での開始位置とサイズを計算
     Vector2 uvPos = { textureLeftTop_.x / metadata.width, textureLeftTop_.y / metadata.height };
     Vector2 uvSize = { textureSize_.x / metadata.width, textureSize_.y / metadata.height };
