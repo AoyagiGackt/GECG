@@ -9,7 +9,7 @@ struct D3D12ResourceLeakChecker {
         // リソースリークチェック
         Microsoft::WRL::ComPtr<IDXGIDebug1> debug;
 
-        // "dxgidebug.dll" から関数を動的に取り出すための型定義
+        // dxgidebug.dllから関数を動的に取り出すための型定義
         typedef HRESULT(WINAPI * PFN_DXGI_GET_DEBUG_INTERFACE1)(UINT, REFIID, void**);
 
         // DLLをロード

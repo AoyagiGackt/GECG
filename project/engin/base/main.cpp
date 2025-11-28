@@ -46,66 +46,6 @@ using namespace std::numbers;
 using Microsoft::WRL::ComPtr;
 
 // --------------------------------------------------
-// 関数定義
-// --------------------------------------------------
-
-DirectX::ScratchImage LoadTexture(const std::string filePath)
-{
-    DirectX::ScratchImage image {};
-    std::wstring filePathW = StringUtility::ConvertString(filePath);
-    HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
-    assert(SUCCEEDED(hr));
-    DirectX::ScratchImage mipImages {};
-    hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 8, mipImages);
-    assert(SUCCEEDED(hr));
-    return mipImages;
-}
-
-ComPtr<ID3D12Resource> CreateTextureResourse(ID3D12Device* device, const DirectX::TexMetadata& metadata)
-{
-    D3D12_RESOURCE_DESC resourceDesc {};
-    resourceDesc.Width = UINT(metadata.width);
-    resourceDesc.Height = UINT(metadata.height);
-    resourceDesc.MipLevels = UINT16(metadata.mipLevels);
-    resourceDesc.DepthOrArraySize = UINT16(metadata.arraySize);
-    resourceDesc.Format = metadata.format;
-    resourceDesc.SampleDesc.Count = 1;
-    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension);
-
-    D3D12_HEAP_PROPERTIES heapProperties {};
-    heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;
-    heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
-    heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
-
-    ComPtr<ID3D12Resource> resource = nullptr;
-    HRESULT hr = device->CreateCommittedResource(
-        &heapProperties,
-        D3D12_HEAP_FLAG_NONE,
-        &resourceDesc,
-        D3D12_RESOURCE_STATE_GENERIC_READ,
-        nullptr,
-        IID_PPV_ARGS(&resource));
-    assert(SUCCEEDED(hr));
-    return resource;
-}
-
-void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages)
-{
-    const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-
-    for (size_t mipLevel = 0; mipLevel < metadata.mipLevels; ++mipLevel) {
-        const DirectX::Image* img = mipImages.GetImage(mipLevel, 0, 0);
-        HRESULT hr = texture->WriteToSubresource(
-            UINT(mipLevel),
-            nullptr,
-            img->pixels,
-            UINT(img->rowPitch),
-            UINT(img->slicePitch));
-        assert(SUCCEEDED(hr));
-    }
-}
-
-// --------------------------------------------------
 // メイン関数
 // --------------------------------------------------
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -145,39 +85,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // --------------------------------------------------
     // テクスチャのロード処理
     // --------------------------------------------------
-    ID3D12Device* device = dxCommon->GetDevice();
-
-    // 読み込むテクスチャファイル名
-    std::string textureFile = "Resources/uvChecker.png";
-
-    // 画像読み込み
-    DirectX::ScratchImage mipImages = LoadTexture(textureFile);
-    const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-
-    // リソース作成
-    ComPtr<ID3D12Resource> textureResource = CreateTextureResourse(device, metadata);
-    // データ転送
-    UploadTextureData(textureResource.Get(), mipImages);
-
-    // SRVヒープのハンドル取得
-    ID3D12DescriptorHeap* srvDescriptorHeap = dxCommon->GetSrvDescriptorHeap();
-    UINT srvIncrement = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+    
+    // SRV用ヒープ
+    ID3D12DescriptorHeap* srvHeap = dxCommon->GetSrvDescriptorHeap();
+    UINT srvIncrement = dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU = srvHeap->GetCPUDescriptorHandleForHeapStart();
+    D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU = srvHeap->GetGPUDescriptorHandleForHeapStart();
 
     srvHandleCPU.ptr += srvIncrement;
     srvHandleGPU.ptr += srvIncrement;
 
-    // シェーダリソースビュー(SRV)作成
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc {};
-    srvDesc.Format = metadata.format;
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-    device->CreateShaderResourceView(textureResource.Get(), &srvDesc, srvHandleCPU);
-
     // Spriteにテクスチャをセット
-    sprite->SetTextureHandle(srvHandleGPU);
+    sprite->LoadTexture("Resources/uvChecker.png", srvHandleCPU, srvHandleGPU);
 
     // --------------------------------------------------
     // ImGuiの初期化
@@ -237,10 +156,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             
             dxCommon->PreDraw();
 
-            // SRV用ディスクリプタヒープを設定
-            ID3D12DescriptorHeap* descriptorHeaps[] = { dxCommon->GetSrvDescriptorHeap() };
-            dxCommon->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps);
-
             // スプライト共通設定
             spriteCommon->CommonDrawSettings();
 
@@ -257,10 +172,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     Logger::Log("Game Loop Finished.\n");
 
-    // --- 終了処理 ---
+    // 終了処理
     imguiManager->Finalize();
 
-    // 生成と逆順に解放
+    // 解放
     delete imguiManager;
     delete sprite;
     delete spriteCommon;

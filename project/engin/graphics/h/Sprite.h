@@ -2,6 +2,7 @@
 #include "MakeAffine.h"
 #include "SpriteCommon.h"
 #include <DirectXMath.h>
+#include <string>
 
 // 頂点データ構造体
 struct VertexDataSprite {
@@ -34,6 +35,8 @@ public:
     // 描画
     void Draw();
 
+    void LoadTexture(const std::string& filePath, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle);
+
     const Vector3& GetTranslate() const { return transform_.translate; }
     void SetTranslate(const Vector3& translate) { transform_.translate = translate; }
 
@@ -60,6 +63,9 @@ private:
 
     Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_;
     TransformationMatrixSprite* transformationMatrixData_ = nullptr;
+
+    // テクスチャリソース本体
+    Microsoft::WRL::ComPtr<ID3D12Resource> textureResource_;
 
     // テクスチャハンドル
     D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle_ {};
