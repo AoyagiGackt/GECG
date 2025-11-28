@@ -18,7 +18,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 
     ID3D12Device* device = spriteCommon_->GetDevice();
 
-    // 頂点バッファ作成 (単位正方形 0.0~1.0 で作る)
+    // 頂点バッファ作成
     vertexResource_ = CreateBufferResource(device, sizeof(VertexDataSprite) * 6);
     vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
     vertexBufferView_.SizeInBytes = sizeof(VertexDataSprite) * 6;
@@ -27,23 +27,22 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
     VertexDataSprite* vertexData = nullptr;
     vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 
-    // アンカーポイント等は行列で計算するので、頂点は固定の「0.0～1.0」の矩形にする
     // 左下 (0, 1)
-    vertexData[0].position = { 0.0f, 1.0f, 0.0f, 1.0f };
+    vertexData[0].position = { 0.0f, 1.0f, 0.5f, 1.0f };
     vertexData[0].texcoord = { 0.0f, 1.0f };
     vertexData[0].normal = { 0.0f, 0.0f, -1.0f };
     // 左上 (0, 0)
-    vertexData[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+    vertexData[1].position = { 0.0f, 0.0f, 0.5f, 1.0f };
     vertexData[1].texcoord = { 0.0f, 0.0f };
     vertexData[1].normal = { 0.0f, 0.0f, -1.0f };
     // 右下 (1, 1)
-    vertexData[2].position = { 1.0f, 1.0f, 0.0f, 1.0f };
+    vertexData[2].position = { 1.0f, 1.0f, 0.5f, 1.0f };
     vertexData[2].texcoord = { 1.0f, 1.0f };
     vertexData[2].normal = { 0.0f, 0.0f, -1.0f };
     // 左上
     vertexData[3] = vertexData[1];
     // 右上 (1, 0)
-    vertexData[4].position = { 1.0f, 0.0f, 0.0f, 1.0f };
+    vertexData[4].position = { 1.0f, 0.0f, 0.5f, 1.0f };
     vertexData[4].texcoord = { 1.0f, 0.0f };
     vertexData[4].normal = { 0.0f, 0.0f, -1.0f };
     // 右下
@@ -147,11 +146,11 @@ void Sprite::Draw()
     commandList->DrawInstanced(6, 1, 0, 0);
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> Sprite::CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
+ComPtr<ID3D12Resource> Sprite::CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
 {
-    D3D12_HEAP_PROPERTIES uploadHeapProperties{};
+    D3D12_HEAP_PROPERTIES uploadHeapProperties {};
     uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
-    D3D12_RESOURCE_DESC resourceDesc{};
+    D3D12_RESOURCE_DESC resourceDesc {};
     resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
     resourceDesc.Width = sizeInBytes;
     resourceDesc.Height = 1;
@@ -159,7 +158,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> Sprite::CreateBufferResource(ID3D12Device
     resourceDesc.MipLevels = 1;
     resourceDesc.SampleDesc.Count = 1;
     resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
+    ComPtr<ID3D12Resource> resource = nullptr;
     device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE,
         &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
         IID_PPV_ARGS(&resource));
