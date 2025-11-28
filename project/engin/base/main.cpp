@@ -7,6 +7,7 @@
 #include "ImGuiManager.h"
 #include "Input.h"
 #include "Logger.h"
+#include "TextureManager.h"
 #include "MakeAffine.h"
 #include "ResourceObject.h"
 #include "Sprite.h"
@@ -71,32 +72,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     input->Initialize(winApp);
 
     // --------------------------------------------------
-    // スプライトシステムの初期化
+    // スプライトの初期化
     // --------------------------------------------------
 
     // スプライト共通設定の初期化
     SpriteCommon* spriteCommon = new SpriteCommon();
     spriteCommon->Initialize(dxCommon);
 
-    // スプライトの初期化
-    Sprite* sprite = new Sprite();
-    sprite->Initialize(spriteCommon);
+    // TextureManager初期化
+    TextureManager::GetInstance()->Initialize(dxCommon);
 
-    // --------------------------------------------------
-    // テクスチャのロード処理
-    // --------------------------------------------------
-    
-    // SRV用ヒープ
-    ID3D12DescriptorHeap* srvHeap = dxCommon->GetSrvDescriptorHeap();
-    UINT srvIncrement = dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU = srvHeap->GetCPUDescriptorHandleForHeapStart();
-    D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU = srvHeap->GetGPUDescriptorHandleForHeapStart();
+    // テクスチャロード 
+    TextureManager::GetInstance()->LoadTexture("Resources/uvChecker.png");
+    TextureManager::GetInstance()->LoadTexture("Resources/monsterBall.png");
 
-    srvHandleCPU.ptr += srvIncrement;
-    srvHandleGPU.ptr += srvIncrement;
+    // スプライト生成
+    Sprite* sprite1 = new Sprite();
+    sprite1->Initialize(spriteCommon, "Resources/uvChecker.png");
+    sprite1->SetPosition({ 200.0f, 200.0f }); // 座標セット
 
-    // Spriteにテクスチャをセット
-    sprite->LoadTexture("Resources/uvChecker.png", srvHandleCPU, srvHandleGPU);
+    Sprite* sprite2 = new Sprite();
+    sprite2->Initialize(spriteCommon, "Resources/monsterBall.png");
+    sprite2->SetPosition({ 600.0f, 200.0f });
 
     // --------------------------------------------------
     // ImGuiの初期化
@@ -123,49 +120,54 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // ImGui受付開始
             imguiManager->Begin();
 
-            // スプライト更新
-            sprite->Update();
+            Vector2 pos = sprite1->GetPosition();
+            float rot = sprite1->GetRotation();
+            Vector2 size = sprite1->GetSize();
+            Vector2 anchor = sprite1->GetAnchorPoint();
+            Vector4 color = sprite1->GetColor();
+            bool flipX = sprite1->GetFlipX();
+            bool flipY = sprite1->GetFlipY();
+            Vector2 texLT = sprite1->GetTextureLeftTop();
+            Vector2 texSz = sprite1->GetTextureSize();
 
-            ImGui::ShowDemoWindow();
-
-            ImGui::Begin("Sprite Control");
-            
-            // クラスから現在の値を取得
-            Vector3 spritePos = sprite->GetTranslate();
-            Vector3 spriteRot = sprite->GetRotate();
-            Vector3 spriteScale = sprite->GetScale();
-
-            // ImGuiで値を変更
-            ImGui::DragFloat3("Position", &spritePos.x, 1.0f);
-            ImGui::DragFloat3("Rotation", &spriteRot.x, 0.01f);
-            ImGui::DragFloat3("Scale", &spriteScale.x, 0.01f);
-
-            // 変更した値をクラスにセット
-            sprite->SetTranslate(spritePos);
-            sprite->SetRotate(spriteRot);
-            sprite->SetScale(spriteScale);
-
+            ImGui::Begin("Sprite 1 Control");
+            ImGui::DragFloat2("Position", &pos.x, 1.0f);
+            ImGui::SliderAngle("Rotation", &rot);
+            ImGui::DragFloat2("Size", &size.x, 1.0f);
+            ImGui::DragFloat2("Anchor", &anchor.x, 0.01f, 0.0f, 1.0f);
+            ImGui::ColorEdit4("Color", &color.x);
+            ImGui::Checkbox("Flip X", &flipX);
+            ImGui::Checkbox("Flip Y", &flipY);
+            ImGui::Text("Texture Cutout");
+            ImGui::DragFloat2("Cut Pos", &texLT.x, 1.0f);
+            ImGui::DragFloat2("Cut Size", &texSz.x, 1.0f);
             ImGui::End();
 
-            // ImGui内部コマンド生成
+            // 値をセット
+            sprite1->SetPosition(pos);
+            sprite1->SetRotation(rot);
+            sprite1->SetSize(size);
+            sprite1->SetAnchorPoint(anchor);
+            sprite1->SetColor(color);
+            sprite1->SetFlipX(flipX);
+            sprite1->SetFlipY(flipY);
+            sprite1->SetTextureLeftTop(texLT);
+            sprite1->SetTextureSize(texSz);
+
+            // 更新 (行列計算などはここで行われる)
+            sprite1->Update();
+            sprite2->Update(); // 2つ目も更新
+
             imguiManager->End();
 
-            // --------------------------------------------------
-            // 描画処理
-            // --------------------------------------------------
-            
+            // --- 描画 ---
             dxCommon->PreDraw();
-
-            // スプライト共通設定
             spriteCommon->CommonDrawSettings();
 
-            // スプライト描画
-            sprite->Draw();
+            sprite1->Draw(); // 1つ目描画
+            sprite2->Draw(); // 2つ目描画
 
-            // ImGui描画
             imguiManager->Draw(dxCommon);
-
-            // 描画後処理 (画面フリップなど)
             dxCommon->PostDraw();
         }
     }
@@ -177,7 +179,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // 解放
     delete imguiManager;
-    delete sprite;
+    delete sprite1;
+    delete sprite2;
     delete spriteCommon;
     delete input;
     delete dxCommon;
