@@ -1,4 +1,4 @@
-#include "Camera.h"
+ï»¿#include "Camera.h"
 #include "WinApp.h"
 
 Camera::Camera()
@@ -14,13 +14,13 @@ Camera::Camera()
 
 void Camera::Update()
 {
-    // ƒrƒ…[s—ñ‚ÌŒvZ
+    // ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ã®è¨ˆç®—
 
-    // ƒJƒƒ‰‚Ìƒ[ƒ‹ƒhs—ñ‚ğì¬
+    // ã‚«ãƒ¡ãƒ©ã®ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ã‚’ä½œæˆ
     Matrix4x4 cameraWorldMatrix = MakeAffineMatrix({ 1.0f, 1.0f, 1.0f }, transform_.rotate, transform_.translate);
-    // ƒJƒƒ‰s—ñ‚Ì‹ts—ñ‚ªƒrƒ…[s—ñ‚É‚È‚é
+    // ã‚«ãƒ¡ãƒ©è¡Œåˆ—ã®é€†è¡Œåˆ—ãŒãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ã«ãªã‚‹
     viewMatrix_ = Inverse(cameraWorldMatrix);
 
-    // ƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ‚ÌŒvZ
+    // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ã®è¨ˆç®—
     projectionMatrix_ = MakePerspectiveFovMatrix(fovY_, aspectRatio_, nearClip_, farClip_);
 }

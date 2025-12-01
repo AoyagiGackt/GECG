@@ -1,6 +1,7 @@
 // --------------------------------------------------
 // include
 // --------------------------------------------------
+#include "Camera.h"
 #include "D3DResourceLeakChecker.h"
 #include "DirectXCommon.h"
 #include "DirectXTex.h"
@@ -121,8 +122,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // モデルデータのロード
     ModelManager::GetInstance()->LoadModel("Resources/plane.obj", "Resources/uvChecker.png");
 
-    // オブジェクトの生成
-    
+    // --------------------------------------------------
+    // カメラの生成
+    // --------------------------------------------------
+
+    Camera* camera = new Camera();
+    camera->SetTranslate({ 0.0f, 0.0f, -10.0f });
+    camera->SetRotate({ 0.0f, 0.0f, 0.0f });
+
+    Object3d::SetCommonCamera(camera);
+
+    // --------------------------------------------------
+    // オブジェクト設定
+    // --------------------------------------------------
+
     // 1つ目のオブジェクト
     Object3d* obj1 = new Object3d();
     obj1->Initialize(modelCommon);
@@ -167,6 +180,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             // ImGui開始
             imguiManager->Begin();
+
+            // カメラ用 ImGui
+            ImGui::Begin("Camera Control");
+            ImGui::DragFloat3("Translate", &camera->GetTranslate().x, 0.1f);
+            ImGui::DragFloat3("Rotate", &camera->GetRotate().x, 0.01f);
+            ImGui::End();
+
+            // カメラの更新
+            camera->Update();
 
             // スプライト用 ImGui
             Vector2 pos = sprite1->GetPosition();
@@ -265,6 +287,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     delete input;
     delete dxCommon;
     delete winApp;
+    delete camera;
 
     return 0;
 }

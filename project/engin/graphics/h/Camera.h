@@ -1,12 +1,12 @@
-#pragma once
+ï»¿#pragma once
 #include "MakeAffine.h"
 
 class Camera {
 public:
-    // ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
     Camera();
 
-    // XV
+    // æ›´æ–°
     void Update();
 
     void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
@@ -21,12 +21,15 @@ public:
     const Matrix4x4& GetViewMatrix() const { return viewMatrix_; }
     const Matrix4x4& GetProjectionMatrix() const { return projectionMatrix_; }
 
+    Vector3& GetRotate() { return transform_.rotate; }
+    Vector3& GetTranslate() { return transform_.translate; }
+
 private:
     Transform transform_;
     Matrix4x4 viewMatrix_;
     Matrix4x4 projectionMatrix_;
 
-    // ƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ—pƒpƒ‰ƒ[ƒ^
+    // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ç”¨ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
     float fovY_;
     float aspectRatio_;
     float nearClip_;

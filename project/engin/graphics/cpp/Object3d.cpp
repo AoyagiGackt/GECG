@@ -1,9 +1,17 @@
 ﻿#include "Object3d.h"
 #include "ModelCommon.h"
 #include "ModelManager.h"
+#include "Camera.h"
 #include <cmath>
 
 using namespace Microsoft::WRL;
+
+Camera* Object3d::commonCamera_ = nullptr;
+
+void Object3d::SetCommonCamera(Camera* camera)
+{
+    commonCamera_ = camera;
+}
 
 void Object3d::Initialize(ModelCommon* modelCommon)
 {
@@ -41,14 +49,30 @@ void Object3d::Initialize(ModelCommon* modelCommon)
 void Object3d::Update()
 {
     Matrix4x4 worldMatrix = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
-    Matrix4x4 viewMatrix = MakeIdentity4x4();
-    viewMatrix.m[3][2] = -10.0f;
-    viewMatrix = Inverse(viewMatrix);
-    Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, 1280.0f / 720.0f, 0.1f, 100.0f);
+
+    Matrix4x4 viewMatrix;
+    Matrix4x4 projectionMatrix;
+
+    // 【カメラがあればカメラから行列をもらう 
+    Camera* camera = camera_ ? camera_ : commonCamera_;
+
+    if (camera) {
+        viewMatrix = camera->GetViewMatrix();
+        projectionMatrix = camera->GetProjectionMatrix();
+    }
+    
+    // WVP行列の合成
     Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
+    // 定数バッファへ転送
     transformationMatrixData_->WVP = worldViewProjectionMatrix;
     transformationMatrixData_->World = worldMatrix;
+}
+
+void Object3d::SetModel(const std::string& filePath)
+{
+    // マネージャーからモデルを検索してセット
+    model_ = ModelManager::GetInstance()->FindModel(filePath);
 }
 
 void Object3d::Draw()
@@ -65,10 +89,4 @@ void Object3d::Draw()
 
     // モデルの描画呼び出し
     model_->Draw(modelCommon_);
-}
-
-void Object3d::SetModel(const std::string& filePath)
-{
-    // マネージャーからモデルを検索してセット
-    model_ = ModelManager::GetInstance()->FindModel(filePath);
 }
