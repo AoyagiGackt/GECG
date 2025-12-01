@@ -2,6 +2,7 @@
 #include "MakeAffine.h"
 #include "Model.h"
 #include <wrl/client.h>
+#include <string>
 
 class ModelCommon;
 
@@ -12,6 +13,8 @@ public:
     void Update();
     void Draw();
     void SetModel(Model* model) { model_ = model; }
+    void SetModel(const std::string& filePath);
+
     void SetPosition(const Vector3& position) { transform_.translate = position; }
     void SetRotation(const Vector3& rotation) { transform_.rotate = rotation; }
     void SetScale(const Vector3& scale) { transform_.scale = scale; }

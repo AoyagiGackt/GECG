@@ -125,13 +125,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // 1つ目のオブジェクト
     Object3d* obj1 = new Object3d();
     obj1->Initialize(modelCommon);
-    obj1->SetModel(ModelManager::GetInstance()->FindModel("Resources/plane.obj"));
+    obj1->SetModel("Resources/plane.obj");
     obj1->SetPosition({ -2.0f, 0.0f, 0.0f }); // 左に配置
 
     // 2つ目のオブジェクト
     Object3d* obj2 = new Object3d();
     obj2->Initialize(modelCommon);
-    obj2->SetModel(ModelManager::GetInstance()->FindModel("Resources/plane.obj")); // 同じモデルを使う
+    obj2->SetModel("Resources/plane.obj");
     obj2->SetPosition({ 2.0f, 0.0f, 0.0f }); // 右に配置
 
     // 回転アニメーション用の変数
@@ -221,12 +221,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // スプライト描画
             spriteCommon->CommonDrawSettings();
 
-            // sprite1->Draw();
+            sprite1->Draw();
             // sprite2->Draw();
 
             // 3Dオブジェクト描画
 
-            // パイプラインステート等のセット
+            // パイプラインステートなどのセット
             modelCommon->CommonDrawSettings();
 
             // ライトのセット

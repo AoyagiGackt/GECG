@@ -1,5 +1,6 @@
 ﻿#include "Object3d.h"
 #include "ModelCommon.h"
+#include "ModelManager.h"
 #include <cmath>
 
 using namespace Microsoft::WRL;
@@ -64,4 +65,10 @@ void Object3d::Draw()
 
     // モデルの描画呼び出し
     model_->Draw(modelCommon_);
+}
+
+void Object3d::SetModel(const std::string& filePath)
+{
+    // マネージャーからモデルを検索してセット
+    model_ = ModelManager::GetInstance()->FindModel(filePath);
 }
