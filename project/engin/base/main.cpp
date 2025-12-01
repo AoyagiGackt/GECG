@@ -13,6 +13,9 @@
 #include "Sprite.h"
 #include "SpriteCommon.h"
 #include "StringUtlity.h"
+#include "Object3dCommon.h"
+#include "Model.h"
+#include "Object3d.h"
 #include "WinApp.h"
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
@@ -96,6 +99,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     sprite2->SetPosition({ 600.0f, 200.0f });
 
     // --------------------------------------------------
+    // 3Dの初期化
+    // --------------------------------------------------
+
+    // 3D共通部の初期化
+    Object3dCommon* object3dCommon = new Object3dCommon();
+    object3dCommon->Initialize(dxCommon);
+
+    // モデルデータの生成 (1つだけ)
+    Model* model1 = new Model();
+    model1->Initialize(object3dCommon, "Resources/monsterBall.png");
+
+    // オブジェクトの生成 (モデルを使い回す)
+    Object3d* obj1 = new Object3d();
+    obj1->Initialize(object3dCommon);
+    obj1->SetModel(model1);
+    obj1->SetPosition({ -2.0f, 0.0f, 0.0f }); // 左に配置
+
+    Object3d* obj2 = new Object3d();
+    obj2->Initialize(object3dCommon);
+    obj2->SetModel(model1); // 同じモデルをセット
+    obj2->SetPosition({ 2.0f, 0.0f, 0.0f }); // 右に配置
+
+    // --------------------------------------------------
     // ImGuiの初期化
     // --------------------------------------------------
     ImGuiManager* imguiManager = new ImGuiManager();
@@ -161,14 +187,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             sprite1->Update();
             sprite2->Update(); // 2つ目も更新
 
+            obj1->Update();
+            obj2->Update();
+
             imguiManager->End();
 
             // --- 描画 ---
             dxCommon->PreDraw();
             spriteCommon->CommonDrawSettings();
 
-            sprite1->Draw(); // 1つ目描画
-            sprite2->Draw(); // 2つ目描画
+            //sprite1->Draw(); // 1つ目描画
+            //sprite2->Draw(); // 2つ目描画
+
+            object3dCommon->CommonDrawSettings(); // 3D用の共通設定
+            obj1->Draw();
+            obj2->Draw();
 
             imguiManager->Draw(dxCommon);
             dxCommon->PostDraw();
