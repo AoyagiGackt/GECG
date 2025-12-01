@@ -241,5 +241,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     delete dxCommon;
     delete winApp;
 
+
     return 0;
 }
