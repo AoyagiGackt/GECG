@@ -1,5 +1,6 @@
 ﻿#include "TextureManager.h"
 #include "DirectXTex.h"
+#include "SrvManager.h"
 #include "StringUtlity.h"
 #include <vector>
 #include <cassert>
@@ -15,7 +16,7 @@ TextureManager* TextureManager::GetInstance()
 void TextureManager::Initialize(DirectXCommon* dxCommon)
 {
     dxCommon_ = dxCommon;
-    srvIndex_ = 1;
+    textureDatas_.clear();
 }
 
 void TextureManager::LoadTexture(const std::string& filePath)
@@ -76,33 +77,22 @@ void TextureManager::LoadTexture(const std::string& filePath)
     }
 
     // SRV作成
-    // ヒープ上の場所を決定
-    ID3D12DescriptorHeap* srvHeap = dxCommon_->GetSrvDescriptorHeap();
-    UINT srvIncrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    
+    // 空いているSRVインデックスをもらう
+    uint32_t srvIndex = SrvManager::GetInstance()->Allocate();
 
-    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = srvHeap->GetCPUDescriptorHandleForHeapStart();
-    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
-
-    cpuHandle.ptr += (srvIncrementSize * srvIndex_);
-    gpuHandle.ptr += (srvIncrementSize * srvIndex_);
-
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc {};
-    srvDesc.Format = metadata.format;
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-
-    device->CreateShaderResourceView(resource.Get(), &srvDesc, cpuHandle);
+    // SRV生成を依頼
+    SrvManager::GetInstance()->CreateSRVforTexture2D(
+        srvIndex,
+        resource.Get(), // 作成したリソース
+        metadata.format,
+        UINT(metadata.mipLevels));
 
     // データ保存
     TextureData& data = textureDatas_[filePath];
     data.resource = resource;
-    data.cpuDescHandleSrv = cpuHandle;
-    data.gpuDescHandleSrv = gpuHandle;
+    data.srvIndex = srvIndex; // インデックスを保存
     data.metadata = metadata;
-
-    // 次のためにインデックスを進める
-    srvIndex_++;
 }
 
 uint32_t TextureManager::GetTextureIndexByFilePath(const std::string& filePath)
@@ -117,7 +107,7 @@ uint32_t TextureManager::GetTextureIndexByFilePath(const std::string& filePath)
 D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(const std::string& filePath)
 {
     assert(textureDatas_.contains(filePath));
-    return textureDatas_[filePath].gpuDescHandleSrv;
+    return SrvManager::GetInstance()->GetGPUDescriptorHandle(textureDatas_[filePath].srvIndex);
 }
 
 const DirectX::TexMetadata& TextureManager::GetMetaData(const std::string& filePath)

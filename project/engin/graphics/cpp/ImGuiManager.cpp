@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
 #include "imgui_impl_win32.h"
+#include <SrvManager.h>
 
 void ImGuiManager::Initialize(WinApp* winApp, DirectXCommon* dxCommon)
 {
@@ -14,15 +15,16 @@ void ImGuiManager::Initialize(WinApp* winApp, DirectXCommon* dxCommon)
     ImGui_ImplWin32_Init(winApp->GetHwnd());
 
     // DirectX12初期化
-    ID3D12DescriptorHeap* srvHeap = dxCommon->GetSrvDescriptorHeap();
+    uint32_t index = SrvManager::GetInstance()->Allocate();
 
     ImGui_ImplDX12_Init(
         dxCommon->GetDevice(),
         dxCommon->GetBufferCount(),
         dxCommon->GetBackBufferFormat(),
-        srvHeap,
-        srvHeap->GetCPUDescriptorHandleForHeapStart(),
-        srvHeap->GetGPUDescriptorHandleForHeapStart());
+        SrvManager::GetInstance()->GetSrvDescriptorHeap(), // ヒープを渡す
+        SrvManager::GetInstance()->GetCPUDescriptorHandle(index), // 確保したCPUハンドル
+        SrvManager::GetInstance()->GetGPUDescriptorHandle(index) // 確保したGPUハンドル
+    );
 }
 
 void ImGuiManager::Begin()
@@ -41,10 +43,10 @@ void ImGuiManager::End()
 
 void ImGuiManager::Draw(DirectXCommon* dxCommon)
 {
+    // コマンドリストをdxCommonから取得する
     ID3D12GraphicsCommandList* commandList = dxCommon->GetCommandList();
-    ID3D12DescriptorHeap* descriptorHeaps[] = { dxCommon->GetSrvDescriptorHeap() };
-    commandList->SetDescriptorHeaps(1, descriptorHeaps);
 
+    // 描画コマンドを発行
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 }
 

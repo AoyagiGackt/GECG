@@ -39,6 +39,7 @@
 #include <string>
 #include <vector>
 #include <wrl/client.h>
+#include <SrvManager.h>
 
 // --------------------------------------------------
 // ライブラリのリンク
@@ -74,6 +75,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     DirectXCommon* dxCommon = nullptr;
     dxCommon = new DirectXCommon();
     dxCommon->Initialize(winApp);
+
+    // SRVマネージャー初期化
+    SrvManager::GetInstance()->Initialize(dxCommon);
 
     // 入力システム初期化
     Input* input = nullptr;
@@ -241,6 +245,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             dxCommon->PreDraw();
 
+            SrvManager::GetInstance()->PreDraw();
+
             // スプライト描画
             spriteCommon->CommonDrawSettings();
 
@@ -270,6 +276,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // 終了処理
     imguiManager->Finalize();
+    SrvManager::GetInstance()->Finalize();
     ModelManager::GetInstance()->Finalize();
 
     // 解放
