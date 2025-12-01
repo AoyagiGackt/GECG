@@ -168,6 +168,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engin\graphics\cpp\Object3dCommon.cpp" />
     <ClCompile Include="engin\graphics\cpp\Model.cpp" />
     <ClCompile Include="engin\graphics\cpp\Object3d.cpp" />
+    <ClCompile Include="engin\graphics\cpp\ModelManager.cpp" />
+    <ClCompile Include="engin\graphics\cpp\ModelCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\object3d\Object3dPS.hlsl">
@@ -211,6 +213,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engin\graphics\h\Object3dCommon.h" />
     <ClInclude Include="engin\graphics\h\Model.h" />
     <ClInclude Include="engin\graphics\h\Object3d.h" />
+    <ClInclude Include="engin\graphics\h\ModelManager.h" />
+    <ClInclude Include="engin\graphics\h\ModelCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
