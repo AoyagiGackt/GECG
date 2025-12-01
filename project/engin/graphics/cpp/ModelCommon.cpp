@@ -94,11 +94,10 @@ void ModelCommon::Initialize(DirectXCommon* dxCommon)
 void ModelCommon::CommonDrawSettings()
 {
     ID3D12GraphicsCommandList* commandList = dxCommon_->GetCommandList();
+
     commandList->SetGraphicsRootSignature(rootSignature_.Get());
     commandList->SetPipelineState(graphicsPipelineState_.Get());
-    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    // SRVヒープの設定
-    ID3D12DescriptorHeap* descriptorHeaps[] = { dxCommon_->GetSrvDescriptorHeap() };
-    commandList->SetDescriptorHeaps(1, descriptorHeaps);
+    // 形状の設定
+    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }

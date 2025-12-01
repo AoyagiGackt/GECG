@@ -157,11 +157,7 @@ void SpriteCommon::CommonDrawSettings()
 {
     ID3D12GraphicsCommandList* commandList = dxCommon_->GetCommandList();
 
-    ID3D12DescriptorHeap* descriptorHeaps[] = { dxCommon_->GetSrvDescriptorHeap() };
-    commandList->SetDescriptorHeaps(1, descriptorHeaps);
-
     commandList->SetGraphicsRootSignature(rootSignature_.Get());
     commandList->SetPipelineState(graphicsPipelineState_.Get());
     commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    commandList->SetGraphicsRootConstantBufferView(3, defaultLightResource_->GetGPUVirtualAddress());
 }
