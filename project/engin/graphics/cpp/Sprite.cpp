@@ -1,5 +1,6 @@
 ﻿#include "Sprite.h"
 #include "TextureManager.h"
+#include "Logger.h"
 
 using namespace Microsoft::WRL;
 

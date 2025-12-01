@@ -1,6 +1,7 @@
 ﻿#include "TextureManager.h"
 #include "DirectXTex.h"
 #include "StringUtlity.h"
+#include <vector>
 #include <cassert>
 
 using namespace Microsoft::WRL;
