@@ -13,7 +13,7 @@ struct D3D12ResourceLeakChecker {
         typedef HRESULT(WINAPI * PFN_DXGI_GET_DEBUG_INTERFACE1)(UINT, REFIID, void**);
 
         // DLLをロード
-        HMODULE dxgidebug = LoadLibraryEx(L"dxgidebug.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+        HMODULE dxgidebug = LoadLibraryExW(L"dxgidebug.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
         if (dxgidebug) {
             // 関数ポインタを取得
             auto dxgiGetDebugInterface1 = reinterpret_cast<PFN_DXGI_GET_DEBUG_INTERFACE1>(
