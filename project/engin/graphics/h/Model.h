@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-class Object3dCommon;
+class ModelCommon;
 
 class Model {
 public:
@@ -15,15 +15,15 @@ public:
     };
 
     // 初期化
-    void Initialize(Object3dCommon* object3dCommon, const std::string& modelFilePath, const std::string& textureFilePath);
-
+    void Initialize(ModelCommon* modelCommon, const std::string& modelFilePath, const std::string& textureFilePath);
+    
     // 描画
-    void Draw(Object3dCommon* object3dCommon);
+    void Draw(ModelCommon* modelCommon);
 
 private:
     // OBJファイル読み込み関数
     void LoadObjFile(const std::string& filePath);
-    Object3dCommon* object3dCommon_ = nullptr;
+    ModelCommon* modelCommon_ = nullptr;
     Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView_ {};
 

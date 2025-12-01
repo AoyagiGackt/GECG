@@ -1,27 +1,25 @@
 ﻿#include "Model.h"
-#include "Object3dCommon.h"
+#include "ModelCommon.h"
 #include "TextureManager.h"
 #include <fstream>
 #include <sstream>
 #include <cmath>
 
-void Model::Initialize(Object3dCommon* object3dCommon, const std::string& modelFilePath, const std::string& textureFilePath)
+using namespace Microsoft::WRL;
+
+void Model::Initialize(ModelCommon* modelCommon, const std::string& modelFilePath, const std::string& textureFilePath)
 {
-    object3dCommon_ = object3dCommon;
+    modelCommon_ = modelCommon;
     textureFilePath_ = textureFilePath;
 
-    // テクスチャ読み込み
     TextureManager::GetInstance()->LoadTexture(textureFilePath);
-
-    // OBJファイルから頂点データを読み込む
     LoadObjFile(modelFilePath);
 
-    // 頂点バッファの作成
-    ID3D12Device* device = object3dCommon_->GetDxCommon()->GetDevice();
+    ID3D12Device* device = modelCommon_->GetDxCommon()->GetDevice();
     size_t sizeInBytes = sizeof(VertexData) * vertices_.size();
 
-    D3D12_HEAP_PROPERTIES uploadHeapProperties {};
-    uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
+    D3D12_HEAP_PROPERTIES uploadHeapProperties { D3D12_HEAP_TYPE_UPLOAD };
+
     D3D12_RESOURCE_DESC resourceDesc {};
     resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
     resourceDesc.Width = sizeInBytes;
@@ -35,34 +33,29 @@ void Model::Initialize(Object3dCommon* object3dCommon, const std::string& modelF
         &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
         IID_PPV_ARGS(&vertexResource_));
 
-    // 頂点データのコピー
     VertexData* data = nullptr;
     vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&data));
     std::copy(vertices_.begin(), vertices_.end(), data);
     vertexResource_->Unmap(0, nullptr);
 
-    // VBビュー作成
     vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
     vertexBufferView_.SizeInBytes = static_cast<UINT>(sizeInBytes);
     vertexBufferView_.StrideInBytes = sizeof(VertexData);
 }
 
-void Model::Draw(Object3dCommon* object3dCommon)
+void Model::Draw(ModelCommon* modelCommon)
 {
-    ID3D12GraphicsCommandList* commandList = object3dCommon->GetDxCommon()->GetCommandList();
+    ID3D12GraphicsCommandList* commandList = modelCommon->GetDxCommon()->GetCommandList();
 
-    // 頂点バッファをセット
     commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
 
-    // テクスチャをセット
     D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle = TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath_);
     commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandle);
 
-    // 描画コマンド
     commandList->DrawInstanced(static_cast<UINT>(vertices_.size()), 1, 0, 0);
 }
 
-// OBJファイル読み込みの実装
+// OBJファイル読み込み
 void Model::LoadObjFile(const std::string& filePath)
 {
     std::ifstream file(filePath);
@@ -99,7 +92,6 @@ void Model::LoadObjFile(const std::string& filePath)
                 std::string s;
                 ss >> s;
 
-                // スラッシュ区切りを解析
                 std::stringstream ss2(s);
                 std::string indexStr;
                 int indices[3] = { 0, 0, 0 };
