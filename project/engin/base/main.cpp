@@ -7,12 +7,15 @@
 #include "ImGuiManager.h"
 #include "Input.h"
 #include "Logger.h"
-#include "TextureManager.h"
 #include "MakeAffine.h"
+#include "Model.h"
+#include "Object3d.h"
+#include "Object3dCommon.h"
 #include "ResourceObject.h"
 #include "Sprite.h"
 #include "SpriteCommon.h"
 #include "StringUtlity.h"
+#include "TextureManager.h"
 #include "WinApp.h"
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
@@ -66,6 +69,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     dxCommon = new DirectXCommon();
     dxCommon->Initialize(winApp);
 
+    Object3dCommon* object3dCommon = new Object3dCommon();
+    object3dCommon->Initialize(dxCommon);
+
     // 入力システム初期化
     Input* input = nullptr;
     input = new Input();
@@ -82,18 +88,40 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // TextureManager初期化
     TextureManager::GetInstance()->Initialize(dxCommon);
 
-    // テクスチャロード 
+    // テクスチャロード
     TextureManager::GetInstance()->LoadTexture("Resources/uvChecker.png");
     TextureManager::GetInstance()->LoadTexture("Resources/monsterBall.png");
 
     // スプライト生成
     Sprite* sprite1 = new Sprite();
     sprite1->Initialize(spriteCommon, "Resources/uvChecker.png");
-    sprite1->SetPosition({ 200.0f, 200.0f }); // 座標セット
+    sprite1->SetPosition({ 200.0f, 200.0f });
 
     Sprite* sprite2 = new Sprite();
     sprite2->Initialize(spriteCommon, "Resources/monsterBall.png");
     sprite2->SetPosition({ 600.0f, 200.0f });
+
+    // --------------------------------------------------
+    // 3Dの初期化
+    // --------------------------------------------------
+
+    // モデルデータの生成
+    Model* model1 = new Model();
+    // OBJファイルとテクスチャを指定して初期化
+    model1->Initialize(object3dCommon, "Resources/plane.obj", "Resources/uvChecker.png");
+
+    // オブジェクトの生成
+    Object3d* obj1 = new Object3d();
+    obj1->Initialize(object3dCommon);
+    obj1->SetModel(model1);
+
+    // 初期座標と回転
+    obj1->SetPosition({ 0.0f, 0.0f, 0.0f });
+
+    // ImGui操作用の変数
+    Vector3 transformScale = { 1.0f, 1.0f, 1.0f };
+    Vector3 transformRotate = { 0.0f, 0.0f, 0.0f };
+    Vector3 transformTranslate = { 0.0f, 0.0f, 0.0f };
 
     // --------------------------------------------------
     // ImGuiの初期化
@@ -117,9 +145,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // 入力更新
             input->Update();
 
-            // ImGui受付開始
+            transformRotate.y += 0.09f;
+
+            // ImGui開始
             imguiManager->Begin();
 
+            // スプライト用 ImGui
             Vector2 pos = sprite1->GetPosition();
             float rot = sprite1->GetRotation();
             Vector2 size = sprite1->GetSize();
@@ -129,9 +160,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             bool flipY = sprite1->GetFlipY();
             Vector2 texLT = sprite1->GetTextureLeftTop();
             Vector2 texSz = sprite1->GetTextureSize();
-
-            ImGui::ShowDemoWindow();
-
 
             ImGui::Begin("Sprite 1 Control");
             ImGui::DragFloat2("Position", &pos.x, 1.0f);
@@ -146,7 +174,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::DragFloat2("Cut Size", &texSz.x, 1.0f);
             ImGui::End();
 
-            // 値をセット
             sprite1->SetPosition(pos);
             sprite1->SetRotation(rot);
             sprite1->SetSize(size);
@@ -157,18 +184,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             sprite1->SetTextureLeftTop(texLT);
             sprite1->SetTextureSize(texSz);
 
-            // 更新
             sprite1->Update();
-            sprite2->Update(); // 2つ目も更新
+            sprite2->Update();
+
+            // 3Dオブジェクト用 ImGui
+            ImGui::Begin("3D Object Control");
+            ImGui::DragFloat3("Scale", &transformScale.x, 0.01f);
+            ImGui::DragFloat3("Rotate", &transformRotate.x, 0.01f);
+            ImGui::DragFloat3("Translate", &transformTranslate.x, 0.01f);
+            ImGui::End();
+
+            // 変数の値をオブジェクトに反映
+            obj1->SetScale(transformScale);
+            obj1->SetRotation(transformRotate);
+            obj1->SetPosition(transformTranslate);
+
+            // 行列更新
+            obj1->Update();
 
             imguiManager->End();
 
-            // --- 描画 ---
+            // 描画
             dxCommon->PreDraw();
-            spriteCommon->CommonDrawSettings();
 
-            sprite1->Draw(); // 1つ目描画
-            sprite2->Draw(); // 2つ目描画
+            // スプライト描画
+            spriteCommon->CommonDrawSettings();
+            // sprite1->Draw();
+            // sprite2->Draw();
+
+            // 3Dオブジェクト描画
+            object3dCommon->CommonDrawSettings();
+            obj1->Draw();
 
             imguiManager->Draw(dxCommon);
             dxCommon->PostDraw();
@@ -185,9 +231,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     delete sprite1;
     delete sprite2;
     delete spriteCommon;
+
+    // 3D関連の解放
+    delete obj1;
+    delete model1;
+    delete object3dCommon;
+
     delete input;
     delete dxCommon;
     delete winApp;
+
 
     return 0;
 }
