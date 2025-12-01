@@ -5,15 +5,21 @@
 #include <string>
 
 class ModelCommon;
+class Camera;
 
 class Object3d {
 public:
+
+    static void SetCommonCamera(Camera* camera);
+
     void Initialize(ModelCommon* modelCommon);
 
     void Update();
     void Draw();
     void SetModel(Model* model) { model_ = model; }
     void SetModel(const std::string& filePath);
+    
+    void SetCamera(Camera* camera) { camera_ = camera; }
 
     void SetPosition(const Vector3& position) { transform_.translate = position; }
     void SetRotation(const Vector3& rotation) { transform_.rotate = rotation; }
@@ -33,8 +39,11 @@ private:
         Matrix4x4 uvTransform;
     };
 
+    static Camera* commonCamera_;
+
     ModelCommon* modelCommon_ = nullptr;
     Model* model_ = nullptr;
+    Camera* camera_ = nullptr;
 
     Transform transform_ = { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 
