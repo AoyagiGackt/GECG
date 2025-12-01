@@ -130,6 +130,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Vector2 texLT = sprite1->GetTextureLeftTop();
             Vector2 texSz = sprite1->GetTextureSize();
 
+            ImGui::ShowDemoWindow();
+
             ImGui::Begin("Sprite 1 Control");
             ImGui::DragFloat2("Position", &pos.x, 1.0f);
             ImGui::SliderAngle("Rotation", &rot);
