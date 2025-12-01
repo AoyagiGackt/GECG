@@ -132,6 +132,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             ImGui::ShowDemoWindow();
 
+
             ImGui::Begin("Sprite 1 Control");
             ImGui::DragFloat2("Position", &pos.x, 1.0f);
             ImGui::SliderAngle("Rotation", &rot);
