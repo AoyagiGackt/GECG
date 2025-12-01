@@ -1,5 +1,6 @@
 ﻿#include "Object3dCommon.h"
 #include <cassert>
+#include <MakeAffine.h>
 
 using namespace Microsoft::WRL;
 
@@ -117,6 +118,21 @@ void Object3dCommon::Initialize(DirectXCommon* dxCommon)
 
     // ライトリソースの作成
     defaultLightResource_ = CreateBufferResource(device, 256);
+
+    struct DirectionalLight {
+        Vector4 color;
+        Vector3 direction;
+        float intensity;
+    };
+
+    DirectionalLight* lightData = nullptr;
+    defaultLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&lightData));
+
+    lightData->color = { 1.0f, 1.0f, 1.0f, 1.0f }; // 真っ白な光
+    lightData->direction = { 0.0f, -1.0f, 0.0f }; // 上から下へ照らす
+    lightData->intensity = 1.0f; // 輝度 1.0
+
+    defaultLightResource_->Unmap(0, nullptr);
 }
 
 void Object3dCommon::CommonDrawSettings()

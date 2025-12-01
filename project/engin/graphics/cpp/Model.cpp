@@ -1,9 +1,11 @@
 ﻿#include "Model.h"
 #include "Object3dCommon.h"
 #include "TextureManager.h"
+#include <fstream>
+#include <sstream>
 #include <cmath>
 
-void Model::Initialize(Object3dCommon* object3dCommon, const std::string& textureFilePath)
+void Model::Initialize(Object3dCommon* object3dCommon, const std::string& modelFilePath, const std::string& textureFilePath)
 {
     object3dCommon_ = object3dCommon;
     textureFilePath_ = textureFilePath;
@@ -11,61 +13,12 @@ void Model::Initialize(Object3dCommon* object3dCommon, const std::string& textur
     // テクスチャ読み込み
     TextureManager::GetInstance()->LoadTexture(textureFilePath);
 
-    // 球体データの生成
-    std::vector<VertexData> vertices;
-    const int subdivision = 16;
-    const float radius = 1.0f;
-    const float kPi = 3.14159265358979323846f;
-    const float kTwoPi = kPi * 2.0f;
-
-    for (int lat = 0; lat < subdivision; ++lat) {
-        float lat0 = kPi * (-0.5f + float(lat) / subdivision);
-        float lat1 = kPi * (-0.5f + float(lat + 1) / subdivision);
-        float y0 = sinf(lat0);
-        float r0 = cosf(lat0);
-        float y1 = sinf(lat1);
-        float r1 = cosf(lat1);
-
-        for (int lon = 0; lon < subdivision; ++lon) {
-            float lon0 = kTwoPi * float(lon) / subdivision;
-            float lon1 = kTwoPi * float(lon + 1) / subdivision;
-            float x0 = cosf(lon0);
-            float z0 = sinf(lon0);
-            float x1 = cosf(lon1);
-            float z1 = sinf(lon1);
-
-            // 頂点4つ
-            VertexData v0, v1, v2, v3;
-            v0.position = { r0 * x0 * radius, y0 * radius, r0 * z0 * radius, 1.0f };
-            v0.normal = { v0.position.x, v0.position.y, v0.position.z };
-            v0.texcoord = { float(lon) / subdivision, 1.0f - float(lat) / subdivision };
-
-            v1.position = { r0 * x1 * radius, y0 * radius, r0 * z1 * radius, 1.0f };
-            v1.normal = { v1.position.x, v1.position.y, v1.position.z };
-            v1.texcoord = { float(lon + 1) / subdivision, 1.0f - float(lat) / subdivision };
-
-            v2.position = { r1 * x0 * radius, y1 * radius, r1 * z0 * radius, 1.0f };
-            v2.normal = { v2.position.x, v2.position.y, v2.position.z };
-            v2.texcoord = { float(lon) / subdivision, 1.0f - float(lat + 1) / subdivision };
-
-            v3.position = { r1 * x1 * radius, y1 * radius, r1 * z1 * radius, 1.0f };
-            v3.normal = { v3.position.x, v3.position.y, v3.position.z };
-            v3.texcoord = { float(lon + 1) / subdivision, 1.0f - float(lat + 1) / subdivision };
-
-            // 三角形2つ (v0, v2, v1) (v1, v2, v3)
-            vertices.push_back(v0);
-            vertices.push_back(v2);
-            vertices.push_back(v1);
-            vertices.push_back(v1);
-            vertices.push_back(v2);
-            vertices.push_back(v3);
-        }
-    }
-    vertexCount_ = static_cast<uint32_t>(vertices.size());
+    // OBJファイルから頂点データを読み込む
+    LoadObjFile(modelFilePath);
 
     // 頂点バッファの作成
     ID3D12Device* device = object3dCommon_->GetDxCommon()->GetDevice();
-    size_t sizeInBytes = sizeof(VertexData) * vertices.size();
+    size_t sizeInBytes = sizeof(VertexData) * vertices_.size();
 
     D3D12_HEAP_PROPERTIES uploadHeapProperties {};
     uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
@@ -85,7 +38,7 @@ void Model::Initialize(Object3dCommon* object3dCommon, const std::string& textur
     // 頂点データのコピー
     VertexData* data = nullptr;
     vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&data));
-    std::copy(vertices.begin(), vertices.end(), data);
+    std::copy(vertices_.begin(), vertices_.end(), data);
     vertexResource_->Unmap(0, nullptr);
 
     // VBビュー作成
@@ -105,6 +58,77 @@ void Model::Draw(Object3dCommon* object3dCommon)
     D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle = TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath_);
     commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandle);
 
-    // 描画
-    commandList->DrawInstanced(vertexCount_, 1, 0, 0);
+    // 描画コマンド
+    commandList->DrawInstanced(static_cast<UINT>(vertices_.size()), 1, 0, 0);
+}
+
+// OBJファイル読み込みの実装
+void Model::LoadObjFile(const std::string& filePath)
+{
+    std::ifstream file(filePath);
+    assert(file.is_open());
+
+    std::vector<Vector4> positions;
+    std::vector<Vector3> normals;
+    std::vector<Vector2> texcoords;
+    std::string line;
+
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string identifier;
+        ss >> identifier;
+
+        if (identifier == "v") {
+            Vector4 position;
+            ss >> position.x >> position.y >> position.z;
+            position.w = 1.0f;
+            positions.push_back(position);
+        } else if (identifier == "vt") {
+            Vector2 texcoord;
+            ss >> texcoord.x >> texcoord.y;
+            texcoord.y = 1.0f - texcoord.y;
+            texcoords.push_back(texcoord);
+        } else if (identifier == "vn") {
+            Vector3 normal;
+            ss >> normal.x >> normal.y >> normal.z;
+            normals.push_back(normal);
+        } else if (identifier == "f") {
+            // 面情報の読み込み
+            VertexData triangle[3];
+            for (int i = 0; i < 3; ++i) {
+                std::string s;
+                ss >> s;
+
+                // スラッシュ区切りを解析
+                std::stringstream ss2(s);
+                std::string indexStr;
+                int indices[3] = { 0, 0, 0 };
+                int count = 0;
+
+                while (std::getline(ss2, indexStr, '/')) {
+                    if (!indexStr.empty()) {
+                        indices[count] = std::stoi(indexStr);
+                    }
+                    count++;
+                }
+
+                if (indices[0] > 0) {
+                    triangle[i].position = positions[indices[0] - 1];
+                }
+
+                if (indices[1] > 0) {
+                    triangle[i].texcoord = texcoords[indices[1] - 1];
+                }
+
+                if (indices[2] > 0) {
+                    triangle[i].normal = normals[indices[2] - 1];
+                }
+            }
+
+            // 頂点リストに追加
+            vertices_.push_back(triangle[0]);
+            vertices_.push_back(triangle[1]);
+            vertices_.push_back(triangle[2]);
+        }
+    }
 }
