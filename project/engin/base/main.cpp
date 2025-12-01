@@ -178,6 +178,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Vector2 texLT = sprite1->GetTextureLeftTop();
             Vector2 texSz = sprite1->GetTextureSize();
 
+            ImGui::ShowDemoWindow();
+
             ImGui::Begin("Sprite 1 Control");
             ImGui::DragFloat2("Position", &pos.x, 1.0f);
             ImGui::SliderAngle("Rotation", &rot);
@@ -201,7 +203,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             obj1->SetScale(transformScale);
             obj1->SetRotation(transformRotate);
             obj1->SetPosition(transformTranslate);
-            
+
             obj2->SetRotation({ 0.0f, -transformRotate.y, 0.0f });
 
             // 行列更新
@@ -213,12 +215,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // --------------------------------------------------
             // 描画処理
             // --------------------------------------------------
-            
+
             dxCommon->PreDraw();
 
             // スプライト描画
             spriteCommon->CommonDrawSettings();
-            
+
             // sprite1->Draw();
             // sprite2->Draw();
 
