@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "MakeAffine.h"
 #include "SpriteCommon.h"
-#include <DirectXMath.h>
 #include <string>
 
 // 頂点データ構造体
@@ -29,26 +28,51 @@ struct TransformationMatrixSprite {
 class Sprite {
 public:
     // 初期化
-    void Initialize(SpriteCommon* spriteCommon);
+    void Initialize(SpriteCommon* spriteCommon, std::string textureFilePath);
     // 更新
     void Update();
     // 描画
     void Draw();
 
-    void LoadTexture(const std::string& filePath, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle);
+    // 座標
+    const Vector2& GetPosition() const { return position_; }
+    void SetPosition(const Vector2& position) { position_ = position; }
 
-    const Vector3& GetTranslate() const { return transform_.translate; }
-    void SetTranslate(const Vector3& translate) { transform_.translate = translate; }
+    // 回転 (ラジアン)
+    float GetRotation() const { return rotation_; }
+    void SetRotation(float rotation) { rotation_ = rotation; }
 
-    const Vector3& GetRotate() const { return transform_.rotate; }
-    void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
+    // サイズ
+    const Vector2& GetSize() const { return size_; }
+    void SetSize(const Vector2& size) { size_ = size; }
 
-    const Vector3& GetScale() const { return transform_.scale; }
-    void SetScale(const Vector3& scale) { transform_.scale = scale; }
+    // アンカーポイント (0.0f ~ 1.0f)
+    const Vector2& GetAnchorPoint() const { return anchorPoint_; }
+    void SetAnchorPoint(const Vector2& anchorPoint) { anchorPoint_ = anchorPoint; }
 
-    void SetTextureHandle(D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) { textureSrvHandle_ = textureHandle; }
+    // 色 (RGBA)
+    const Vector4& GetColor() const { return materialData_->color; }
+    void SetColor(const Vector4& color) { materialData_->color = color; }
+
+    // 反転
+    bool GetFlipX() const { return isFlipX_; }
+    void SetFlipX(bool isFlipX) { isFlipX_ = isFlipX; }
+    bool GetFlipY() const { return isFlipY_; }
+    void SetFlipY(bool isFlipY) { isFlipY_ = isFlipY; }
+
+    // テクスチャ範囲指定 (左上X, 左上Y, 幅, 高さ)
+    const Vector2& GetTextureLeftTop() const { return textureLeftTop_; }
+    void SetTextureLeftTop(const Vector2& textureLeftTop) { textureLeftTop_ = textureLeftTop; }
+    const Vector2& GetTextureSize() const { return textureSize_; }
+    void SetTextureSize(const Vector2& textureSize) { textureSize_ = textureSize; }
+
+    // テクスチャ変更
+    void SetTexture(std::string textureFilePath);
 
 private:
+
+    void AdjustTextureSize();
+
     Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(ID3D12Device* device, size_t sizeInBytes);
 
 private:
@@ -64,12 +88,18 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource_;
     TransformationMatrixSprite* transformationMatrixData_ = nullptr;
 
-    // テクスチャリソース本体
-    Microsoft::WRL::ComPtr<ID3D12Resource> textureResource_;
+    // テクスチャ関連
+    std::string textureFilePath_;
 
-    // テクスチャハンドル
-    D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle_ {};
+    // スプライトパラメータ
+    Vector2 position_ = { 0.0f, 0.0f };
+    float rotation_ = 0.0f;
+    Vector2 size_ = { 640.0f, 360.0f };
+    Vector2 anchorPoint_ = { 0.0f, 0.0f }; // デフォルトは左上
+    bool isFlipX_ = false;
+    bool isFlipY_ = false;
 
-    // トランスフォーム
-    Transform transform_ { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+    // テクスチャ切り出し用
+    Vector2 textureLeftTop_ = { 0.0f, 0.0f };
+    Vector2 textureSize_ = { 100.0f, 100.0f };
 };

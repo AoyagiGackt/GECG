@@ -9,7 +9,7 @@ struct D3DResourceLeakChecker {
         Microsoft::WRL::ComPtr<IDXGIDebug1> debug;
         typedef HRESULT(WINAPI * PFN_DXGI_GET_DEBUG_INTERFACE1)(UINT, REFIID, void**);
 
-        HMODULE dxgidebug = LoadLibraryEx(L"dxgidebug.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+        HMODULE dxgidebug = LoadLibraryExW(L"dxgidebug.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
         if (dxgidebug) {
             auto dxgiGetDebugInterface1 = reinterpret_cast<PFN_DXGI_GET_DEBUG_INTERFACE1>(
                 GetProcAddress(dxgidebug, "DXGIGetDebugInterface1"));

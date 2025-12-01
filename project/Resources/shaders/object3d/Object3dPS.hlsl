@@ -31,16 +31,20 @@ struct PixelShaderOutput
 PixelShaderOutput main(VertexShaderOutput input)
 {
     PixelShaderOutput output;
+    
+    // UV変換
     float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
 
+    // 色
     float4 baseColor = gMaterial.color * textureColor;
 
+    // ライティング計算
     if (gMaterial.enableLighting != 0)
     {
         float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
-
         float lighting = 1.0f;
+        
         if (gMaterial.shadingType == 0)
         { // Lambert
             lighting = max(NdotL, 0.0f);
@@ -50,35 +54,21 @@ PixelShaderOutput main(VertexShaderOutput input)
             lighting = NdotL * 0.5f + 0.5f;
         }
 
-        // 前のコード
-        //output.color = baseColor * gDirectionalLight.color * lighting * gDirectionalLight.intensity;
-        
-        output.color = gMaterial.color * textureColor * gDirectionalLight.color * lighting * gDirectionalLight.intensity;
-        output.color.rgb = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb  * gDirectionalLight.intensity;
+        // ライティング結果の合成
+        output.color.rgb = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * lighting * gDirectionalLight.intensity;
         output.color.a = gMaterial.color.a * textureColor.a;
     }
     else
     {
+        // ライティングなし
         output.color = baseColor;
     }
     
-    // output.colorのα値が0のときピクセルを棄却
+    // アルファ値が0（完全な透明）の場合のみ描画しない
     if (output.color.a == 0.0f)
     {
         discard;
     }
-    
-    // textureColorのα値が0のときピクセルを棄却
-    if (textureColor.a == 0.0f)
-    {
-        discard;
-    }
-    
-    // textureColorのα値が0.5以下のときピクセルを棄却
-    if (textureColor.a <= 0.5f)
-    {
-        discard;
-    }
-    
+
     return output;
 }
