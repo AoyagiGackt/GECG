@@ -122,6 +122,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ModelManager::GetInstance()->LoadModel("Resources/plane.obj", "Resources/uvChecker.png");
 
     // オブジェクトの生成
+    
     // 1つ目のオブジェクト
     Object3d* obj1 = new Object3d();
     obj1->Initialize(modelCommon);
