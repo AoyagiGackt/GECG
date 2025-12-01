@@ -110,7 +110,7 @@ void Sprite::Update()
     // 平行移動 (指定座標へ)
     Matrix4x4 translateMatrix = MakeTranslateMatrix({ position_.x, position_.y, 0.0f });
 
-    // 行列の合成
+    // 行列の合成: Anchor -> Scale -> Rotate -> Translate
     Matrix4x4 worldMatrix = MakeIdentity4x4();
     worldMatrix = Multiply(worldMatrix, anchorMatrix);
     worldMatrix = Multiply(worldMatrix, scaleMatrix);
@@ -139,7 +139,7 @@ void Sprite::Draw()
     // 座標変換
     commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
     
-    // テクスチャ
+    // テクスチャ (TextureManagerからハンドルを取得してセット)
     D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle = TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath_);
     commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandle);
 
