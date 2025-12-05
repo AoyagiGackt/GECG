@@ -98,43 +98,51 @@ void ParticleManager::CreateRootSignature()
 {
     ID3D12Device* device = dxCommon_->GetDevice();
 
-    D3D12_DESCRIPTOR_RANGE descriptorRange[2] = {};
-    descriptorRange[0].BaseShaderRegister = 0;
-    descriptorRange[0].NumDescriptors = 1;
-    descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    D3D12_DESCRIPTOR_RANGE rangeT0[1] = {};
+    rangeT0[0].BaseShaderRegister = 0;
+    rangeT0[0].NumDescriptors = 1;
+    rangeT0[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    rangeT0[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-    descriptorRange[1].BaseShaderRegister = 1;
-    descriptorRange[1].NumDescriptors = 1;
-    descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    descriptorRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    D3D12_DESCRIPTOR_RANGE rangeT1[1] = {};
+    rangeT1[0].BaseShaderRegister = 1;
+    rangeT1[0].NumDescriptors = 1;
+    rangeT1[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    rangeT1[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-    D3D12_ROOT_PARAMETER rootParameters[2] = {};
+    D3D12_ROOT_PARAMETER rootParameters[3] = {};
+
     rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // VSでもPSでも使う
-    rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
+    rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+    rootParameters[0].DescriptorTable.pDescriptorRanges = rangeT0;
     rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;
 
     rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
     rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    rootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRange[1];
+    rootParameters[1].DescriptorTable.pDescriptorRanges = rangeT1;
     rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;
 
-    // スタティックサンプラー設定
-    D3D12_STATIC_SAMPLER_DESC staticSampler = {};
-    staticSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-    staticSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    staticSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    staticSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    staticSampler.ShaderRegister = 0;
-    staticSampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[2].Descriptor.ShaderRegister = 0;
 
     D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature {};
     descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
     descriptionRootSignature.pParameters = rootParameters;
     descriptionRootSignature.NumParameters = _countof(rootParameters);
-    descriptionRootSignature.pStaticSamplers = &staticSampler;
-    descriptionRootSignature.NumStaticSamplers = 1;
+
+    // スタティックサンプラー設定
+    D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+    staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+    staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+    staticSamplers[0].ShaderRegister = 0;
+    staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    descriptionRootSignature.pStaticSamplers = staticSamplers;
+    descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
 
     ComPtr<ID3DBlob> signatureBlob;
     ComPtr<ID3DBlob> errorBlob;
@@ -144,6 +152,71 @@ void ParticleManager::CreateRootSignature()
     }
     hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
     assert(SUCCEEDED(hr));
+}
+
+void ParticleManager::Update(Camera* camera)
+{
+    // ビルボード行列の計算
+    Matrix4x4 billboardMatrix = MakeIdentity4x4();
+    Matrix4x4 cameraView = camera->GetViewMatrix();
+    // カメラの回転成分のみを抽出
+    billboardMatrix.m[0][0] = cameraView.m[0][0];
+    billboardMatrix.m[0][1] = cameraView.m[1][0];
+    billboardMatrix.m[0][2] = cameraView.m[2][0];
+    billboardMatrix.m[1][0] = cameraView.m[0][1];
+    billboardMatrix.m[1][1] = cameraView.m[1][1];
+    billboardMatrix.m[1][2] = cameraView.m[2][1];
+    billboardMatrix.m[2][0] = cameraView.m[0][2];
+    billboardMatrix.m[2][1] = cameraView.m[1][2];
+    billboardMatrix.m[2][2] = cameraView.m[2][2];
+
+    // ビュー行列とプロジェクション行列をカメラから取得
+    Matrix4x4 viewProj = Multiply(camera->GetViewMatrix(), camera->GetProjectionMatrix());
+
+    // 全てのパーティクルグループについて処理する
+    for (auto& [name, group] : particleGroups_) {
+        uint32_t instanceCount = 0;
+
+        // グループ内の全てのパーティクルについて処理する
+        for (auto it = group.particles.begin(); it != group.particles.end();) {
+
+            // 寿命に達していたらグループから外す
+            if (it->currentTime >= it->lifeTime) {
+                it = group.particles.erase(it);
+                continue;
+            }
+
+            // 移動処理
+            it->transform.translate.x += it->velocity.x * (1.0f / 60.0f); // 速度を適用
+            it->transform.translate.y += it->velocity.y * (1.0f / 60.0f);
+            it->transform.translate.z += it->velocity.z * (1.0f / 60.0f);
+
+            // 経過時間を加算
+            it->currentTime += 1.0f / 60.0f;
+
+            // インスタンシング用データの書き込み
+            if (instanceCount < group.kNumMaxInstance) {
+                // ワールド行列を計算
+                Matrix4x4 scaleMatrix = MakeScaleMatrix(it->transform.scale);
+                Matrix4x4 translateMatrix = MakeTranslateMatrix(it->transform.translate);
+
+                // ワールド行列
+                Matrix4x4 worldMatrix = Multiply(scaleMatrix, Multiply(billboardMatrix, translateMatrix));
+
+                // ワールドビュープロジェクション行列を合成
+                Matrix4x4 WVP = Multiply(worldMatrix, viewProj);
+
+                group.instancingData[instanceCount].WVP = WVP;
+                group.instancingData[instanceCount].World = worldMatrix;
+
+                float alpha = 1.0f - (it->currentTime / it->lifeTime);
+                group.instancingData[instanceCount].color = { it->color.x, it->color.y, it->color.z, alpha };
+
+                instanceCount++;
+            }
+            ++it;
+        }
+    }
 }
 
 void ParticleManager::Draw(Camera* camera)
@@ -181,8 +254,8 @@ void ParticleManager::CreatePipelineState()
     ID3D12Device* device = dxCommon_->GetDevice();
 
     // シェーダーコンパイル
-    IDxcBlob* vsBlob = dxCommon_->CompileShader(L"Resources/shaders/Particle.VS.hlsl", L"vs_6_0");
-    IDxcBlob* psBlob = dxCommon_->CompileShader(L"Resources/shaders/Particle.PS.hlsl", L"ps_6_0");
+    IDxcBlob* vsBlob = dxCommon_->CompileShader(L"Resources/shaders//Particle/Particle.VS.hlsl", L"vs_6_0");
+    IDxcBlob* psBlob = dxCommon_->CompileShader(L"Resources/shaders//Particle/Particle.PS.hlsl", L"ps_6_0");
 
     D3D12_INPUT_ELEMENT_DESC inputElementDescs[] = {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
