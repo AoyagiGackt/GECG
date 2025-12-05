@@ -9,7 +9,7 @@
 #include <string>
 #include <wrl/client.h>
 
-// パーティクル1粒のデータ (CPU計算用)
+// パーティクルのデータ
 struct Particle {
     Transform transform;
     Vector3 velocity;
