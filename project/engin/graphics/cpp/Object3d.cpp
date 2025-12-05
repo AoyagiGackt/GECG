@@ -53,7 +53,7 @@ void Object3d::Update()
     Matrix4x4 viewMatrix;
     Matrix4x4 projectionMatrix;
 
-    // 【カメラがあればカメラから行列をもらう 
+    // カメラがあればカメラから行列をもらう 
     Camera* camera = camera_ ? camera_ : commonCamera_;
 
     if (camera) {
@@ -87,6 +87,5 @@ void Object3d::Draw()
     commandList->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
     commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource_->GetGPUVirtualAddress());
 
-    // モデルの描画呼び出し
     model_->Draw(modelCommon_);
 }

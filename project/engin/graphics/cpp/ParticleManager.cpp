@@ -187,7 +187,7 @@ void ParticleManager::Update(Camera* camera)
             }
 
             // 移動処理
-            it->transform.translate.x += it->velocity.x * (1.0f / 60.0f); // 速度を適用
+            it->transform.translate.x += it->velocity.x * (1.0f / 60.0f);
             it->transform.translate.y += it->velocity.y * (1.0f / 60.0f);
             it->transform.translate.z += it->velocity.z * (1.0f / 60.0f);
 

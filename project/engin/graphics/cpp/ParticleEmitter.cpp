@@ -10,7 +10,7 @@ ParticleEmitter::ParticleEmitter(const std::string& name, const Transform& trans
 
 void ParticleEmitter::Update()
 {
-    // 時刻を進める (1/60秒固定と仮定、実際はDeltaTimeを使うのが良い)
+    // 時刻を進める
     timeCount_ += 1.0f / 60.0f;
 
     // 発生頻度より大きいなら発生
@@ -31,6 +31,5 @@ void ParticleEmitter::Emit()
         (float)(rand() % 100 - 50) / 100.0f
     };
 
-    // エミッタの設定値に従ってParticleManagerのEmitを呼び出す
     ParticleManager::GetInstance()->Emit(name_, transform_.translate, velocity);
 }

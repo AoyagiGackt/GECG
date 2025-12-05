@@ -8,7 +8,6 @@ void ModelCommon::Initialize(DirectXCommon* dxCommon)
     dxCommon_ = dxCommon;
     ID3D12Device* device = dxCommon_->GetDevice();
 
-    // --- ルートシグネチャ作成 ---
     D3D12_DESCRIPTOR_RANGE descriptorRanges[1] = {};
     descriptorRanges[0].BaseShaderRegister = 0;
     descriptorRanges[0].NumDescriptors = 1;
@@ -53,7 +52,6 @@ void ModelCommon::Initialize(DirectXCommon* dxCommon)
     D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
     device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
 
-    // --- パイプラインステート作成 ---
     IDxcBlob* vsBlob = dxCommon_->CompileShader(L"Resources/shaders/object3d/Object3dVS.hlsl", L"vs_6_0");
     IDxcBlob* psBlob = dxCommon_->CompileShader(L"Resources/shaders/object3d/Object3dPS.hlsl", L"ps_6_0");
 

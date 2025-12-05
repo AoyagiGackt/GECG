@@ -38,7 +38,7 @@ public:
     const Vector2& GetPosition() const { return position_; }
     void SetPosition(const Vector2& position) { position_ = position; }
 
-    // 回転 (ラジアン)
+    // 回転
     float GetRotation() const { return rotation_; }
     void SetRotation(float rotation) { rotation_ = rotation; }
 
@@ -46,7 +46,7 @@ public:
     const Vector2& GetSize() const { return size_; }
     void SetSize(const Vector2& size) { size_ = size; }
 
-    // アンカーポイント (0.0f ~ 1.0f)
+    // アンカーポイント
     const Vector2& GetAnchorPoint() const { return anchorPoint_; }
     void SetAnchorPoint(const Vector2& anchorPoint) { anchorPoint_ = anchorPoint; }
 

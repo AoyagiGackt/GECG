@@ -331,7 +331,7 @@ void DirectXCommon::CreateRTV()
     assert(SUCCEEDED(hr));
 
     D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-    rtvDesc.Format = GetBackBufferFormat(); // .h で定義した関数を使う
+    rtvDesc.Format = GetBackBufferFormat();
     rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
     D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
