@@ -7,9 +7,10 @@
 #include <d3d12.h>
 #include <list>
 #include <string>
+#include <unordered_map>
 #include <wrl/client.h>
 
-// パーティクルのデータ
+// パーティクル1粒のデータ
 struct Particle {
     Transform transform;
     Vector3 velocity;
@@ -18,11 +19,32 @@ struct Particle {
     float currentTime;
 };
 
-// GPUに送るデータ (StructuredBuffer用)
+// GPUに送るデータ
 struct ParticleForGPU {
     Matrix4x4 WVP;
     Matrix4x4 World;
     Vector4 color;
+};
+
+// パーティクルグループ
+struct ParticleGroup {
+    // マテリアルデータ
+    std::string textureFilePath;
+
+    // パーティクルリスト
+    std::list<Particle> particles;
+
+    // インスタンシングデータ用SRVのインデックス
+    uint32_t srvIndex = 0;
+
+    // インスタンシング用リソース
+    Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource;
+
+    // インスタンス数
+    const uint32_t kNumMaxInstance = 1024;
+
+    // インスタンシングデータを書き込むためのポインタ
+    ParticleForGPU* instancingData = nullptr;
 };
 
 class ParticleManager {
@@ -41,6 +63,9 @@ public:
     // パーティクルの発生
     void Emit(const std::string& name, const Vector3& position, const Vector3& velocity);
 
+    // パーティクルグループの生成
+    void CreateParticleGroup(const std::string& name, const std::string& textureFilePath);
+
     // モデルのセット (パーティクルの形状)
     void SetModel(Model* model) { model_ = model; }
 
@@ -54,8 +79,6 @@ private:
     void CreateRootSignature();
     // グラフィックスパイプラインの作成
     void CreatePipelineState();
-    // インスタンシング用バッファの作成
-    void CreateInstancingResource();
 
 private:
     DirectXCommon* dxCommon_ = nullptr;
@@ -64,15 +87,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_;
 
-    // インスタンシング用リソース
-    Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource_;
-    ParticleForGPU* instancingData_ = nullptr;
-    uint32_t srvIndex_ = 0; // SRVのインデックス
-    const uint32_t kNumMaxInstance = 1024; // 最大描画数
+    std::unordered_map<std::string, ParticleGroup> particleGroups_;
 
-    // パーティクルリスト
-    std::list<Particle> particles_;
-
-    // 描画するモデル
     Model* model_ = nullptr;
 };

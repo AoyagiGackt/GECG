@@ -196,5 +196,6 @@
   <ItemGroup>
     <None Include="Resources\shaders\object3d\Object3d.hlsli" />
     <None Include="Resources\shaders\Particle\Particle.hlsli" />
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>
