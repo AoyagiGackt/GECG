@@ -1,8 +1,13 @@
+C:\Users\gakua\source\repos\GECG\project\engin\game\cpp\LightingMode.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\LightingMode.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\Camera.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\Camera.obj
 C:\Users\gakua\source\repos\GECG\project\engin\game\cpp\D3DResourceLeakChecker.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\D3DResourceLeakChecker.obj
 C:\Users\gakua\source\repos\GECG\project\engin\game\cpp\DirectXCommon.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\DirectXCommon.obj
 C:\Users\gakua\source\repos\GECG\project\engin\game\cpp\Logger.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\Logger.obj
 C:\Users\gakua\source\repos\GECG\project\engin\game\cpp\WinApp.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\WinApp.obj
 C:\Users\gakua\source\repos\GECG\project\engin\game\cpp\StringUtlity.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\StringUtlity.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\ImguiControl.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\ImguiControl.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\MaterialManager.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\MaterialManager.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\MeshManager.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\MeshManager.obj
 C:\Users\gakua\source\repos\GECG\project\externals\imgui\imgui.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\imgui.obj
 C:\Users\gakua\source\repos\GECG\project\externals\imgui\imgui_demo.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\imgui_demo.obj
 C:\Users\gakua\source\repos\GECG\project\externals\imgui\imgui_draw.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\imgui_draw.obj
@@ -16,3 +21,11 @@ C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\ImGuiManager.cpp;C:\
 C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\SpriteCommon.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\SpriteCommon.obj
 C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\Sprite.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\Sprite.obj
 C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\TextureManager.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\TextureManager.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\Object3dCommon.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\Object3dCommon.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\Model.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\Model.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\Object3d.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\Object3d.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\ModelManager.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\ModelManager.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\ModelCommon.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\ModelCommon.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\SrvManager.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\SrvManager.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\ParticleManager.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\ParticleManager.obj
+C:\Users\gakua\source\repos\GECG\project\engin\graphics\cpp\ParticleEmitter.cpp;C:\Users\gakua\source\repos\GECG\Generated\Obj\CG2-1\Development\ParticleEmitter.obj
