@@ -172,6 +172,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engin\graphics\cpp\ModelManager.cpp" />
     <ClCompile Include="engin\graphics\cpp\ModelCommon.cpp" />
     <ClCompile Include="engin\graphics\cpp\SrvManager.cpp" />
+    <ClCompile Include="engin\graphics\cpp\ParticleManager.cpp" />
+    <ClCompile Include="engin\graphics\cpp\ParticleEmitter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\object3d\Object3dPS.hlsl">
@@ -219,6 +221,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engin\graphics\h\ModelManager.h" />
     <ClInclude Include="engin\graphics\h\ModelCommon.h" />
     <ClInclude Include="engin\graphics\h\SrvManager.h" />
+    <ClInclude Include="engin\graphics\h\ParticleManager.h" />
+    <ClInclude Include="engin\graphics\h\ParticleEmitter.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
@@ -230,6 +234,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\shaders\object3d\Object3d.hlsli" />
+    <None Include="Resources\shaders\Particle\Particle.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
