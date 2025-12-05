@@ -1,4 +1,4 @@
-#include "MeshManager.h"
+ï»¿#include "MeshManager.h"
 #include <cmath>
 
 namespace {
@@ -6,21 +6,18 @@ namespace {
 MeshData GenerateSphereMesh(int subdivision = 16, float radius = 1.0f)
 {
     MeshData mesh;
-    // ‰ŠúTransform
     mesh.transform = { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 
-    // ‹…‘Ì’¸“_¶¬
     const float kPi = 3.14159265358979323846f;
     const float kTwoPi = kPi * 2.0f;
 
     for (int lat = 0; lat < subdivision; ++lat) {
-        float lat0 = kPi * (float(lat) / subdivision - 0.5f); // -ƒÎ/2 ` +ƒÎ/2
+        float lat0 = kPi * (float(lat) / subdivision - 0.5f);
         float lat1 = kPi * (float(lat + 1) / subdivision - 0.5f);
         for (int lon = 0; lon < subdivision; ++lon) {
             float lon0 = kTwoPi * float(lon) / subdivision;
             float lon1 = kTwoPi * float(lon + 1) / subdivision;
 
-            // 4“_‚Ì‹…–ÊÀ•W
             Vector4 p00 = { radius * cosf(lat0) * cosf(lon0), radius * sinf(lat0), radius * cosf(lat0) * sinf(lon0), 1.0f };
             Vector4 p01 = { radius * cosf(lat0) * cosf(lon1), radius * sinf(lat0), radius * cosf(lat0) * sinf(lon1), 1.0f };
             Vector4 p10 = { radius * cosf(lat1) * cosf(lon0), radius * sinf(lat1), radius * cosf(lat1) * sinf(lon0), 1.0f };
@@ -31,7 +28,6 @@ MeshData GenerateSphereMesh(int subdivision = 16, float radius = 1.0f)
             Vector2 uv10 = { float(lon) / subdivision, 1.0f - float(lat + 1) / subdivision };
             Vector2 uv11 = { float(lon + 1) / subdivision, 1.0f - float(lat + 1) / subdivision };
 
-            // 2OŠpŒ`
             mesh.vertices.push_back({ p00, uv00, { p00.x, p00.y, p00.z } });
             mesh.vertices.push_back({ p10, uv10, { p10.x, p10.y, p10.z } });
             mesh.vertices.push_back({ p11, uv11, { p11.x, p11.y, p11.z } });
@@ -50,29 +46,29 @@ MeshData GenerateCubeMesh(float size = 1.0f)
     mesh.transform = { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 
     const float s = size * 0.5f;
-    // ’¸“_ƒf[ƒ^FŠe–Ê2OŠpŒ`E6–Ê
+
     struct Face {
         Vector4 p0, p1, p2, p3;
         Vector2 uv0, uv1, uv2, uv3;
         Vector3 normal;
     };
+
     Face faces[6] = {
         // +X
-        { { s, -s, -s, 1 }, { s, -s, s, 1 }, { s, s, s, 1 }, { s, s, -s, 1 }, { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } }, { 1, 0, 0 } },
+        { { s, -s, -s, 1 }, { s, -s, s, 1 }, { s, s, s, 1 }, { s, s, -s, 1 }, { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { 1, 0, 0 } },
         // -X
-        { { -s, -s, s, 1 }, { -s, -s, -s, 1 }, { -s, s, -s, 1 }, { -s, s, s, 1 }, { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } }, { -1, 0, 0 } },
+        { { -s, -s, s, 1 }, { -s, -s, -s, 1 }, { -s, s, -s, 1 }, { -s, s, s, 1 }, { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 0, 0 } },
         // +Y
-        { { -s, s, s, 1 }, { s, s, s, 1 }, { s, s, -s, 1 }, { -s, s, -s, 1 }, { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } }, { 0, 1, 0 } },
+        { { -s, s, s, 1 }, { s, s, s, 1 }, { s, s, -s, 1 }, { -s, s, -s, 1 }, { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { 0, 1, 0 } },
         // -Y
-        { { -s, -s, -s, 1 }, { s, -s, -s, 1 }, { s, -s, s, 1 }, { -s, -s, s, 1 }, { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } }, { 0, -1, 0 } },
+        { { -s, -s, -s, 1 }, { s, -s, -s, 1 }, { s, -s, s, 1 }, { -s, -s, s, 1 }, { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { 0, -1, 0 } },
         // +Z
-        { { -s, -s, s, 1 }, { s, -s, s, 1 }, { s, s, s, 1 }, { -s, s, s, 1 }, { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } }, { 0, 0, 1 } },
+        { { -s, -s, s, 1 }, { s, -s, s, 1 }, { s, s, s, 1 }, { -s, s, s, 1 }, { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { 0, 0, 1 } },
         // -Z
-        { { s, -s, -s, 1 }, { -s, -s, -s, 1 }, { -s, s, -s, 1 }, { s, s, -s, 1 }, { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } }, { 0, 0, -1 } },
+        { { s, -s, -s, 1 }, { -s, -s, -s, 1 }, { -s, s, -s, 1 }, { s, s, -s, 1 }, { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { 0, 0, -1 } },
     };
 
     for (const auto& f : faces) {
-        // 2OŠpŒ`
         mesh.vertices.push_back({ f.p0, f.uv0, f.normal });
         mesh.vertices.push_back({ f.p1, f.uv1, f.normal });
         mesh.vertices.push_back({ f.p2, f.uv2, f.normal });
@@ -86,6 +82,7 @@ MeshData GenerateCubeMesh(float size = 1.0f)
 
 MeshData GeneratePlaneMesh(float width = 1.0f, float height = 1.0f)
 {
+    // (å¤‰æ›´ãªã—) æ—¢å­˜ã®ã‚³ãƒ¼ãƒ‰ãã®ã¾ã¾
     MeshData mesh;
     mesh.transform = { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 
@@ -101,7 +98,6 @@ MeshData GeneratePlaneMesh(float width = 1.0f, float height = 1.0f)
     Vector2 uv3 = { 0, 1 };
     Vector3 normal = { 0, 1, 0 };
 
-    // 2OŠpŒ`
     mesh.vertices.push_back({ p0, uv0, normal });
     mesh.vertices.push_back({ p1, uv1, normal });
     mesh.vertices.push_back({ p2, uv2, normal });
@@ -112,7 +108,7 @@ MeshData GeneratePlaneMesh(float width = 1.0f, float height = 1.0f)
 
     return mesh;
 }
-} // namespace
+}
 
 MeshManager::MeshManager()
     : currentMeshType_(MeshType_Sphere)

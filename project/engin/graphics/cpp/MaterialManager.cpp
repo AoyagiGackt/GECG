@@ -1,4 +1,4 @@
-#include "MaterialManager.h"
+﻿#include "MaterialManager.h"
 
 MaterialManager::MaterialManager()
     : currentMaterialIndex_(0)
@@ -11,7 +11,7 @@ Material& MaterialManager::GetCurrentMaterial() { return materials[currentMateri
 
 void MaterialManager::InitMaterials()
 {
-    // �ԁA�΁A��
+    // 赤、緑、青
     materials.push_back({ { 1, 0, 0, 1 }, 1, { 0, 0, 0 }, MakeIdentity4x4() });
     materials.push_back({ { 0, 1, 0, 1 }, 1, { 0, 0, 0 }, MakeIdentity4x4() });
     materials.push_back({ { 0, 0, 1, 1 }, 1, { 0, 0, 0 }, MakeIdentity4x4() });
