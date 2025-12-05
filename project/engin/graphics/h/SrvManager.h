@@ -4,7 +4,6 @@
 
 class SrvManager {
 public:
-    // シングルトン
     static SrvManager* GetInstance();
 
     // 初期化

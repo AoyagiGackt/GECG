@@ -1,4 +1,4 @@
-#include "MaterialManager.h"
+ï»¿#include "MaterialManager.h"
 
 MaterialManager::MaterialManager()
     : currentMaterialIndex_(0)
@@ -11,9 +11,9 @@ Material& MaterialManager::GetCurrentMaterial() { return materials[currentMateri
 
 void MaterialManager::InitMaterials()
 {
-    // —á: ÔA—ÎAÂAƒJƒXƒ^ƒ€
-    materials.push_back({ { 1, 0, 0, 1 }, 1, { 0, 0, 0 }, MakeIdentity4x4() }); // Red
-    materials.push_back({ { 0, 1, 0, 1 }, 1, { 0, 0, 0 }, MakeIdentity4x4() }); // Green
-    materials.push_back({ { 0, 0, 1, 1 }, 1, { 0, 0, 0 }, MakeIdentity4x4() }); // Blue
-    materials.push_back({ { 1, 1, 1, 1 }, 1, { 0, 0, 0 }, MakeIdentity4x4() }); // White/Custom
+    // èµ¤ã€ç·‘ã€é’
+    materials.push_back({ { 1, 0, 0, 1 }, 1, { 0, 0, 0 }, MakeIdentity4x4() });
+    materials.push_back({ { 0, 1, 0, 1 }, 1, { 0, 0, 0 }, MakeIdentity4x4() });
+    materials.push_back({ { 0, 0, 1, 1 }, 1, { 0, 0, 0 }, MakeIdentity4x4() });
+    materials.push_back({ { 1, 1, 1, 1 }, 1, { 0, 0, 0 }, MakeIdentity4x4() });
 }

@@ -15,12 +15,21 @@
 #include "StringUtlity.h"
 #include "TextureManager.h"
 
-// 3D関連のインクルード
+// 3D関連
 #include "Model.h"
 #include "ModelCommon.h"
 #include "ModelManager.h"
 #include "Object3d.h"
 #include "Object3dCommon.h"
+
+// パーティクル関連
+#include "ParticleManager.h"
+#include "ParticleEmitter.h"
+
+#include "ImguiControl.h"
+#include "MaterialManager.h"
+#include "MeshManager.h"
+#include "LightingMode.h"
 
 #include "WinApp.h"
 #include "imgui.h"
@@ -49,6 +58,13 @@
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dxcompiler.lib")
 #pragma comment(lib, "xinput.lib")
+
+// --------------------------------------------------
+// グローバル変数の定義
+// --------------------------------------------------
+MeshManager meshManager;
+MaterialManager materialManager;
+int lightingMode = LightingMode::Lighting_HalfLambert;
 
 // --------------------------------------------------
 // using declarations
@@ -127,6 +143,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     ModelManager::GetInstance()->LoadModel("Resources/plane.obj", "Resources/uvChecker.png");
 
     // --------------------------------------------------
+    // パーティクルの初期化
+    // --------------------------------------------------
+
+    ParticleManager* particleManager = ParticleManager::GetInstance();
+    particleManager->Initialize(dxCommon);
+
+    Model* particleModel = ModelManager::GetInstance()->FindModel("Resources/plane.obj");
+    particleManager->SetModel(particleModel);
+
+    particleManager->CreateParticleGroup("fire", "Resources/uvChecker.png");
+
+    Vector3 emitterPos = { 0.0f, 3.0f, 0.0f };
+    Transform emitterTransform = { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, emitterPos };
+    ParticleEmitter* fireEmitter = new ParticleEmitter("fire", emitterTransform);
+
+    // --------------------------------------------------
     // カメラの生成
     // --------------------------------------------------
 
@@ -182,6 +214,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // くるくる回転
             transformRotate.y += 0.02f;
 
+            fireEmitter->Update();
+
+            particleManager->Update(camera);
+
             // ImGui開始
             imguiManager->Begin();
 
@@ -189,6 +225,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::Begin("Camera Control");
             ImGui::DragFloat3("Translate", &camera->GetTranslate().x, 0.1f);
             ImGui::DragFloat3("Rotate", &camera->GetRotate().x, 0.01f);
+            ImGui::End();
+
+            ImGui::Begin("Engine Controls");
+            ShowControls(); // ImguiControl.cpp の関数を呼び出す
             ImGui::End();
 
             // カメラの更新
@@ -265,6 +305,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             obj1->Draw();
             obj2->Draw();
 
+            // パーティクル描画
+            particleManager->Draw(camera);
+
             // ImGui描画
             imguiManager->Draw(dxCommon);
 
@@ -284,6 +327,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     delete sprite1;
     delete sprite2;
     delete spriteCommon;
+
+    delete fireEmitter;
 
     delete obj1;
     delete obj2;
