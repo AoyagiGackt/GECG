@@ -66,7 +66,7 @@ public:
     // パーティクルグループの生成
     void CreateParticleGroup(const std::string& name, const std::string& textureFilePath);
 
-    // モデルのセット (パーティクルの形状)
+    // モデルのセット
     void SetModel(Model* model) { model_ = model; }
 
 private:

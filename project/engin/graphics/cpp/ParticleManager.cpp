@@ -1,5 +1,6 @@
 ﻿#include "ParticleManager.h"
 #include "TextureManager.h"
+#include <algorithm>
 #include <cassert>
 #include <d3dx12.h>
 
@@ -162,7 +163,7 @@ void ParticleManager::Draw(Camera* camera)
 
     // 全てのパーティクルグループについて処理する
     for (auto& [name, group] : particleGroups_) {
-        UINT drawCount = (UINT)std::min((size_t)group.kNumMaxInstance, group.particles.size());
+        UINT drawCount = (UINT)(std::min)((size_t)group.kNumMaxInstance, group.particles.size());
         if (drawCount == 0) {
             continue;
             }

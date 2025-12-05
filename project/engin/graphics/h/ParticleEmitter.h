@@ -4,19 +4,21 @@
 
 class ParticleEmitter {
 public:
-    ParticleEmitter(ParticleManager* particleManager);
+   ParticleEmitter(const std::string& name, const Transform& transform);
 
     // 更新
     void Update();
+
+    void Emit();
 
     // 発生場所のセット
     void SetTranslate(const Vector3& translate) { transform_.translate = translate; }
 
 private:
-    ParticleManager* particleManager_ = nullptr;
+    std::string name_;
     Transform transform_;
 
     // 発生間隔など
-    float count_ = 0.0f;
-    float frequency_ = 0.1f; // 秒
+    float frequency_ = 0.5f;
+    float timeCount_ = 0.0f;
 };

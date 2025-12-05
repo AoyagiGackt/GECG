@@ -1,26 +1,36 @@
 ﻿#include "ParticleEmitter.h"
+#include "ParticleManager.h"
 #include <cstdlib>
 
-ParticleEmitter::ParticleEmitter(ParticleManager* particleManager)
-    : particleManager_(particleManager)
+ParticleEmitter::ParticleEmitter(const std::string& name, const Transform& transform)
+    : name_(name)
+    , transform_(transform)
 {
-    transform_.scale = { 1.0f, 1.0f, 1.0f };
-    transform_.rotate = { 0.0f, 0.0f, 0.0f };
-    transform_.translate = { 0.0f, 0.0f, 0.0f };
 }
 
 void ParticleEmitter::Update()
 {
-    count_ += 1.0f / 60.0f;
+    // 時刻を進める (1/60秒固定と仮定、実際はDeltaTimeを使うのが良い)
+    timeCount_ += 1.0f / 60.0f;
 
-    if (count_ >= frequency_) {
-        count_ = 0.0f;
+    // 発生頻度より大きいなら発生
+    if (timeCount_ >= frequency_) {
+        // 発生処理
+        Emit();
 
-        Vector3 velocity;
-        velocity.x = (float)(rand() % 100 - 50) / 100.0f;
-        velocity.y = (float)(rand() % 100 - 50) / 100.0f;
-        velocity.z = (float)(rand() % 100 - 50) / 100.0f;
-
-        particleManager_->Emit("default", transform_.translate, velocity);
+        timeCount_ -= frequency_;
     }
+}
+
+void ParticleEmitter::Emit()
+{
+    // ランダムな速度を生成
+    Vector3 velocity = {
+        (float)(rand() % 100 - 50) / 100.0f,
+        (float)(rand() % 100 - 50) / 100.0f,
+        (float)(rand() % 100 - 50) / 100.0f
+    };
+
+    // エミッタの設定値に従ってParticleManagerのEmitを呼び出す
+    ParticleManager::GetInstance()->Emit(name_, transform_.translate, velocity);
 }
