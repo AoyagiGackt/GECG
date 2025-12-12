@@ -322,6 +322,7 @@ project/Resources/multiMaterial.blend
 
 Dumps/
 logs/
+generated/
 
 externals/DirectXTex/Bin/
 externals/DirectXTex/x64/
