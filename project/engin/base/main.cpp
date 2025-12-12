@@ -154,7 +154,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     particleManager->CreateParticleGroup("fire", "Resources/uvChecker.png");
 
-    Vector3 emitterPos = { 0.0f, 3.0f, 0.0f };
+    Vector3 emitterPos = { 0.0f, 0.0f, 0.0f };
     Transform emitterTransform = { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, emitterPos };
     ParticleEmitter* fireEmitter = new ParticleEmitter("fire", emitterTransform);
 
@@ -258,6 +258,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             sprite1->SetSize(size);
             sprite1->Update();
             sprite2->Update();
+
+            ImGui::Begin("Particle Control");
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Text("Particle Settings");
+
+            // エミッターの位置
+            static Vector3 debugEmitterPos = { 0, 0, 0 };
+            if (ImGui::DragFloat3("Emitter Pos", &debugEmitterPos.x, 0.1f)) {
+                fireEmitter->SetTranslate(debugEmitterPos);
+            }
+
+            // テクスチャ切り替え機能
+            static const char* texturePaths[] = {
+                "Resources/uvChecker.png",
+                "Resources/monsterBall.png",
+            };
+            static int currentItem = 0;
+
+            if (ImGui::Combo("Particle Texture", &currentItem, texturePaths, IM_ARRAYSIZE(texturePaths))) {
+                ParticleManager::GetInstance()->SetTexture("fire", texturePaths[currentItem]);
+            }
+
+            ImGui::End();
 
             // 3Dオブジェクト用 ImGui
             ImGui::Begin("3D Object Control");

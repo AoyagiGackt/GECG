@@ -63,6 +63,9 @@ public:
     // パーティクルの発生
     void Emit(const std::string& name, const Vector3& position, const Vector3& velocity);
 
+    // テクスチャを使い分けれるように関数
+    void SetTexture(const std::string& groupName, const std::string& textureFilePath);
+
     // パーティクルグループの生成
     void CreateParticleGroup(const std::string& name, const std::string& textureFilePath);
 

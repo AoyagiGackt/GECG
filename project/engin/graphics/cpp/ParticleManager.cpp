@@ -299,3 +299,17 @@ void ParticleManager::CreatePipelineState()
     HRESULT hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&graphicsPipelineState_));
     assert(SUCCEEDED(hr));
 }
+
+void ParticleManager::SetTexture(const std::string& groupName, const std::string& textureFilePath)
+{
+    // グループが存在するか確認
+    if (particleGroups_.contains(groupName)) {
+        ParticleGroup& group = particleGroups_[groupName];
+
+        // パスを更新
+        group.textureFilePath = textureFilePath;
+
+        // テクスチャが未読み込みならロード
+        TextureManager::GetInstance()->LoadTexture(textureFilePath);
+    }
+}
