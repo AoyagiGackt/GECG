@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: リポジトリをチェックアウト
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
       - name: 不要なファイルとディレクトリを検索(bush)
         run: |
           # ディレクトリ条件を構築(最初の不要な -o を後で削除)
