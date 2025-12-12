@@ -231,6 +231,9 @@ void ParticleManager::Draw(Camera* camera)
     commandList->SetPipelineState(graphicsPipelineState_.Get());
     commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+    D3D12_VERTEX_BUFFER_VIEW vbv = model_->GetVertexBufferView();
+    commandList->IASetVertexBuffers(0, 1, &vbv);
+
     // SrvManagerのヒープをセット
     SrvManager::GetInstance()->PreDraw();
 
@@ -245,7 +248,7 @@ void ParticleManager::Draw(Camera* camera)
 
         D3D12_GPU_DESCRIPTOR_HANDLE textureH = TextureManager::GetInstance()->GetSrvHandleGPU(group.textureFilePath);
         commandList->SetGraphicsRootDescriptorTable(1, textureH);
-        commandList->DrawInstanced(6, drawCount, 0, 0);
+        commandList->DrawInstanced((UINT)model_->GetVertexCount(), drawCount, 0, 0);
     }
 }
 
@@ -295,4 +298,18 @@ void ParticleManager::CreatePipelineState()
 
     HRESULT hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&graphicsPipelineState_));
     assert(SUCCEEDED(hr));
+}
+
+void ParticleManager::SetTexture(const std::string& groupName, const std::string& textureFilePath)
+{
+    // グループが存在するか確認
+    if (particleGroups_.contains(groupName)) {
+        ParticleGroup& group = particleGroups_[groupName];
+
+        // パスを更新
+        group.textureFilePath = textureFilePath;
+
+        // テクスチャが未読み込みならロード
+        TextureManager::GetInstance()->LoadTexture(textureFilePath);
+    }
 }

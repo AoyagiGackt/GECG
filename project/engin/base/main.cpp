@@ -23,18 +23,19 @@
 #include "Object3dCommon.h"
 
 // パーティクル関連
-#include "ParticleManager.h"
 #include "ParticleEmitter.h"
+#include "ParticleManager.h"
 
 #include "ImguiControl.h"
+#include "LightingMode.h"
 #include "MaterialManager.h"
 #include "MeshManager.h"
-#include "LightingMode.h"
 
 #include "WinApp.h"
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
 #include "imgui_impl_win32.h"
+#include <SrvManager.h>
 #include <Windows.h>
 #include <Xinput.h>
 #include <cassert>
@@ -48,7 +49,6 @@
 #include <string>
 #include <vector>
 #include <wrl/client.h>
-#include <SrvManager.h>
 
 // --------------------------------------------------
 // ライブラリのリンク
@@ -154,7 +154,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     particleManager->CreateParticleGroup("fire", "Resources/uvChecker.png");
 
-    Vector3 emitterPos = { 0.0f, 3.0f, 0.0f };
+    Vector3 emitterPos = { 0.0f, 0.0f, 0.0f };
     Transform emitterTransform = { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, emitterPos };
     ParticleEmitter* fireEmitter = new ParticleEmitter("fire", emitterTransform);
 
@@ -259,6 +259,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             sprite1->Update();
             sprite2->Update();
 
+            ImGui::Begin("Particle Control");
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Text("Particle Settings");
+
+            // エミッターの位置
+            static Vector3 debugEmitterPos = { 0, 0, 0 };
+            if (ImGui::DragFloat3("Emitter Pos", &debugEmitterPos.x, 0.1f)) {
+                fireEmitter->SetTranslate(debugEmitterPos);
+            }
+
+            // テクスチャ切り替え機能
+            static const char* texturePaths[] = {
+                "Resources/uvChecker.png",
+                "Resources/monsterBall.png",
+            };
+            static int currentItem = 0;
+
+            if (ImGui::Combo("Particle Texture", &currentItem, texturePaths, IM_ARRAYSIZE(texturePaths))) {
+                ParticleManager::GetInstance()->SetTexture("fire", texturePaths[currentItem]);
+            }
+
+            ImGui::End();
+
             // 3Dオブジェクト用 ImGui
             ImGui::Begin("3D Object Control");
             ImGui::DragFloat3("Scale", &transformScale.x, 0.01f);
@@ -288,10 +312,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             SrvManager::GetInstance()->PreDraw();
 
             // スプライト描画
-            spriteCommon->CommonDrawSettings();
+            // spriteCommon->CommonDrawSettings();
 
-            sprite1->Draw();
-            // sprite2->Draw();
+            // sprite1->Draw();
+            //  sprite2->Draw();
 
             // 3Dオブジェクト描画
 
@@ -302,8 +326,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             object3dCommon->SetDefaultLight(dxCommon->GetCommandList());
 
             // 3dオブジェクト描画
-            obj1->Draw();
-            obj2->Draw();
+            // obj1->Draw();
+            // obj2->Draw();
 
             // パーティクル描画
             particleManager->Draw(camera);

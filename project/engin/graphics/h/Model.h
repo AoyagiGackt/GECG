@@ -20,6 +20,10 @@ public:
     // 描画
     void Draw(ModelCommon* modelCommon);
 
+    D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const { return vertexBufferView_; }
+
+    size_t GetVertexCount() const { return vertices_.size(); }
+
 private:
     // OBJファイル読み込み関数
     void LoadObjFile(const std::string& filePath);
