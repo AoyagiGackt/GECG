@@ -23,18 +23,19 @@
 #include "Object3dCommon.h"
 
 // パーティクル関連
-#include "ParticleManager.h"
 #include "ParticleEmitter.h"
+#include "ParticleManager.h"
 
 #include "ImguiControl.h"
+#include "LightingMode.h"
 #include "MaterialManager.h"
 #include "MeshManager.h"
-#include "LightingMode.h"
 
 #include "WinApp.h"
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
 #include "imgui_impl_win32.h"
+#include <SrvManager.h>
 #include <Windows.h>
 #include <Xinput.h>
 #include <cassert>
@@ -48,7 +49,6 @@
 #include <string>
 #include <vector>
 #include <wrl/client.h>
-#include <SrvManager.h>
 
 // --------------------------------------------------
 // ライブラリのリンク
@@ -288,10 +288,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             SrvManager::GetInstance()->PreDraw();
 
             // スプライト描画
-            spriteCommon->CommonDrawSettings();
+            // spriteCommon->CommonDrawSettings();
 
-            sprite1->Draw();
-            // sprite2->Draw();
+            // sprite1->Draw();
+            //  sprite2->Draw();
 
             // 3Dオブジェクト描画
 
@@ -302,8 +302,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             object3dCommon->SetDefaultLight(dxCommon->GetCommandList());
 
             // 3dオブジェクト描画
-            obj1->Draw();
-            obj2->Draw();
+            // obj1->Draw();
+            // obj2->Draw();
 
             // パーティクル描画
             particleManager->Draw(camera);
