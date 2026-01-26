@@ -320,6 +320,13 @@ project/Resources/axis.blend
 project/Resources/fence.png
 project/Resources/multiMaterial.blend
 
+x64/
+Debug/
+Release/
+AppPackages/
+Generated Files/
+generated/
+
 Dumps/
 logs/
 generated/
@@ -331,5 +338,18 @@ DirectXGame/DirectXGame.exe
 DirectXGame/imgui.ini
 
 imgui.ini
+*.exe
 *.dll
 *.pdb
+
+*.obj
+*.tlog
+*.idb
+*.ilk
+*.ipdb
+*.iobj
+*.sbr
+
+externals/**/x64/
+externals/**/Debug/
+externals/**/Release/
