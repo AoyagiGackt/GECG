@@ -10,8 +10,9 @@ extern int lightingMode;
 
 void ShowControls()
 {
-    if(ImGui::CollapsingHeader("Mesh Settings", ImGuiTreeNodeFlags_DefaultOpen))
-    {
+#ifdef USE_IMGUI
+
+    if (ImGui::CollapsingHeader("Mesh Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
         const char* meshItems[] = { "Sphere", "Cube", "Plane" };
         int currentMesh = (int)meshManager.GetCurrentMeshType();
         if (ImGui::Combo("Mesh Type", &currentMesh, meshItems, IM_ARRAYSIZE(meshItems))) {
@@ -45,4 +46,6 @@ void ShowControls()
         const char* lightItems[] = { "None", "Lambert", "Half Lambert" };
         ImGui::Combo("Lighting Mode", &lightingMode, lightItems, IM_ARRAYSIZE(lightItems));
     }
+
+#endif
 }
