@@ -32,9 +32,6 @@
 #include "MeshManager.h"
 
 #include "WinApp.h"
-#include "imgui.h"
-#include "imgui_impl_dx12.h"
-#include "imgui_impl_win32.h"
 #include <SrvManager.h>
 #include <Windows.h>
 #include <Xinput.h>
@@ -221,16 +218,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // ImGui開始
             imguiManager->Begin();
 
-            // カメラ用 ImGui
-            ImGui::Begin("Camera Control");
-            ImGui::DragFloat3("Translate", &camera->GetTranslate().x, 0.1f);
-            ImGui::DragFloat3("Rotate", &camera->GetRotate().x, 0.01f);
-            ImGui::End();
-
-            ImGui::Begin("Engine Controls");
-            ShowControls(); // ImguiControl.cpp の関数を呼び出す
-            ImGui::End();
-
             // カメラの更新
             camera->Update();
 
@@ -245,6 +232,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Vector2 texLT = sprite1->GetTextureLeftTop();
             Vector2 texSz = sprite1->GetTextureSize();
 
+            #ifdef USE_IMGUI
+
+            // カメラ用 ImGui
+            ImGui::Begin("Camera Control");
+            ImGui::DragFloat3("Translate", &camera->GetTranslate().x, 0.1f);
+            ImGui::DragFloat3("Rotate", &camera->GetRotate().x, 0.01f);
+            ImGui::End();
+
+            ImGui::Begin("Engine Controls");
+            ShowControls(); // ImguiControl.cpp の関数を呼び出す
+            ImGui::End();
+
             ImGui::ShowDemoWindow();
 
             ImGui::Begin("Sprite 1 Control");
@@ -252,12 +251,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::SliderAngle("Rotation", &rot);
             ImGui::DragFloat2("Size", &size.x, 1.0f);
             ImGui::End();
-
-            sprite1->SetPosition(pos);
-            sprite1->SetRotation(rot);
-            sprite1->SetSize(size);
-            sprite1->Update();
-            sprite2->Update();
 
             ImGui::Begin("Particle Control");
             ImGui::Spacing();
@@ -289,6 +282,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             ImGui::DragFloat3("Rotate", &transformRotate.x, 0.01f);
             ImGui::DragFloat3("Translate", &transformTranslate.x, 0.01f);
             ImGui::End();
+
+            #endif
+
+            sprite1->SetPosition(pos);
+            sprite1->SetRotation(rot);
+            sprite1->SetSize(size);
+            sprite1->Update();
+            sprite2->Update();
 
             // オブジェクトへの反映
             obj1->SetScale(transformScale);
