@@ -1,10 +1,8 @@
 ﻿#include "ImguiControl.h"
+#include "ImGuiManager.h"
 #include "LightingMode.h"
 #include "MaterialManager.h"
 #include "MeshManager.h"
-#include "imgui.h"
-#include "imgui_impl_dx12.h"
-#include "imgui_impl_win32.h"
 
 extern MeshManager meshManager;
 extern MaterialManager materialManager;

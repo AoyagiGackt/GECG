@@ -1,5 +1,6 @@
 ﻿#include "WinApp.h"
-#include "imgui.h"
+#include "ImGuiManager.h"
+#include <imgui_impl_win32.h>
 
 #pragma comment(lib, "winmm.lib")
 

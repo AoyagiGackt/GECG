@@ -1,11 +1,12 @@
 ﻿#include "ImGuiManager.h"
-#include "imgui.h"
 #include "imgui_impl_dx12.h"
 #include "imgui_impl_win32.h"
 #include <SrvManager.h>
 
-void ImGuiManager::Initialize(WinApp* winApp, DirectXCommon* dxCommon)
+void ImGuiManager::Initialize([[maybe_unused]] WinApp* winApp, [[maybe_unused]] DirectXCommon* dxCommon)
 {
+#ifdef USE_IMGUI
+
     // ImGui生成
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -29,24 +30,36 @@ void ImGuiManager::Initialize(WinApp* winApp, DirectXCommon* dxCommon)
     unsigned char* pixels;
     int width, height;
     ImGui::GetIO().Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+#endif
 }
 
 void ImGuiManager::Begin()
 {
+#ifdef USE_IMGUI
+
     // フレーム開始
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
+
+#endif
 }
 
 void ImGuiManager::End()
 {
+#ifdef USE_IMGUI
+
     // 内部コマンド生成
     ImGui::Render();
+
+#endif
 }
 
 void ImGuiManager::Draw(DirectXCommon* dxCommon)
 {
+#ifdef USE_IMGUI
+
     // コマンドリストをdxCommonから取得する
     ID3D12GraphicsCommandList* commandList = dxCommon->GetCommandList();
 
@@ -55,12 +68,18 @@ void ImGuiManager::Draw(DirectXCommon* dxCommon)
 
     // 描画コマンドを発行
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
+
+#endif
 }
 
 void ImGuiManager::Finalize()
 {
+#ifdef USE_IMGUI
+
     // 終了処理
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
+
+#endif
 }
