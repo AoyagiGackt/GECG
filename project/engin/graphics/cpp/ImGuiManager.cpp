@@ -25,6 +25,10 @@ void ImGuiManager::Initialize(WinApp* winApp, DirectXCommon* dxCommon)
         SrvManager::GetInstance()->GetCPUDescriptorHandle(index), // 確保したCPUハンドル
         SrvManager::GetInstance()->GetGPUDescriptorHandle(index) // 確保したGPUハンドル
     );
+
+    unsigned char* pixels;
+    int width, height;
+    ImGui::GetIO().Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 }
 
 void ImGuiManager::Begin()
@@ -45,6 +49,9 @@ void ImGuiManager::Draw(DirectXCommon* dxCommon)
 {
     // コマンドリストをdxCommonから取得する
     ID3D12GraphicsCommandList* commandList = dxCommon->GetCommandList();
+
+    ID3D12DescriptorHeap* ppHeaps[] = { SrvManager::GetInstance()->GetSrvDescriptorHeap() };
+    commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
     // 描画コマンドを発行
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
