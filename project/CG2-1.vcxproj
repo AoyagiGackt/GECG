@@ -156,6 +156,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="engin\game\cpp\Audio.cpp" />
     <ClCompile Include="engin\game\cpp\LightingMode.cpp" />
     <ClCompile Include="engin\graphics\cpp\Camera.cpp" />
     <ClCompile Include="engin\game\cpp\D3DResourceLeakChecker.cpp" />
@@ -200,6 +201,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engin\game\h\Audio.h" />
     <ClInclude Include="engin\game\h\LightingMode.h" />
     <ClInclude Include="engin\game\h\Logger.h" />
     <ClInclude Include="engin\graphics\h\Camera.h" />

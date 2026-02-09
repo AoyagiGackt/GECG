@@ -32,6 +32,8 @@
 #include "MeshManager.h"
 
 #include "WinApp.h"
+#include "Audio.h"
+
 #include <SrvManager.h>
 #include <Windows.h>
 #include <Xinput.h>
@@ -47,7 +49,6 @@
 #include <string>
 #include <vector>
 #include <wrl/client.h>
-#include <xaudio2.h>
 
 // --------------------------------------------------
 // ライブラリのリンク
@@ -57,7 +58,6 @@
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dxcompiler.lib")
 #pragma comment(lib, "xinput.lib")
-#pragma comment(lib, "xaudio2.lib")
 
 // --------------------------------------------------
 // グローバル変数の定義
@@ -190,17 +190,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     Vector3 transformTranslate = { 0.0f, 0.0f, 0.0f };
 
     // --------------------------------------------------
-    // 音楽の初期化
-    // --------------------------------------------------
-
-    ComPtr<IXAudio2> xAudio2;
-    IXAudio2MasteringVoice* masteringVoice;
-
-    // --------------------------------------------------
     // ImGuiの初期化
     // --------------------------------------------------
     ImGuiManager* imguiManager = new ImGuiManager();
     imguiManager->Initialize(winApp, dxCommon);
+
+    // --------------------------------------------------
+    // 音楽の初期化
+    // --------------------------------------------------
+
+    // 音楽の初期化セクション
+    Audio* audio = new Audio();
+    audio->Initialize();
+
+    // 音のロード
+    SoundData seJump = audio->LoadWave("Resources/se_jump.wav");
 
     // --------------------------------------------------
     // メインループ
@@ -230,6 +234,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             // カメラの更新
             camera->Update();
+
+            if (input->TriggerKey(DIK_SPACE)) { // スペースキーが押されたら
+                audio->PlayWave(seJump); // 再生
+            }
 
             // スプライト用 ImGui
             Vector2 pos = sprite1->GetPosition();
@@ -315,6 +323,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     imguiManager->Finalize();
     SrvManager::GetInstance()->Finalize();
     ModelManager::GetInstance()->Finalize();
+    audio->Finalize();
 
     // 解放
     delete imguiManager;
@@ -334,6 +343,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     delete dxCommon;
     delete winApp;
     delete camera;
+    delete audio;
 
     return 0;
 }
