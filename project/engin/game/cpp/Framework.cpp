@@ -1,5 +1,8 @@
 ﻿#include "Framework.h"
+#include "D3DResourceLeakChecker.h"
 #include "SrvManager.h"
+
+static D3D12ResourceLeakChecker leakCheck;
 
 void Framework::Run()
 {
