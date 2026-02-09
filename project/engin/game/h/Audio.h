@@ -38,4 +38,5 @@ public:
 private:
     Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
     IXAudio2MasteringVoice* masteringVoice_ = nullptr;
+    IXAudio2SourceVoice* pSourceVoice_ = nullptr;
 };

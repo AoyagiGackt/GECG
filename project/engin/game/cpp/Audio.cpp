@@ -26,6 +26,10 @@ void Audio::Initialize()
 
 void Audio::Finalize()
 {
+    if (!xAudio2_) {
+        return;
+    }
+
     // XAudio2の終了
     if (masteringVoice_) {
         masteringVoice_->DestroyVoice();
@@ -127,17 +131,27 @@ SoundData Audio::LoadAudio(const std::string& filename)
 void Audio::PlayWave(const SoundData& soundData)
 {
     HRESULT hr;
-    IXAudio2SourceVoice* pSourceVoice = nullptr;
-    hr = xAudio2_->CreateSourceVoice(&pSourceVoice, &soundData.wfex);
+
+    // 前の音が鳴っていたら消す（BGM切り替え用）
+    if (pSourceVoice_) {
+        pSourceVoice_->Stop();
+        pSourceVoice_->DestroyVoice();
+        pSourceVoice_ = nullptr;
+    }
+
+    // 再生担当を作る
+    hr = xAudio2_->CreateSourceVoice(&pSourceVoice_, &soundData.wfex);
     assert(SUCCEEDED(hr));
 
+    // データをセット
     XAUDIO2_BUFFER buffer = {};
     buffer.pAudioData = soundData.pBuffer.data();
     buffer.AudioBytes = soundData.bufferSize;
     buffer.Flags = XAUDIO2_END_OF_STREAM;
 
-    hr = pSourceVoice->SubmitSourceBuffer(&buffer);
+    hr = pSourceVoice_->SubmitSourceBuffer(&buffer);
     assert(SUCCEEDED(hr));
 
-    hr = pSourceVoice->Start(0);
+    // 再生開始
+    hr = pSourceVoice_->Start(0);
 }

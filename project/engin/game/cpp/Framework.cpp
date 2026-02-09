@@ -1,6 +1,15 @@
 ﻿#include "Framework.h"
 #include "D3DResourceLeakChecker.h"
 #include "SrvManager.h"
+#include "MeshManager.h"
+#include "MaterialManager.h"
+#include "LightingMode.h"
+#include <TextureManager.h>
+
+// グローバル変数の実体定義
+MeshManager meshManager;
+MaterialManager materialManager;
+int lightingMode = LightingMode::Lighting_HalfLambert;
 
 static D3D12ResourceLeakChecker leakCheck;
 
@@ -23,6 +32,7 @@ void Framework::Initialize()
     dxCommon_ = new DirectXCommon();
     dxCommon_->Initialize(winApp_);
     SrvManager::GetInstance()->Initialize(dxCommon_);
+    TextureManager::GetInstance()->Initialize(dxCommon_);
     input_ = new Input();
     input_->Initialize(winApp_);
     audio_ = new Audio();
