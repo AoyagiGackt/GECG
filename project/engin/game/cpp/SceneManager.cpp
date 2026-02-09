@@ -18,6 +18,11 @@ void SceneManager::Initialize(DirectXCommon* dxCommon, Input* input, Audio* audi
     // 最初のシーン
     currentScene_ = new TitleScene();
     currentScene_->Initialize(dxCommon_, input_, audio_);
+
+    auto titleScene = dynamic_cast<TitleScene*>(currentScene_);
+    if (titleScene) {
+        titleScene->SetImGuiManager(imguiManager_);
+    }
 }
 
 void SceneManager::Update()

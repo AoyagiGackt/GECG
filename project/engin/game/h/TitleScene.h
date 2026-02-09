@@ -5,6 +5,7 @@
 #include "Input.h"
 #include "Sprite.h"
 #include "SpriteCommon.h"
+#include "ImGuiManager.h"
 
 class TitleScene : public BaseScene {
 public:
@@ -15,12 +16,14 @@ public:
 
     // シーンが終了したかどうか
     bool IsFinished() const { return finished_; }
+    void SetImGuiManager(ImGuiManager* imgui) { imguiManager_ = imgui; }
 
 private:
     // 借りてくるもの
     DirectXCommon* dxCommon_ = nullptr;
     Input* input_ = nullptr;
     Audio* audio_ = nullptr;
+    ImGuiManager* imguiManager_ = nullptr;
 
     // 自分の持ち物
     SpriteCommon* spriteCommon_ = nullptr;
