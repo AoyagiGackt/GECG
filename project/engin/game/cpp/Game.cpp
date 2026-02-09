@@ -1,40 +1,30 @@
 ﻿#include "Game.h"
+#include "LightingMode.h"
+#include "MaterialManager.h"
+#include "MeshManager.h"
 #include "ModelManager.h"
 #include "SrvManager.h"
 #include "TextureManager.h"
-#include "LightingMode.h"
-#include <MeshManager.h>
-#include <MaterialManager.h>
 
 // --------------------------------------------------
-// グローバル変数の定義
+// グローバル変数の実体定義
 // --------------------------------------------------
 MeshManager meshManager;
 MaterialManager materialManager;
 int lightingMode = LightingMode::Lighting_HalfLambert;
 
-void Game::Initialize()
+// --------------------------------------------------
+// 初期化
+// --------------------------------------------------
+void MyGame::Initialize()
 {
-    winApp_ = new WinApp();
-    winApp_->Initialize();
+    // 基盤の初期化
+    Framework::Initialize();
 
-    dxCommon_ = new DirectXCommon();
-    dxCommon_->Initialize(winApp_);
-
-    // マネージャー系の初期化
-    SrvManager::GetInstance()->Initialize(dxCommon_);
+    // 描画共通マネージャーの初期化
     TextureManager::GetInstance()->Initialize(dxCommon_);
 
-    input_ = new Input();
-    input_->Initialize(winApp_);
-
-    audio_ = new Audio();
-    audio_->Initialize();
-
-    imguiManager_ = new ImGuiManager();
-    imguiManager_->Initialize(winApp_, dxCommon_);
-
-    // 描画共通系の初期化
+    // 各共通設定の初期化
     spriteCommon_ = new SpriteCommon();
     spriteCommon_->Initialize(dxCommon_);
 
@@ -46,34 +36,34 @@ void Game::Initialize()
 
     ModelManager::GetInstance()->Initialize(modelCommon_);
 
-    // --- アセット読み込み・オブジェクト生成 ---
+    // アセットの読み込み
+    bgmData_ = audio_->LoadAudio("Resources/461_BPM174.wav");
+
+    // カメラ
     camera_ = new Camera();
+    camera_->SetTranslate({ 0.0f, 0.0f, -10.0f });
     Object3d::SetCommonCamera(camera_);
 
+    // スプライト
     sprite1_ = new Sprite();
     sprite1_->Initialize(spriteCommon_, "Resources/uvChecker.png");
     sprite1_->SetPosition({ 100.0f, 100.0f });
-
-    bgmData_ = audio_->LoadAudio("Resources/461_BPM174.wav");
 }
 
-void Game::Update()
+// --------------------------------------------------
+// 更新処理
+// --------------------------------------------------
+void MyGame::Update() 
 {
-    if (winApp_->ProcessMessage()) {
-        endRequest_ = true;
-        return;
-    }
+    Framework::Update();
 
-    input_->Update();
-    imguiManager_->Begin();
-    camera_->Update();
-
-    // サウンド再生テスト
+    // サウンド再生
     if (input_->TriggerKey(DIK_SPACE)) {
         audio_->PlayWave(bgmData_);
     }
 
-    // ImGui
+    camera_->Update();
+
 #ifdef USE_IMGUI
     Vector2 pos = sprite1_->GetPosition();
     ImGui::SetNextWindowSize(ImVec2(500, 100), ImGuiCond_FirstUseEver);
@@ -87,36 +77,33 @@ void Game::Update()
     imguiManager_->End();
 }
 
-void Game::Draw()
+// --------------------------------------------------
+// 描画処理
+// --------------------------------------------------
+void MyGame::Draw()
 {
     dxCommon_->PreDraw();
     SrvManager::GetInstance()->PreDraw();
 
-    // スプライト描画
     spriteCommon_->CommonDrawSettings();
     sprite1_->Draw();
 
-    // ImGui描画
     imguiManager_->Draw(dxCommon_);
-
     dxCommon_->PostDraw();
 }
 
-void Game::Finalize()
+// --------------------------------------------------
+// 解放
+// --------------------------------------------------
+void MyGame::Finalize()
 {
-    // 解放
-    imguiManager_->Finalize();
-    audio_->Finalize();
-    ModelManager::GetInstance()->Finalize();
-
     delete sprite1_;
     delete camera_;
-    delete imguiManager_;
-    delete audio_;
-    delete input_;
     delete spriteCommon_;
     delete modelCommon_;
     delete object3dCommon_;
-    delete dxCommon_;
-    delete winApp_;
+
+    ModelManager::GetInstance()->Finalize();
+
+    Framework::Finalize();
 }
