@@ -30,6 +30,11 @@ void Audio::Finalize()
         return;
     }
 
+    if (pSourceVoice_) {
+        pSourceVoice_->DestroyVoice();
+        pSourceVoice_ = nullptr;
+    }
+
     // XAudio2の終了
     if (masteringVoice_) {
         masteringVoice_->DestroyVoice();
