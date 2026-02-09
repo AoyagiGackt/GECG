@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <cstdint>
 #include <map>
 #include <string>
@@ -6,23 +6,33 @@
 #include <wrl/client.h>
 #include <xaudio2.h>
 
+#include <mfapi.h>
+#include <mfidl.h>
+#include <mfreadwrite.h>
+
+#pragma comment(lib, "Mfplat.lib")
+#pragma comment(lib, "Mfreadwrite.lib")
+#pragma comment(lib, "Ole32.lib")
+#pragma comment(lib, "xaudio2.lib")
+#pragma comment(lib, "mfuuid.lib")
+
 struct SoundData {
-    WAVEFORMATEX wfex; // ”gŒ`ƒtƒH[ƒ}ƒbƒg
-    std::vector<byte> pBuffer; // ‰¹ºƒoƒbƒtƒ@
-    unsigned int bufferSize; // ƒoƒbƒtƒ@ƒTƒCƒY
+    WAVEFORMATEX wfex; // æ³¢å½¢ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ
+    std::vector<byte> pBuffer; // éŸ³å£°ãƒãƒƒãƒ•ã‚¡
+    unsigned int bufferSize; // ãƒãƒƒãƒ•ã‚¡ã‚µã‚¤ã‚º
 };
 
 class Audio {
 public:
-    // ‰Šú‰»
+    // åˆæœŸåŒ–
     void Initialize();
-    // I—¹ˆ—
+    // çµ‚äº†å‡¦ç†
     void Finalize();
 
-    // WAVƒtƒ@ƒCƒ‹‚Ì“Ç‚İ‚İ
-    SoundData LoadWave(const std::string& filename);
+    // éŸ³ç³»ãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿
+    SoundData LoadAudio(const std::string& filename);
 
-    // ‰¹º‚ÌÄ¶
+    // éŸ³å£°ã®å†ç”Ÿ
     void PlayWave(const SoundData& soundData);
 
 private:

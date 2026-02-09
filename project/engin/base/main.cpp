@@ -204,7 +204,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     audio->Initialize();
 
     // 音のロード
-    SoundData seJump = audio->LoadWave("Resources/se_jump.wav");
+    SoundData seJump = audio->LoadAudio("Resources/440_BPM180.mp3");
 
     // --------------------------------------------------
     // メインループ
