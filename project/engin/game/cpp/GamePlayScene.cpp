@@ -34,11 +34,14 @@ void GamePlayScene::Update()
 
     #ifdef USE_IMGUI
     if (imguiManager_) {
+        // スプライトの座標を操作するウィンドウを表示
         Vector2 pos = sprite1_->GetPosition();
+
         ImGui::SetNextWindowSize(ImVec2(500, 100), ImGuiCond_FirstUseEver);
         ImGui::Begin("Sprite Control");
         ImGui::SliderFloat2("Position", &pos.x, 0.0f, 1280.0f, "%.1f");
         ImGui::End();
+
         sprite1_->SetPosition(pos);
     }
 #endif
