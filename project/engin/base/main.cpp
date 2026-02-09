@@ -83,7 +83,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     winApp = new WinApp();
     winApp->Initialize();
 
-    CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    // CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
     DirectXCommon* dxCommon = nullptr;
     dxCommon = new DirectXCommon();
@@ -115,7 +115,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     // スプライト生成
     Sprite* sprite1 = new Sprite();
     sprite1->Initialize(spriteCommon, "Resources/uvChecker.png");
-    sprite1->SetPosition({ 200.0f, 200.0f });
+    sprite1->SetPosition({ 100.0f, 100.0f });
 
     Sprite* sprite2 = new Sprite();
     sprite2->Initialize(spriteCommon, "Resources/monsterBall.png");
@@ -234,53 +234,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             #ifdef USE_IMGUI
 
-            // カメラ用 ImGui
-            ImGui::Begin("Camera Control");
-            ImGui::DragFloat3("Translate", &camera->GetTranslate().x, 0.1f);
-            ImGui::DragFloat3("Rotate", &camera->GetRotate().x, 0.01f);
-            ImGui::End();
+            ImGui::SetNextWindowSize(ImVec2(500, 100), ImGuiCond_FirstUseEver);
 
-            ImGui::Begin("Engine Controls");
-            ShowControls(); // ImguiControl.cpp の関数を呼び出す
-            ImGui::End();
+            ImGui::Begin("Sprite Control");
 
-            ImGui::ShowDemoWindow();
+            ImGui::SliderFloat2("Position", &pos.x, 0.0f, 1280.0f, "%.1f");
 
-            ImGui::Begin("Sprite 1 Control");
-            ImGui::DragFloat2("Position", &pos.x, 1.0f);
-            ImGui::SliderAngle("Rotation", &rot);
-            ImGui::DragFloat2("Size", &size.x, 1.0f);
-            ImGui::End();
-
-            ImGui::Begin("Particle Control");
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Text("Particle Settings");
-
-            // エミッターの位置
-            static Vector3 debugEmitterPos = { 0, 0, 0 };
-            if (ImGui::DragFloat3("Emitter Pos", &debugEmitterPos.x, 0.1f)) {
-                fireEmitter->SetTranslate(debugEmitterPos);
-            }
-
-            // テクスチャ切り替え機能
-            static const char* texturePaths[] = {
-                "Resources/uvChecker.png",
-                "Resources/monsterBall.png",
-            };
-            static int currentItem = 0;
-
-            if (ImGui::Combo("Particle Texture", &currentItem, texturePaths, IM_ARRAYSIZE(texturePaths))) {
-                ParticleManager::GetInstance()->SetTexture("fire", texturePaths[currentItem]);
-            }
-
-            ImGui::End();
-
-            // 3Dオブジェクト用 ImGui
-            ImGui::Begin("3D Object Control");
-            ImGui::DragFloat3("Scale", &transformScale.x, 0.01f);
-            ImGui::DragFloat3("Rotate", &transformRotate.x, 0.01f);
-            ImGui::DragFloat3("Translate", &transformTranslate.x, 0.01f);
             ImGui::End();
 
             #endif
@@ -313,9 +272,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             SrvManager::GetInstance()->PreDraw();
 
             // スプライト描画
-            // spriteCommon->CommonDrawSettings();
+            spriteCommon->CommonDrawSettings();
 
-            // sprite1->Draw();
+            sprite1->Draw();
             //  sprite2->Draw();
 
             // 3Dオブジェクト描画
@@ -331,7 +290,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             // obj2->Draw();
 
             // パーティクル描画
-            particleManager->Draw(camera);
+            // particleManager->Draw(camera);
 
             // ImGui描画
             imguiManager->Draw(dxCommon);
