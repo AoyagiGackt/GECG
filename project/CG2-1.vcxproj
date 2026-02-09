@@ -161,6 +161,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engin\game\cpp\Game.cpp" />
     <ClCompile Include="engin\game\cpp\GamePlayScene.cpp" />
     <ClCompile Include="engin\game\cpp\LightingMode.cpp" />
+    <ClCompile Include="engin\game\cpp\SceneManager.cpp" />
+    <ClCompile Include="engin\game\cpp\TitleScene.cpp" />
     <ClCompile Include="engin\graphics\cpp\Camera.cpp" />
     <ClCompile Include="engin\game\cpp\D3DResourceLeakChecker.cpp" />
     <ClCompile Include="engin\game\cpp\DirectXCommon.cpp" />
@@ -205,12 +207,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engin\game\h\Audio.h" />
+    <ClInclude Include="engin\game\h\BaseScene.h" />
     <ClInclude Include="engin\game\h\Framework.h" />
     <ClInclude Include="engin\game\h\Game.h" />
     <ClInclude Include="engin\game\h\GamePlayScene.h" />
-    <ClInclude Include="engin\game\h\IScene.h" />
     <ClInclude Include="engin\game\h\LightingMode.h" />
     <ClInclude Include="engin\game\h\Logger.h" />
+    <ClInclude Include="engin\game\h\SceneManager.h" />
+    <ClInclude Include="engin\game\h\TitleScene.h" />
     <ClInclude Include="engin\graphics\h\Camera.h" />
     <ClInclude Include="engin\graphics\h\D3DResourceLeakChecker.h" />
     <ClInclude Include="engin\game\h\D3DResourceLeakChecker.h" />

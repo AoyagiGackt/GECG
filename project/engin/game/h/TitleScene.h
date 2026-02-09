@@ -1,33 +1,31 @@
 ﻿#pragma once
 #include "Audio.h"
-#include "Camera.h"
 #include "DirectXCommon.h"
 #include "BaseScene.h"
 #include "Input.h"
 #include "Sprite.h"
 #include "SpriteCommon.h"
-#include "ImGuiManager.h"
 
-class GamePlayScene : public BaseScene {
+class TitleScene : public BaseScene {
 public:
-    // 初期化時に必要なマネージャーを受け取る
     void Initialize(DirectXCommon* dxCommon, Input* input, Audio* audio) override;
     void Finalize() override;
     void Update() override;
     void Draw() override;
 
-    void SetImGuiManager(ImGuiManager* imgui) { imguiManager_ = imgui; }
+    // シーンが終了したかどうか
+    bool IsFinished() const { return finished_; }
 
 private:
     // 借りてくるもの
     DirectXCommon* dxCommon_ = nullptr;
     Input* input_ = nullptr;
     Audio* audio_ = nullptr;
-    ImGuiManager* imguiManager_ = nullptr;
 
-    // このシーンで管理するもの
+    // 自分の持ち物
     SpriteCommon* spriteCommon_ = nullptr;
-    Sprite* sprite1_ = nullptr;
-    Camera* camera_ = nullptr;
-    SoundData bgmData_;
+    Sprite* titleSprite_ = nullptr; // タイトル画像用
+
+    // 終了フラグ
+    bool finished_ = false;
 };

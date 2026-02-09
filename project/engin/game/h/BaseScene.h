@@ -10,9 +10,9 @@ enum SceneType {
 };
 
 // シーンの基底クラス
-class IScene {
+class BaseScene {
 public:
-    virtual ~IScene() = default;
+    virtual ~BaseScene() = default;
 
     // 初期化
     virtual void Initialize(DirectXCommon* dxCommon, Input* input, Audio* audio) = 0;
@@ -25,4 +25,6 @@ public:
 
     // 終了処理
     virtual void Finalize() = 0;
+
+    virtual bool IsFinished() const { return false; }
 };

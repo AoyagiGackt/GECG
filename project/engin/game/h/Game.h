@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "Framework.h"
-#include "IScene.h"
+#include "BaseScene.h"
 #include <memory>
 
 class MyGame : public Framework {
@@ -11,5 +11,5 @@ public:
     void Draw() override;
 
 private:
-    IScene* scene_ = nullptr;
+    BaseScene* scene_ = nullptr;
 };
