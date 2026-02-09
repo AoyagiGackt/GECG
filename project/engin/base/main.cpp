@@ -42,10 +42,12 @@
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 #include <format>
+#include <fstream>
 #include <numbers>
 #include <string>
 #include <vector>
 #include <wrl/client.h>
+#include <xaudio2.h>
 
 // --------------------------------------------------
 // ライブラリのリンク
@@ -55,6 +57,7 @@
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dxcompiler.lib")
 #pragma comment(lib, "xinput.lib")
+#pragma comment(lib, "xaudio2.lib")
 
 // --------------------------------------------------
 // グローバル変数の定義
@@ -187,6 +190,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     Vector3 transformTranslate = { 0.0f, 0.0f, 0.0f };
 
     // --------------------------------------------------
+    // 音楽の初期化
+    // --------------------------------------------------
+
+    ComPtr<IXAudio2> xAudio2;
+    IXAudio2MasteringVoice* masteringVoice;
+
+    // --------------------------------------------------
     // ImGuiの初期化
     // --------------------------------------------------
     ImGuiManager* imguiManager = new ImGuiManager();
@@ -232,7 +242,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Vector2 texLT = sprite1->GetTextureLeftTop();
             Vector2 texSz = sprite1->GetTextureSize();
 
-            #ifdef USE_IMGUI
+#ifdef USE_IMGUI
 
             ImGui::SetNextWindowSize(ImVec2(500, 100), ImGuiCond_FirstUseEver);
 
@@ -242,7 +252,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             ImGui::End();
 
-            #endif
+#endif
 
             sprite1->SetPosition(pos);
             sprite1->SetRotation(rot);
