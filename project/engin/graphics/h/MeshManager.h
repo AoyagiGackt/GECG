@@ -27,6 +27,8 @@ public:
     void SetCurrentMeshType(MeshType type);
     MeshType GetCurrentMeshType() const;
     std::vector<MeshData> meshes;
+    static MeshManager* GetInstance();
+    void Finalize();
 
 private:
     MeshType currentMeshType_;

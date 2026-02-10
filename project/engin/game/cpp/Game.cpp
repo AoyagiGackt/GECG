@@ -1,6 +1,7 @@
 ﻿#include "Game.h"
 #include "GamePlayScene.h"
 #include "SceneManager.h"
+#include "SceneFactory.h"
 #include "TitleScene.h"
 #include <SrvManager.h>
 
@@ -16,7 +17,11 @@ void MyGame::Initialize()
     SceneManager::GetInstance()->SetSceneFactory(sceneFactory_.get());
 
     // 最初のシーンを工場経由でセットする
-    SceneManager::GetInstance()->Initialize(dxCommon_, input_, audio_, imguiManager_);
+    SceneManager::GetInstance()->Initialize(
+        dxCommon_.get(),
+        input_.get(),
+        audio_.get(),
+        imguiManager_.get());
 }
 
 
@@ -40,7 +45,8 @@ void MyGame::Draw()
     // 現在のシーンの描画
     SceneManager::GetInstance()->Draw();
 
-    imguiManager_->Draw(dxCommon_);
+    imguiManager_->Draw(dxCommon_.get());
+
     dxCommon_->PostDraw();
 }
 
@@ -48,9 +54,7 @@ void MyGame::Finalize()
 {
     audio_->Finalize();
 
-    // シーンの終了処理
     SceneManager::GetInstance()->Finalize();
 
-    // 基盤の終了
     Framework::Finalize();
 }

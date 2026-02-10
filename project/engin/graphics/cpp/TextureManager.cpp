@@ -115,3 +115,8 @@ const DirectX::TexMetadata& TextureManager::GetMetaData(const std::string& fileP
     assert(textureDatas_.contains(filePath));
     return textureDatas_[filePath].metadata;
 }
+
+void TextureManager::Finalize()
+{
+    textureDatas_.clear();
+}

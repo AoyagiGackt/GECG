@@ -16,6 +16,8 @@ public:
     void SetCurrentMaterialIndex(size_t index);
     size_t GetCurrentMaterialIndex() const;
     std::vector<Material> materials;
+    static MaterialManager* GetInstance();
+    void Finalize();
 
 private:
     size_t currentMaterialIndex_;

@@ -17,3 +17,14 @@ void MaterialManager::InitMaterials()
     materials.push_back({ { 0, 0, 1, 1 }, 1, { 0, 0, 0 }, MakeIdentity4x4() });
     materials.push_back({ { 1, 1, 1, 1 }, 1, { 0, 0, 0 }, MakeIdentity4x4() });
 }
+
+MaterialManager* MaterialManager::GetInstance()
+{
+    static MaterialManager instance;
+    return &instance;
+}
+
+void MaterialManager::Finalize()
+{
+
+}

@@ -160,6 +160,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engin\game\cpp\Framework.cpp" />
     <ClCompile Include="engin\game\cpp\Game.cpp" />
     <ClCompile Include="engin\game\cpp\GamePlayScene.cpp" />
+    <ClCompile Include="engin\game\cpp\hoge.cpp" />
     <ClCompile Include="engin\game\cpp\LightingMode.cpp" />
     <ClCompile Include="engin\game\cpp\SceneFactory.cpp" />
     <ClCompile Include="engin\game\cpp\SceneManager.cpp" />
@@ -213,6 +214,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engin\game\h\Framework.h" />
     <ClInclude Include="engin\game\h\Game.h" />
     <ClInclude Include="engin\game\h\GamePlayScene.h" />
+    <ClInclude Include="engin\game\h\hoge.h" />
     <ClInclude Include="engin\game\h\LightingMode.h" />
     <ClInclude Include="engin\game\h\Logger.h" />
     <ClInclude Include="engin\game\h\SceneFactory.h" />

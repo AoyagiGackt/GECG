@@ -127,3 +127,14 @@ void MeshManager::InitMeshes()
     meshes.push_back(GenerateCubeMesh());
     meshes.push_back(GeneratePlaneMesh());
 }
+
+MeshManager* MeshManager::GetInstance()
+{
+    static MeshManager instance;
+    return &instance;
+}
+
+void MeshManager::Finalize()
+{
+    meshes.clear();
+}

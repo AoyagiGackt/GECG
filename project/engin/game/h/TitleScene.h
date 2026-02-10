@@ -6,6 +6,7 @@
 #include "Sprite.h"
 #include "SpriteCommon.h"
 #include "ImGuiManager.h"
+#include <memory>
 
 class TitleScene : public BaseScene {
 public:
@@ -26,8 +27,8 @@ private:
     ImGuiManager* imguiManager_ = nullptr;
 
     // 自分の持ち物
-    SpriteCommon* spriteCommon_ = nullptr;
-    Sprite* titleSprite_ = nullptr; // タイトル画像用
+    std::unique_ptr<SpriteCommon> spriteCommon_;
+    std::unique_ptr<Sprite> titleSprite_; // タイトル画像用
 
     // 終了フラグ
     bool finished_ = false;

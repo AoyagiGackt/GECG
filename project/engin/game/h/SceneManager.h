@@ -37,8 +37,8 @@ private:
 
     ImGuiManager* imguiManager_ = nullptr;
     // 今のシーン
-    BaseScene* currentScene_ = nullptr;
+    std::unique_ptr<BaseScene> currentScene_;
     // 次のシーン（予約）
-    BaseScene* nextScene_ = nullptr;
+    std::unique_ptr<BaseScene> nextScene_;
     AbstractSceneFactory* sceneFactory_ = nullptr;
 };

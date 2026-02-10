@@ -8,12 +8,12 @@ void TitleScene::Initialize(DirectXCommon* dxCommon, Input* input, Audio* audio)
     audio_ = audio;
 
     // スプライト初期化
-    spriteCommon_ = new SpriteCommon();
+    spriteCommon_ = std::make_unique<SpriteCommon>();
     spriteCommon_->Initialize(dxCommon_);
 
     // タイトル画像の生成(とりあえず)
-    titleSprite_ = new Sprite();
-    titleSprite_->Initialize(spriteCommon_, "Resources/uvChecker.png");
+    titleSprite_ = std::make_unique<Sprite>();
+    titleSprite_->Initialize(spriteCommon_.get(), "Resources/uvChecker.png");
     titleSprite_->SetPosition({ 0.0f, 0.0f });
     // ウィンドウサイズに合わせる
     titleSprite_->SetSize({ 1280.0f, 720.0f });
@@ -42,6 +42,5 @@ void TitleScene::Draw()
 
 void TitleScene::Finalize()
 {
-    delete titleSprite_;
-    delete spriteCommon_;
+    
 }
