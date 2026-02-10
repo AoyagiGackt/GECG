@@ -9,7 +9,13 @@ void MyGame::Initialize()
     // 基盤の初期化
     Framework::Initialize();
 
-    // シーンマネージャー初期化
+    // 工場を作る
+    sceneFactory_ = std::make_unique<SceneFactory>();
+
+    // SceneManagerに工場を教える
+    SceneManager::GetInstance()->SetSceneFactory(sceneFactory_.get());
+
+    // 最初のシーンを工場経由でセットする
     SceneManager::GetInstance()->Initialize(dxCommon_, input_, audio_, imguiManager_);
 }
 
