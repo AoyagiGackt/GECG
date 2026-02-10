@@ -34,6 +34,7 @@ void SceneManager::Update()
             currentScene_->Finalize();
             delete currentScene_;
         }
+
         // 新シーンへ交代
         currentScene_ = nextScene_;
         nextScene_ = nullptr; // 予約クリア
