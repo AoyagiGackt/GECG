@@ -1,4 +1,5 @@
 #include "Game.h"
+#include <memory>
 
 // --------------------------------------------------
 // メイン関数
@@ -7,12 +8,10 @@
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
     // ゲームインスタンス生成
-    Framework* game = new MyGame();
-    
+    std::unique_ptr<Framework> game = std::make_unique<MyGame>();
+
     // ゲーム実行
     game->Run();
-
-    delete game;
 
     return 0;
 }
