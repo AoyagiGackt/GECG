@@ -389,7 +389,7 @@ void DirectXCommon::UpdateFixFPS()
     // 前回記録からの経過時間を取得する
     std::chrono::microseconds elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - reference_);
 
-    // 1/60(よりわずかに短い時間)立っていない場合
+    // 1/60立っていない場合
     if (elapsed < kMinCheckTime) {
         // 1/60秒になるまで微小なスリープを繰り返す
         while (std::chrono::steady_clock::now() - reference_ < kMinTime) {
