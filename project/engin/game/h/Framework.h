@@ -14,6 +14,8 @@
 #include "ModelCommon.h"
 #include "Object3dCommon.h"
 #include "SpriteCommon.h"
+#include "MeshManager.h"
+#include "MaterialManager.h"
 
 // シーンオブジェクト
 #include "Camera.h"
@@ -43,10 +45,10 @@ public:
     virtual bool IsEndRequest() { return endRequest_ || winApp_->ProcessMessage(); }
 
 protected:
-    WinApp* winApp_ = nullptr;
-    DirectXCommon* dxCommon_ = nullptr;
-    Input* input_ = nullptr;
-    Audio* audio_ = nullptr;
-    ImGuiManager* imguiManager_ = nullptr;
+    std::unique_ptr<WinApp> winApp_;
+    std::unique_ptr<DirectXCommon> dxCommon_;
+    std::unique_ptr<Input> input_;
+    std::unique_ptr<Audio> audio_;
+    std::unique_ptr<ImGuiManager> imguiManager_;
     bool endRequest_ = false;
 };

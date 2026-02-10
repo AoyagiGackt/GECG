@@ -10,17 +10,20 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon, Input* input, Audio* aud
     audio_ = audio;
 
     // スプライト共通設定
-    spriteCommon_ = new SpriteCommon();
+    spriteCommon_ = std::make_unique<SpriteCommon>();
     spriteCommon_->Initialize(dxCommon_);
 
     // アセットロード
     bgmData_ = audio_->LoadAudio("Resources/461_BPM174.wav");
 
     // オブジェクト生成
-    camera_ = new Camera();
-    sprite1_ = new Sprite();
-    sprite1_->Initialize(spriteCommon_, "Resources/uvChecker.png");
+    camera_ = std::make_unique<Camera>(); // カメラ生成
+    sprite1_ = std::make_unique<Sprite>();
+    sprite1_->Initialize(spriteCommon_.get(), "Resources/uvChecker.png");
     sprite1_->SetPosition({ 100.0f, 100.0f });
+
+    hoge_ = std::make_unique<Hoge>();
+    hoge_->Initialize(dxCommon, input, audio);
 }
 
 void GamePlayScene::Update()
@@ -31,6 +34,7 @@ void GamePlayScene::Update()
     }
 
     camera_->Update();
+    hoge_->Update();
 
     #ifdef USE_IMGUI
     if (imguiManager_) {
@@ -54,11 +58,10 @@ void GamePlayScene::Draw()
     // スプライト描画
     spriteCommon_->CommonDrawSettings();
     sprite1_->Draw();
+    hoge_->Draw();
 }
 
 void GamePlayScene::Finalize()
 {
-    delete sprite1_;
-    delete camera_;
-    delete spriteCommon_;
+
 }

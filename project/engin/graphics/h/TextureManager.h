@@ -11,6 +11,8 @@ public:
     static TextureManager* GetInstance();
     void Initialize(DirectXCommon* dxCommon);
 
+    void Finalize();
+
     // ロード
     void LoadTexture(const std::string& filePath);
 

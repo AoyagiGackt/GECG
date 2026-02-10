@@ -3,10 +3,12 @@
 #include "Camera.h"
 #include "DirectXCommon.h"
 #include "BaseScene.h"
+#include "hoge.h"
 #include "Input.h"
 #include "Sprite.h"
 #include "SpriteCommon.h"
 #include "ImGuiManager.h"
+#include <memory>
 
 class GamePlayScene : public BaseScene {
 public:
@@ -26,8 +28,9 @@ private:
     ImGuiManager* imguiManager_ = nullptr;
 
     // このシーンで管理するもの
-    SpriteCommon* spriteCommon_ = nullptr;
-    Sprite* sprite1_ = nullptr;
-    Camera* camera_ = nullptr;
+    std::unique_ptr<SpriteCommon> spriteCommon_;
+    std::unique_ptr<Sprite> sprite1_;
+    std::unique_ptr<Camera> camera_;
+    std::unique_ptr<Hoge> hoge_;
     SoundData bgmData_;
 };
