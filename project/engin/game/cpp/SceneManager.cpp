@@ -72,9 +72,6 @@ void SceneManager::Finalize()
 // シーン切り替え予約
 void SceneManager::ChangeScene(const std::string& sceneName)
 {
-    if (sceneName == "TITLE") {
-        nextScene_ = new TitleScene();
-    } else if (sceneName == "GAMEPLAY") {
-        nextScene_ = new GamePlayScene();
-    }
+    // 工場にシーンを作ってもらう
+    nextScene_ = sceneFactory_->CreateScene(sceneName);
 }

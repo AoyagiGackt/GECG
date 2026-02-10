@@ -4,6 +4,7 @@
 #include "DirectXCommon.h"
 #include "ImGuiManager.h"
 #include "Input.h"
+#include "AbstractSceneFactory.h"
 #include <memory>
 
 class SceneManager {
@@ -19,6 +20,9 @@ public:
 
     // 次のシーンを予約する関数
     void ChangeScene(const std::string& sceneName);
+    // 工場をセットする関数を追加
+    void SetSceneFactory(AbstractSceneFactory* factory) { sceneFactory_ = factory; }
+
 
 private:
     SceneManager() = default;
@@ -36,4 +40,5 @@ private:
     BaseScene* currentScene_ = nullptr;
     // 次のシーン（予約）
     BaseScene* nextScene_ = nullptr;
+    AbstractSceneFactory* sceneFactory_ = nullptr;
 };
