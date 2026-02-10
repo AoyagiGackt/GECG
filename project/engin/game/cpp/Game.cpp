@@ -13,6 +13,7 @@ void MyGame::Initialize()
     SceneManager::GetInstance()->Initialize(dxCommon_, input_, audio_, imguiManager_);
 }
 
+
 void MyGame::Update()
 {
     // 基盤の更新

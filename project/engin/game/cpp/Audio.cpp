@@ -109,6 +109,7 @@ SoundData Audio::LoadAudio(const std::string& filename)
         if (FAILED(hr) || (flags & MF_SOURCE_READERF_ENDOFSTREAM)) {
             break;
         }
+
         if (!pSample) {
             continue;
         }
