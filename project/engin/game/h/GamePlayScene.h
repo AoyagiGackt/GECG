@@ -8,7 +8,9 @@
 #include "Sprite.h"
 #include "SpriteCommon.h"
 #include "ImGuiManager.h"
+#include "GameObject.h"
 #include <memory>
+#include <vector>
 
 class GamePlayScene : public BaseScene {
 public:
@@ -31,6 +33,6 @@ private:
     std::unique_ptr<SpriteCommon> spriteCommon_;
     std::unique_ptr<Sprite> sprite1_;
     std::unique_ptr<Camera> camera_;
-    std::unique_ptr<Hoge> hoge_;
+    std::vector<std::unique_ptr<GameObject>> gameObjects_;
     SoundData bgmData_;
 };

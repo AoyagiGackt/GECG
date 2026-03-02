@@ -159,6 +159,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engin\game\cpp\Audio.cpp" />
     <ClCompile Include="engin\game\cpp\Framework.cpp" />
     <ClCompile Include="engin\game\cpp\Game.cpp" />
+    <ClCompile Include="engin\game\cpp\GameObject.cpp" />
     <ClCompile Include="engin\game\cpp\GamePlayScene.cpp" />
     <ClCompile Include="engin\game\cpp\hoge.cpp" />
     <ClCompile Include="engin\game\cpp\LightingMode.cpp" />
@@ -214,6 +215,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engin\game\h\BaseScene.h" />
     <ClInclude Include="engin\game\h\Framework.h" />
     <ClInclude Include="engin\game\h\Game.h" />
+    <ClInclude Include="engin\game\h\GameObject.h" />
     <ClInclude Include="engin\game\h\GamePlayScene.h" />
     <ClInclude Include="engin\game\h\hoge.h" />
     <ClInclude Include="engin\game\h\LightingMode.h" />
