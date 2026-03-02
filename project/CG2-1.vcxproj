@@ -172,6 +172,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engin\game\cpp\WinApp.cpp" />
     <ClCompile Include="engin\game\cpp\StringUtlity.cpp" />
     <ClCompile Include="engin\graphics\cpp\ImguiControl.cpp" />
+    <ClCompile Include="engin\graphics\cpp\LightManager.cpp" />
     <ClCompile Include="engin\graphics\cpp\MaterialManager.cpp" />
     <ClCompile Include="engin\graphics\cpp\MeshManager.cpp" />
     <ClCompile Include="engin\base\main.cpp" />
@@ -225,6 +226,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engin\game\h\D3DResourceLeakChecker.h" />
     <ClInclude Include="engin\game\h\DirectXCommon.h" />
     <ClInclude Include="engin\game\h\WinApp.h" />
+    <ClInclude Include="engin\graphics\h\LightManager.h" />
     <ClInclude Include="engin\graphics\h\MaterialManager.h" />
     <ClInclude Include="engin\graphics\h\MeshManager.h" />
     <ClInclude Include="engin\math\h\MakeAffine.h" />

@@ -411,3 +411,28 @@ ID3D12Resource* DirectXCommon::GetCurrentBackBufferResource()
     UINT backBufferIndex = swapChain_->GetCurrentBackBufferIndex();
     return swapChainResoures_[backBufferIndex].Get();
 }
+
+// ヘルパー関数（バッファ作成用）
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_t sizeInBytes)
+{
+    HRESULT hr;
+    D3D12_HEAP_PROPERTIES uploadHeapProperties {};
+    uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
+
+    D3D12_RESOURCE_DESC resourceDesc {};
+    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+    resourceDesc.Width = sizeInBytes;
+    resourceDesc.Height = 1;
+    resourceDesc.DepthOrArraySize = 1;
+    resourceDesc.MipLevels = 1;
+    resourceDesc.SampleDesc.Count = 1;
+    resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
+    hr = device_->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE,
+        &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+        IID_PPV_ARGS(&resource));
+    assert(SUCCEEDED(hr));
+
+    return resource;
+}

@@ -26,6 +26,7 @@ public: // メンバ関数
     IDXGISwapChain4* GetSwapChain() { return swapChain_.Get(); }
     ID3D12CommandAllocator* GetCommandAllocator() { return commandAllocator_.Get(); }
     ID3D12DescriptorHeap* GetSrvDescriptorHeap() { return srvDescriptorHeap_.Get(); }
+    Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
 
     // RTV関連
     D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferHandle();

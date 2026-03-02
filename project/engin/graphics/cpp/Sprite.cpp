@@ -20,7 +20,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
     ID3D12Device* device = spriteCommon_->GetDevice();
 
     // 頂点バッファ作成
-    vertexResource_ = CreateBufferResource(device, sizeof(VertexDataSprite) * 6);
+    vertexResource_ = spriteCommon_->GetDxCommon()->CreateBufferResource(sizeof(VertexDataSprite) * 6);
     vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
     vertexBufferView_.SizeInBytes = sizeof(VertexDataSprite) * 6;
     vertexBufferView_.StrideInBytes = sizeof(VertexDataSprite);
@@ -50,7 +50,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
     vertexData[5] = vertexData[2];
 
     // マテリアル作成
-    materialResource_ = CreateBufferResource(device, sizeof(MaterialSprite));
+    materialResource_ = spriteCommon_->GetDxCommon()->CreateBufferResource(sizeof(MaterialSprite));
     materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
     materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
     materialData_->enableLighting = false;
@@ -58,7 +58,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
     materialData_->uvTransform = MakeIdentity4x4();
 
     // WVP作成
-    transformationMatrixResource_ = CreateBufferResource(device, sizeof(TransformationMatrixSprite));
+    transformationMatrixResource_ = spriteCommon_->GetDxCommon()->CreateBufferResource(sizeof(TransformationMatrixSprite));
     transformationMatrixResource_->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData_));
     *transformationMatrixData_ = { MakeIdentity4x4(), MakeIdentity4x4() };
 }
@@ -144,23 +144,4 @@ void Sprite::Draw()
     commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandle);
 
     commandList->DrawInstanced(6, 1, 0, 0);
-}
-
-ComPtr<ID3D12Resource> Sprite::CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
-{
-    D3D12_HEAP_PROPERTIES uploadHeapProperties {};
-    uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
-    D3D12_RESOURCE_DESC resourceDesc {};
-    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    resourceDesc.Width = sizeInBytes;
-    resourceDesc.Height = 1;
-    resourceDesc.DepthOrArraySize = 1;
-    resourceDesc.MipLevels = 1;
-    resourceDesc.SampleDesc.Count = 1;
-    resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    ComPtr<ID3D12Resource> resource = nullptr;
-    device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE,
-        &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-        IID_PPV_ARGS(&resource));
-    return resource;
 }

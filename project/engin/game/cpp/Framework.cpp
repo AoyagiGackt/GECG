@@ -8,7 +8,6 @@
 #include "ModelManager.h"
 
 // グローバル変数の実体定義
-int lightingMode = LightingMode::Lighting_HalfLambert;
 
 static D3D12ResourceLeakChecker leakCheck;
 
