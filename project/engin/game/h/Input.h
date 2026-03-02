@@ -4,12 +4,16 @@
  */
 #pragma once
 
-#include <array>
+#define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
+#include <array>
 #include <windows.h>
+#include <XInput.h>
 
 #include <wrl/client.h>
 #include "WinApp.h"
+
+#pragma comment(lib, "xinput.lib")
 
 /**
  * @brief キーボード入力を一括管理するクラス
@@ -51,6 +55,24 @@ public: // メンバ関数
      */
     bool TriggerKey(BYTE keyNumber);
 
+    /** @brief 毎フレームの更新（コントローラー用） */
+    void UpdateGamepad();
+
+    /** @brief ボタンが押されているか */
+    bool PushButton(WORD button) const { return (state_.Gamepad.wButtons & button); }
+
+    /** @brief ボタンが押された瞬間か */
+    bool TriggerButton(WORD button) const
+    {
+        return (state_.Gamepad.wButtons & button) && !(previousState_.Gamepad.wButtons & button);
+    }
+
+    /** @brief 左スティックの値を 0.0 ~ 1.0 の範囲で取得 */
+    struct Stick {
+        float x, y;
+    };
+    Stick GetLeftStick() const;
+
 private:
 
     /** @brief DirectInput 8 の本体ポインタ */
@@ -81,4 +103,9 @@ private:
 
     /** @brief ウィンドウ管理のポインタ */
     WinApp* winApp_ = nullptr;
+
+    XINPUT_STATE state_ {}; ///< 現在のコントローラー状態
+    XINPUT_STATE previousState_ {}; ///< 前回のコントローラー状態
+    const float deadzone_ = 0.2f; ///< デッドゾーン
+
 };

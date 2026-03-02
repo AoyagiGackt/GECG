@@ -84,6 +84,12 @@ public:
      */
     const Transform& GetTransform() const { return transform_; }
 
+    /**
+     * @brief トランスフォーム（座標・回転・スケール）への参照を取得する（書き込み用）
+     * @return Transform& トランスフォームへの参照
+     */
+    Transform& GetTransform() { return transform_; }
+
 private:
     /**
      * @brief GPUに送るための座標変換行列データ
