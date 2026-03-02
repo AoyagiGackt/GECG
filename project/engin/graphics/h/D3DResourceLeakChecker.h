@@ -1,9 +1,22 @@
-﻿#pragma once
+﻿/**
+ * @file D3DResourceLeakChecker.h
+ * @brief DirectX12のリソースリーク（メモリの解放忘れ）を自動でチェック・報告するファイル
+ */
+#pragma once
 #include <d3d12.h>
 #include <dxgidebug.h>
 #include <wrl/client.h>
 
+/**
+ * @brief アプリケーション終了時にCOMオブジェクトの解放忘れがないかをチェックする構造体
+ * @note グローバル変数として宣言するか、メイン関数の最初にローカル変数として宣言することで、
+ * プログラム終了時（デストラクタ呼び出し時）に自動的にリークチェックが実行されるはず。
+ */
 struct D3D12ResourceLeakChecker {
+
+    /**
+     * @brief デストラクタ。dxgidebug.dll を動的に読み込み、出力ウィンドウにリーク情報をレポートする
+     */
     ~D3D12ResourceLeakChecker()
     {
         // リソースリークチェック
