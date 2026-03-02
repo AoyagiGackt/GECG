@@ -33,21 +33,30 @@ void EnemyAI::Update(const Vector3& selfPos, const Vector3& targetPos)
 
     // 決定された状態に応じた行動を計算
     switch (state_) {
-    case AIState::kIdle:
+    case AIState::kIdle: {
         ThinkIdle();
         break;
-    case AIState::kPatrol:
+    }
+
+    case AIState::kPatrol: {
         ThinkPatrol(selfPos);
         break;
-    case AIState::kChase:
+    }
+
+    case AIState::kChase: {
         ThinkChase(selfPos, targetPos);
         break;
-    case AIState::kAttack:
+    }
+
+    case AIState::kAttack: {
         ThinkAttack();
         break;
-    case AIState::kEscape:
+    }
+
+    case AIState::kEscape: {
         ThinkEscape(selfPos, targetPos);
         break;
+    }
     }
 }
 
@@ -58,7 +67,7 @@ void EnemyAI::ThinkIdle()
 
 void EnemyAI::ThinkPatrol(const Vector3& self)
 {
-    // 拠点に戻るようなゆるやかな動き（例：拠点への方向ベクトル）
+    // 拠点に戻るようなゆるやかな動き
     Vector3 toHome = { homePos_.x - self.x, homePos_.y - self.y, homePos_.z - self.z };
     float mag = std::sqrt(toHome.x * toHome.x + toHome.y * toHome.y + toHome.z * toHome.z);
     if (mag > 0.1f) {
@@ -97,16 +106,25 @@ void EnemyAI::ThinkEscape(const Vector3& self, const Vector3& target)
 std::string EnemyAI::GetStateString() const
 {
     switch (state_) {
-    case AIState::kIdle:
+    case AIState::kIdle: {
         return "Idle";
-    case AIState::kPatrol:
+    }
+
+    case AIState::kPatrol: {
         return "Patrol";
-    case AIState::kChase:
+    }
+
+    case AIState::kChase: {
         return "Chase";
-    case AIState::kAttack:
+    }
+
+    case AIState::kAttack: {
         return "Attack";
-    case AIState::kEscape:
+    }
+
+    case AIState::kEscape: {
         return "Escape";
+    }
     }
     return "Unknown";
 }
