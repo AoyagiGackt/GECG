@@ -14,14 +14,21 @@ void Player::Update()
 {
     // --- キーボード入力 ---
     Vector3 move = { 0, 0, 0 };
-    if (input_->PushKey(DIK_W))
+    if (input_->PushKey(DIK_W)) {
         move.z += 1.0f;
-    if (input_->PushKey(DIK_S))
+    }
+
+    if (input_->PushKey(DIK_S)) {
         move.z -= 1.0f;
-    if (input_->PushKey(DIK_A))
+    }
+
+    if (input_->PushKey(DIK_A)) {
         move.x -= 1.0f;
-    if (input_->PushKey(DIK_D))
+    }
+
+    if (input_->PushKey(DIK_D)) {
         move.x += 1.0f;
+    }
 
     // --- コントローラー入力 ---
     input_->UpdateGamepad(); // 毎フレーム呼ぶ

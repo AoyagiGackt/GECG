@@ -71,6 +71,7 @@ public: // メンバ関数
     struct Stick {
         float x, y;
     };
+
     Stick GetLeftStick() const;
 
 private:

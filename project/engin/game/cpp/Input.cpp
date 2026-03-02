@@ -54,6 +54,7 @@ bool Input::TriggerKey(BYTE keyNumber)
     if (key[keyNumber] && !prevKeyStates_[keyNumber]) {
         return true;
     }
+
     // そうでなければfalseを返す
     prevKeyStates_[keyNumber] = key[keyNumber];
     return false;
@@ -84,10 +85,13 @@ Input::Stick Input::GetLeftStick() const
     float y = (float)state_.Gamepad.sThumbLY / 32767.0f;
 
     // デッドゾーンの処理
-    if (std::abs(x) < deadzone_)
+    if (std::abs(x) < deadzone_) {
         x = 0.0f;
-    if (std::abs(y) < deadzone_)
+    }
+
+    if (std::abs(y) < deadzone_) {
         y = 0.0f;
+    }
 
     return { x, y };
 }
