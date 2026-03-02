@@ -7,7 +7,6 @@ void Player::Initialize(ModelCommon* modelCommon, Input* input)
     // 3Dオブジェクトの生成と初期化
     object3d_ = std::make_unique<Object3d>();
     object3d_->Initialize(modelCommon);
-    // プレイヤー用のモデルをセット（例として"player.obj"）
     object3d_->SetModel("Resources/player.obj");
 }
 
