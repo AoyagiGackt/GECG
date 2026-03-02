@@ -1,25 +1,38 @@
+/**
+ * @file MakeAffine.h
+ * @brief 3Dゲームエンジンに必要な数学演算（ベクトル、行列、座標変換）を定義するファイル
+ */
 #pragma once
 #include <cmath>
 
+// =================================================================
+// 構造体定義
+// =================================================================
+
+/** @brief 4x4 行列構造体 */
 struct Matrix4x4 {
     float m[4][4];
 };
 
+/** @brief 3x3 行列構造体 */
 struct Matrix3x3 {
     float m[3][3];
 };
 
+/** @brief 2次元ベクトル */
 struct Vector2 {
     float x;
     float y;
 };
 
+/** @brief 3次元ベクトル */
 struct Vector3 {
     float x;
     float y;
     float z;
 };
 
+/** @brief 4次元ベクトル */
 struct Vector4 {
     float x;
     float y;
@@ -27,13 +40,21 @@ struct Vector4 {
     float w;
 };
 
+/** @brief オブジェクトのトランスフォーム情報をまとめた構造体 */
 struct Transform {
-    Vector3 scale;
-    Vector3 rotate;
-    Vector3 translate;
+    Vector3 scale; ///< 拡大縮小
+    Vector3 rotate; ///< 回転（ラジアン）
+    Vector3 translate; ///< 座標
 };
 
-// 単位行列
+// =================================================================
+// 行列演算関数
+// =================================================================
+
+/**
+ * @brief 4x4 単位行列を作成する
+ * @return Matrix4x4 単位行列
+ */
 inline Matrix4x4 MakeIdentity4x4()
 {
     Matrix4x4 identity;
@@ -56,7 +77,12 @@ inline Matrix4x4 MakeIdentity4x4()
     return identity;
 }
 
-// 4x4の掛け算
+/**
+ * @brief 4x4 行列同士の掛け算を行う
+ * @param m1 左側の行列
+ * @param m2 右側の行列
+ * @return Matrix4x4 計算結果
+ */
 inline Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2)
 {
     Matrix4x4 result;
@@ -83,7 +109,11 @@ inline Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2)
     return result;
 }
 
-// X軸で回転
+// =================================================================
+// 座標変換行列作成
+// =================================================================
+
+/** @brief X軸回転行列の作成 */
 inline Matrix4x4 MakeRotateXMatrix(float radian)
 {
     float cosTheta = std::cos(radian);
@@ -94,7 +124,7 @@ inline Matrix4x4 MakeRotateXMatrix(float radian)
         0.0f, 0.0f, 0.0f, 1.0f };
 }
 
-// Y軸で回転
+/** @brief Y軸回転行列の作成 */
 inline Matrix4x4 MakeRotateYMatrix(float radian)
 {
     float cosTheta = std::cos(radian);
@@ -105,7 +135,7 @@ inline Matrix4x4 MakeRotateYMatrix(float radian)
         0.0f, 0.0f, 0.0f, 1.0f };
 }
 
-// Z軸で回転
+/** @brief Z軸回転行列の作成 */
 inline Matrix4x4 MakeRotateZMatrix(float radian)
 {
     float cosTheta = std::cos(radian);
@@ -116,7 +146,9 @@ inline Matrix4x4 MakeRotateZMatrix(float radian)
         0.0f, 0.0f, 0.0f, 1.0f };
 }
 
-// Affine変換
+/**
+ * @brief スケール、回転、平行移動を合成したアフィン変換行列を作成する
+ */
 inline Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
 {
     Matrix4x4 result = Multiply(Multiply(MakeRotateXMatrix(rotate.x), MakeRotateYMatrix(rotate.y)), MakeRotateZMatrix(rotate.z));
@@ -138,6 +170,17 @@ inline Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, c
     return result;
 }
 
+// =================================================================
+// 投影行列作成
+// =================================================================
+
+/**
+ * @brief 透視投影行列（パース用）の作成
+ * @param fovY 垂直画角（ラジアン）
+ * @param aspectRatio 画面比率（幅/高）
+ * @param nearClip 近クリップ面
+ * @param farClip 遠クリップ面
+ */
 inline Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip)
 {
     float cotHalfFovV = 1.0f / std::tan(fovY / 2.0f);
@@ -149,6 +192,9 @@ inline Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float n
     };
 }
 
+/**
+ * @brief 正射影行列（2DスプライトやUI用）の作成
+ */
 inline Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip)
 {
     return {
@@ -171,6 +217,11 @@ inline Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, floa
     };
 }
 
+/**
+ * @brief スケール（拡大縮小）行列を作成する
+ * @param scale 各軸の拡大倍率
+ * @return Matrix4x4 スケール行列
+ */
 inline Matrix4x4 MakeScaleMatrix(const Vector3& scale)
 {
     Matrix4x4 result = MakeIdentity4x4();
@@ -180,6 +231,11 @@ inline Matrix4x4 MakeScaleMatrix(const Vector3& scale)
     return result;
 }
 
+/**
+ * @brief 平行移動行列を作成する
+ * @param translate 各軸の移動量
+ * @return Matrix4x4 平行移動行列
+ */
 inline Matrix4x4 MakeTranslateMatrix(const Vector3& translate)
 {
     Matrix4x4 result = MakeIdentity4x4();
@@ -189,6 +245,14 @@ inline Matrix4x4 MakeTranslateMatrix(const Vector3& translate)
     return result;
 }
 
+// =================================================================
+// 特殊演算
+// =================================================================
+
+/**
+ * @brief 4x4 行列の逆行列を求める
+ * @note カメラのビュー行列作成などで使用します
+ */
 inline Matrix4x4 Inverse(const Matrix4x4& m)
 {
     float determinant = +m.m[0][0] * m.m[1][1] * m.m[2][2] * m.m[3][3]
