@@ -3,8 +3,7 @@
 #include "LightingMode.h"
 #include "MaterialManager.h"
 #include "MeshManager.h"
-
-extern int lightingMode;
+#include "LightManager.h"
 
 void ShowControls()
 {
@@ -42,7 +41,14 @@ void ShowControls()
     // ライティング切り替え
     if (ImGui::CollapsingHeader("Lighting Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
         const char* lightItems[] = { "None", "Lambert", "Half Lambert" };
-        ImGui::Combo("Lighting Mode", &lightingMode, lightItems, IM_ARRAYSIZE(lightItems));
+
+        // マネージャーから現在の値を取得
+        int currentMode = LightManager::GetInstance()->GetLightingMode();
+
+        // ImGuiで値が変更されたら、マネージャーにセットし直す
+        if (ImGui::Combo("Lighting Mode", &currentMode, lightItems, IM_ARRAYSIZE(lightItems))) {
+            LightManager::GetInstance()->SetLightingMode(currentMode);
+        }
     }
 
 #endif

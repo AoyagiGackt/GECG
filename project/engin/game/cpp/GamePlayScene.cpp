@@ -22,8 +22,9 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon, Input* input, Audio* aud
     sprite1_->Initialize(spriteCommon_.get(), "Resources/uvChecker.png");
     sprite1_->SetPosition({ 100.0f, 100.0f });
 
-    hoge_ = std::make_unique<Hoge>();
-    hoge_->Initialize(dxCommon, input, audio);
+    auto hoge = std::make_unique<Hoge>();
+    hoge->Initialize(dxCommon, input, audio);
+    gameObjects_.push_back(std::move(hoge));
 }
 
 void GamePlayScene::Update()
@@ -34,7 +35,10 @@ void GamePlayScene::Update()
     }
 
     camera_->Update();
-    hoge_->Update();
+    
+    for (auto& obj : gameObjects_) {
+        obj->Update();
+    }
 
     #ifdef USE_IMGUI
     if (imguiManager_) {
@@ -58,7 +62,10 @@ void GamePlayScene::Draw()
     // スプライト描画
     spriteCommon_->CommonDrawSettings();
     sprite1_->Draw();
-    hoge_->Draw();
+    
+    for (auto& obj : gameObjects_) {
+        obj->Draw();
+    }
 }
 
 void GamePlayScene::Finalize()

@@ -1,6 +1,7 @@
 ﻿#include "Object3d.h"
 #include "ModelCommon.h"
 #include "ModelManager.h"
+#include "LightManager.h"
 #include "Camera.h"
 #include <cmath>
 
@@ -67,6 +68,9 @@ void Object3d::Update()
     // 定数バッファへ転送
     transformationMatrixData_->WVP = worldViewProjectionMatrix;
     transformationMatrixData_->World = worldMatrix;
+
+    // 毎フレームライティングモードをマテリアルに反映させる
+    materialData_->shadingType = LightManager::GetInstance()->GetLightingMode();
 }
 
 void Object3d::SetModel(const std::string& filePath)

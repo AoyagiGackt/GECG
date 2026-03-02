@@ -3,25 +3,6 @@
 
 using namespace Microsoft::WRL;
 
-// ヘルパー関数（バッファ作成用）
-ComPtr<ID3D12Resource> CreateBufferResourceCommon(ID3D12Device* device, size_t sizeInBytes)
-{
-    D3D12_HEAP_PROPERTIES heapProperties {};
-    heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
-    D3D12_RESOURCE_DESC resourceDesc {};
-    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    resourceDesc.Width = sizeInBytes;
-    resourceDesc.Height = 1;
-    resourceDesc.DepthOrArraySize = 1;
-    resourceDesc.MipLevels = 1;
-    resourceDesc.SampleDesc.Count = 1;
-    resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    ComPtr<ID3D12Resource> resource = nullptr;
-    device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE,
-        &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-        IID_PPV_ARGS(&resource));
-    return resource;
-}
 
 void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 {
@@ -150,7 +131,7 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
         IID_PPV_ARGS(&graphicsPipelineState_));
     assert(SUCCEEDED(hr));
 
-    defaultLightResource_ = CreateBufferResourceCommon(device, 256);
+   defaultLightResource_ = dxCommon_->CreateBufferResource(256);
 }
 
 void SpriteCommon::CommonDrawSettings()
