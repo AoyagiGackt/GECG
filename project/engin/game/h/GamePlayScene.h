@@ -13,6 +13,7 @@
 #include "SpriteCommon.h"
 #include "ImGuiManager.h"
 #include "GameObject.h"
+#include "VideoPlayer.h"
 #include <memory>
 #include <vector>
 
@@ -91,4 +92,7 @@ private:
 
     /** @brief このシーンで再生するBGMのデータ */
     SoundData bgmData_;
+
+    /** @brief 動画再生用のVideoPlayer */
+    std::unique_ptr<VideoPlayer> videoPlayer_;
 };

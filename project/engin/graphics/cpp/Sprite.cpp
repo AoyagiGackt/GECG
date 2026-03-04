@@ -1,6 +1,7 @@
 ﻿#include "Sprite.h"
 #include "TextureManager.h"
 #include "Logger.h"
+#include <SrvManager.h>
 
 using namespace Microsoft::WRL;
 
@@ -142,6 +143,14 @@ void Sprite::Draw()
     // テクスチャ (TextureManagerからハンドルを取得してセット)
     D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle = TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath_);
     commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandle);
+
+    if (useExternalTexture_) {
+        // 動画など、外部で作成したテクスチャを使う場合
+        commandList->SetGraphicsRootDescriptorTable(2, SrvManager::GetInstance()->GetGPUDescriptorHandle(textureIndex_));
+    } else {
+        // 通常のテクスチャを使う場合
+        commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath_));
+    }
 
     commandList->DrawInstanced(6, 1, 0, 0);
 }
