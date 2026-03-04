@@ -25,6 +25,7 @@
 #include "Camera.h"
 #include "Object3d.h"
 #include "Sprite.h"
+#include <VideoPlayer.h>
 
 // ライブラリのリンク
 #pragma comment(lib, "d3d12.lib")
@@ -101,6 +102,9 @@ protected:
 
     /** @brief ImGui管理（デバッグUI用） */
     std::unique_ptr<ImGuiManager> imguiManager_;
+
+    /** @brief ビデオプレイヤー管理（必要に応じて初期化/終了） */
+    std::unique_ptr<VideoPlayer> videoPlayer_;
 
     /** @brief 終了リクエストフラグ */
     bool endRequest_ = false;

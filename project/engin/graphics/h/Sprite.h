@@ -116,6 +116,13 @@ public:
      */
     void SetTexture(std::string textureFilePath);
 
+    /** @brief 外部で作成したSRVインデックスを直接指定する（動画用） */
+    void SetExternalTexture(uint32_t srvIndex)
+    {
+        textureIndex_ = srvIndex;
+        useExternalTexture_ = true;
+    }
+
 private:
     /**
      * @brief テクスチャサイズと実際の描画サイズを調整・反映する内部処理
@@ -140,7 +147,7 @@ private:
     std::string textureFilePath_; ///< 使用中のテクスチャパス
 
     // スプライトパラメータ
-    Vector2 position_ = { 0.0f, 0.0f }; /// 座標
+    Vector2 position_ = { 250.0f, 250.0f }; /// 座標
     float rotation_ = 0.0f; /// 回転角（Z軸）
     Vector2 size_ = { 640.0f, 360.0f }; /// 描画サイズ
     Vector2 anchorPoint_ = { 0.0f, 0.0f }; /// アンカーポイント（デフォルトは左上）
@@ -153,4 +160,6 @@ private:
     // テクスチャ切り出し用
     Vector2 textureLeftTop_ = { 0.0f, 0.0f }; /// 切り出し開始座標
     Vector2 textureSize_ = { 100.0f, 100.0f }; /// 切り出しサイズ
+    uint32_t textureIndex_ = 0;
+    bool useExternalTexture_ = false;
 };

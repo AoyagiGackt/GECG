@@ -58,6 +58,10 @@ void Framework::Finalize()
         imguiManager_->Finalize();
     }
 
+    if (videoPlayer_) {
+        videoPlayer_->Finalize();
+    }
+
     // 各種マネージャーのGPUリソースを解放する
     MeshManager::GetInstance()->Finalize();
     MaterialManager::GetInstance()->Finalize();
