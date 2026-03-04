@@ -1,6 +1,6 @@
 ﻿/**
  * @file Object3d.h
- * @brief 3D空間に配置される個々のオブジェクト（インスタンス）を管理・描画するファイル
+ * @brief 3D空間に配置される個々のオブジェクトを管理・描画するファイル
  */
 #pragma once
 #include "MakeAffine.h"

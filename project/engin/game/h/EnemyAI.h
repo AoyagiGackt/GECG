@@ -1,6 +1,6 @@
 ﻿/**
  * @file EnemyAI.h
- * @brief 敵キャラクターの意思決定（AI）ロジックを管理するファイル
+ * @brief 敵キャラクターの意思決定（なんちゃってAI）ロジックを管理するファイル
  */
 #pragma once
 #include "MakeAffine.h"
