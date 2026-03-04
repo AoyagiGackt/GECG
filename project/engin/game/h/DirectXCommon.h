@@ -5,13 +5,13 @@
 #pragma once
 #include <Windows.h>
 #include <cassert>
+#include <chrono>
 #include <d3d12.h>
 #include <d3dx12.h>
-#include <dxgi1_6.h>
-#include <wrl/client.h>
-#include <chrono>
-#include <thread>
 #include <dxcapi.h>
+#include <dxgi1_6.h>
+#include <thread>
+#include <wrl/client.h>
 
 class WinApp;
 
@@ -22,7 +22,6 @@ class WinApp;
  */
 class DirectXCommon {
 public: // メンバ関数
-    
     /**
      * @brief DirectX12基盤の初期化
      * @param winApp 管理対象となるWinApp（ウィンドウ管理）のポインタ
@@ -48,25 +47,25 @@ public: // メンバ関数
      * @return IDxcBlob* コンパイルされたシェーダーデータ
      */
     IDxcBlob* CompileShader(const std::wstring& filePath, const wchar_t* profile);
-    
+
     /** @brief デバイスの取得 */
     ID3D12Device* GetDevice() { return device_.Get(); }
-    
+
     /** @brief グラフィックスコマンドリストの取得 */
     ID3D12GraphicsCommandList* GetCommandList() { return commandList_.Get(); }
-    
+
     /** @brief コマンドキューの取得 */
     ID3D12CommandQueue* GetCommandQueue() { return commandQueue_.Get(); }
-    
+
     /** @brief スワップチェーンの取得 */
     IDXGISwapChain4* GetSwapChain() { return swapChain_.Get(); }
-    
+
     /** @brief コマンドアロケータの取得 */
     ID3D12CommandAllocator* GetCommandAllocator() { return commandAllocator_.Get(); }
-    
+
     /** @brief SRV用デスクリプタヒープの取得 */
     ID3D12DescriptorHeap* GetSrvDescriptorHeap() { return srvDescriptorHeap_.Get(); }
-    
+
     /**
      * @brief バッファリソース（定数バッファ等）を生成する
      * @param sizeInBytes 生成するバッファのサイズ
@@ -81,13 +80,13 @@ public: // メンバ関数
 
     /** @brief 現在のバックバッファリソースを取得 */
     ID3D12Resource* GetCurrentBackBufferResource();
-    
+
     /** @brief バックバッファのフォーマットを取得（デフォルトはSRGB） */
     DXGI_FORMAT GetBackBufferFormat() const { return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; }
-    
+
     /** @brief スワップチェーンのバッファ数を取得（ダブルバッファリングなら2） */
     UINT GetBufferCount() const { return 2; }
-    
+
     /** @brief DSV（深度バッファ）のハンドルを取得 */
     D3D12_CPU_DESCRIPTOR_HANDLE GetDsvHandle() { return dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart(); }
 
@@ -107,21 +106,36 @@ public: // メンバ関数
 
 private:
     // 内部初期化関数群
-    void InitializeDevice(); ///< デバイスとファクトリの生成
-    void CreateCommand(); ///< コマンドキュー・アロケータ・リストの生成
-    void CreateSwapChain(); ///< スワップチェーンの生成
-    void CreateDescriptorHeaps(); ///< 各種デスクリプタヒープの生成
-    void CreateRTV(); ///< レンダーターゲットビューの生成
-    void CreateDepthBuffer(); ///< 深度バッファリソースとDSVの生成
-    void CreateFence(); ///< GPU同期用フェンスの生成
-    void InitializeDXC(); ///< DXCシェーダーコンパイラの初期化
+
+    // デバイスとファクトリの生成
+    void InitializeDevice();
+
+    // コマンドキュー・アロケータ・リストの生成
+    void CreateCommand();
+
+    // スワップチェーンの生成
+    void CreateSwapChain();
+
+    // 各種デスクリプタヒープの生成
+    void CreateDescriptorHeaps();
+
+    // レンダーターゲットビューの生成
+    void CreateRTV();
+
+    // 深度バッファリソースとDSVの生成
+    void CreateDepthBuffer();
+
+    // GPU同期用フェンスの生成
+    void CreateFence();
+
+    // DXCシェーダーコンパイラの初期化
+    void InitializeDXC();
 
     // FPS固定関連
     void InitializeFixFPS(); ///< FPS固定用の参照時間初期化
     void UpdateFixFPS(); ///< 1/60秒に満たない場合に待機する
 
 private:
-
     // DirectX12基盤オブジェクト
     Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_;
     Microsoft::WRL::ComPtr<ID3D12Device> device_;
@@ -134,7 +148,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap_;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap_;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap_;
-    
+
     // リソース
     Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResoures_[2];
     Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource_;

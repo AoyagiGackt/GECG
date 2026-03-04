@@ -108,8 +108,8 @@ private:
 
     // --- コントローラー状態管理用 ---
 
-    XINPUT_STATE state_ {}; ///< 現在のコントローラー状態
-    XINPUT_STATE previousState_ {}; ///< 前回のコントローラー状態
-    const float deadzone_ = 0.2f; ///< デッドゾーン
+    XINPUT_STATE state_ {}; /// 現在のコントローラー状態
+    XINPUT_STATE previousState_ {}; /// 前回のコントローラー状態
+    const float deadzone_ = 0.2f; /// デッドゾーン
 
 };
