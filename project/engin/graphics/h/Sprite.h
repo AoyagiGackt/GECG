@@ -144,7 +144,7 @@ private:
     TransformationMatrixSprite* transformationMatrixData_ = nullptr;
 
     // --- スプライト固有データ ---
-    std::string textureFilePath_; ///< 使用中のテクスチャパス
+    std::string textureFilePath_; /// 使用中のテクスチャパス
 
     // スプライトパラメータ
     Vector2 position_ = { 250.0f, 250.0f }; /// 座標

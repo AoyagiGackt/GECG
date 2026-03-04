@@ -16,11 +16,19 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon, Input* input, Audio* aud
     // アセットロード
     bgmData_ = audio_->LoadAudio("Resources/461_BPM174.wav");
 
+    // 動画ファイルのパスをリストに追加
+    videoList_ = {
+        "Resources/test.mp4",
+        "Resources/test2.mp4",
+    };
+
+    currentVideoIndex_ = 0;
+
     // 動画プレイヤーの生成
     videoPlayer_ = std::make_unique<VideoPlayer>();
     
     // 動画再生の初期化
-    videoPlayer_->Initialize(dxCommon_, spriteCommon_.get(), "Resources/test.mp4");
+    videoPlayer_->Initialize(dxCommon_, spriteCommon_.get(), videoList_[currentVideoIndex_]);
 
     // オブジェクト生成
     camera_ = std::make_unique<Camera>(); // カメラ生成
@@ -42,6 +50,38 @@ void GamePlayScene::Update()
 
     camera_->Update();
     
+    // ホイールのスクロール量を取得
+    int32_t wheel = input_->GetWheel();
+    if (wheel != 0) {
+        // スクロール方向でインデックスを増減（ループさせる）
+        if (wheel > 0) {
+            // 上スクロール（前の動画へ）
+            currentVideoIndex_--;
+            if (currentVideoIndex_ < 0) {
+                currentVideoIndex_ = (int)videoList_.size() - 1;
+            }
+        } else if (wheel < 0) {
+            // 下スクロール（次の動画へ）
+            currentVideoIndex_++;
+            if (currentVideoIndex_ >= videoList_.size()) {
+                currentVideoIndex_ = 0;
+            }
+        }
+
+        // 今の動画の座標とサイズを一時保存しておく
+        Vector2 pos = videoPlayer_->GetPosition();
+        Vector2 size = videoPlayer_->GetSize();
+
+        // プレイヤーを作り直して新しい動画をロード
+        videoPlayer_->Finalize();
+        videoPlayer_ = std::make_unique<VideoPlayer>();
+        videoPlayer_->Initialize(dxCommon_, spriteCommon_.get(), videoList_[currentVideoIndex_]);
+
+        // 座標とサイズを復元
+        videoPlayer_->SetPosition(pos);
+        videoPlayer_->SetSize(size);
+    }
+
     for (auto& obj : gameObjects_) {
         obj->Update();
     }

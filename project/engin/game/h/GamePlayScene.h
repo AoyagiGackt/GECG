@@ -95,4 +95,10 @@ private:
 
     /** @brief 動画再生用のVideoPlayer */
     std::unique_ptr<VideoPlayer> videoPlayer_;
+
+    /** @brief 動画ファイルのパスリスト（複数動画を切り替える場合などに使用） */
+    std::vector<std::string> videoList_;
+
+    /** @brief 現在再生中の動画のインデックス */
+    int currentVideoIndex_ = 0;
 };
