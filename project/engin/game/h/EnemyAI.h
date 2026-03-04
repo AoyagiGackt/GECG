@@ -10,11 +10,11 @@
  * @brief AIの状態を定義する列挙型
  */
 enum class AIState {
-    kIdle, ///< 待機：その場で停止
-    kPatrol, ///< 巡回：決まったルートを移動
-    kChase, ///< 追跡：ターゲット（プレイヤー）を追いかける
-    kAttack, ///< 攻撃：射程内に入ったターゲットを攻撃
-    kEscape ///< 撤退：体力が減った際などに距離を取る
+    kIdle, /// 待機：その場で停止
+    kPatrol, /// 巡回：決まったルートを移動
+    kChase, /// 追跡：ターゲット（プレイヤー）を追いかける
+    kAttack, /// 攻撃：射程内に入ったターゲットを攻撃
+    kEscape /// 撤退：体力が減った際などに距離を取る
 };
 
 /**
@@ -56,9 +56,9 @@ private:
     void ThinkEscape(const Vector3& self, const Vector3& target);
 
 private:
-    AIState state_ = AIState::kIdle; ///< 現在の状態
-    Vector3 velocity_ = { 0.0f, 0.0f, 0.0f }; ///< 決定された移動ベクトル
-    Vector3 homePos_ = { 0.0f, 0.0f, 0.0f }; ///< 拠点（戻るべき場所）の座標
+    AIState state_ = AIState::kIdle; /// 現在の状態
+    Vector3 velocity_ = { 0.0f, 0.0f, 0.0f }; /// 決定された移動ベクトル
+    Vector3 homePos_ = { 0.0f, 0.0f, 0.0f }; /// 拠点（戻るべき場所）の座標
 
     // --- パラメータ（ImGui等で調整可能にすると便利） ---
     float speed_ = 0.08f; ///< 移動速度

@@ -18,20 +18,20 @@
  * @brief CPU側で計算・管理するパーティクル1粒のデータ
  */
 struct Particle {
-    Transform transform; ///< パーティクルの座標・回転・スケール
-    Vector3 velocity; ///< パーティクルの移動方向とスピード
-    Vector4 color; ///< パーティクルの色（RGBA）
-    float lifeTime; ///< パーティクルが消滅するまでの寿命（秒）
-    float currentTime; ///< 発生してからの経過時間（秒）
+    Transform transform; /// パーティクルの座標・回転・スケール
+    Vector3 velocity; /// パーティクルの移動方向とスピード
+    Vector4 color; /// パーティクルの色（RGBA）
+    float lifeTime; /// パーティクルが消滅するまでの寿命（秒）
+    float currentTime; /// 発生してからの経過時間（秒）
 };
 
 /**
  * @brief 描画のためにGPUへ転送するパーティクル1粒のデータ
  */
 struct ParticleForGPU {
-    Matrix4x4 WVP; ///< ワールド・ビュー・プロジェクション行列
-    Matrix4x4 World; ///< ワールド行列
-    Vector4 color; ///< パーティクルの色
+    Matrix4x4 WVP; /// ワールド・ビュー・プロジェクション行列
+    Matrix4x4 World; /// ワールド行列
+    Vector4 color; /// パーティクルの色
 };
 
 /**
@@ -39,17 +39,17 @@ struct ParticleForGPU {
  */
 struct ParticleGroup {
 
-    std::string textureFilePath; ///< このグループが使用するテクスチャのパス
+    std::string textureFilePath; /// このグループが使用するテクスチャのパス
 
-    std::list<Particle> particles; ///< 現在生存しているパーティクルのリスト
+    std::list<Particle> particles; /// 現在生存しているパーティクルのリスト
 
-    uint32_t srvIndex = 0; ///< インスタンシングデータ用SRVのインデックス
+    uint32_t srvIndex = 0; /// インスタンシングデータ用SRVのインデックス
 
-    Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource; ///< GPU上のインスタンシング用バッファリソース
+    Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource; /// GPU上のインスタンシング用バッファリソース
 
-    const uint32_t kNumMaxInstance = 1024; ///< 1グループあたりの最大パーティクル発生数
+    const uint32_t kNumMaxInstance = 1024; /// 1グループあたりの最大パーティクル発生数
 
-    ParticleForGPU* instancingData = nullptr; ///< GPUへデータを書き込むためのマップ済みポインタ
+    ParticleForGPU* instancingData = nullptr; /// GPUへデータを書き込むためのマップ済みポインタ
 };
 
 /**

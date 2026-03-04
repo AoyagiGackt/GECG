@@ -11,28 +11,28 @@
  * @brief スプライトを描画するための1頂点のデータ
  */
 struct VertexDataSprite {
-    Vector4 position; ///< 頂点座標（2D空間）
-    Vector2 texcoord; ///< UV座標（テクスチャの切り出し位置）
-    Vector3 normal; ///< 法線ベクトル（ライティング用）
+    Vector4 position; /// 頂点座標（2D空間）
+    Vector2 texcoord; /// UV座標（テクスチャの切り出し位置）
+    Vector3 normal; /// 法線ベクトル（ライティング用）
 };
 
 /**
  * @brief スプライトの質感（色やライティング設定）用データ
  */
 struct MaterialSprite {
-    Vector4 color; ///< スプライトの色・透明度（RGBA）
-    int enableLighting; ///< ライティングを有効にするか（1:有効, 0:無効）
-    int shadingType; ///< シェーディングの種類
-    float padding[2]; ///< 16バイトアライメント用のパディング
-    Matrix4x4 uvTransform; ///< UVアニメーション用の変換行列
+    Vector4 color; /// スプライトの色・透明度（RGBA）
+    int enableLighting; /// ライティングを有効にするか（1:有効, 0:無効）
+    int shadingType; /// シェーディングの種類
+    float padding[2]; /// 16バイトアライメント用のパディング
+    Matrix4x4 uvTransform; /// UVアニメーション用の変換行列
 };
 
 /**
  * @brief スプライトの座標変換用データ
  */
 struct TransformationMatrixSprite {
-    Matrix4x4 WVP; ///< ワールド・ビュー・プロジェクション行列（2D用の正投影）
-    Matrix4x4 World; ///< ワールド行列
+    Matrix4x4 WVP; /// ワールド・ビュー・プロジェクション行列（2D用の正投影）
+    Matrix4x4 World; /// ワールド行列
 };
 
 /**
@@ -140,17 +140,17 @@ private:
     std::string textureFilePath_; ///< 使用中のテクスチャパス
 
     // スプライトパラメータ
-    Vector2 position_ = { 0.0f, 0.0f }; ///< 座標
-    float rotation_ = 0.0f; ///< 回転角（Z軸）
-    Vector2 size_ = { 640.0f, 360.0f }; ///< 描画サイズ
-    Vector2 anchorPoint_ = { 0.0f, 0.0f }; ///< アンカーポイント（デフォルトは左上）
-    Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; ///< 色・アルファ値
+    Vector2 position_ = { 0.0f, 0.0f }; /// 座標
+    float rotation_ = 0.0f; /// 回転角（Z軸）
+    Vector2 size_ = { 640.0f, 360.0f }; /// 描画サイズ
+    Vector2 anchorPoint_ = { 0.0f, 0.0f }; /// アンカーポイント（デフォルトは左上）
+    Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; /// 色・アルファ値
     uint32_t srvIndex_ = 0;
 
-    bool isFlipX_ = false; ///< 左右反転フラグ
-    bool isFlipY_ = false; ///< 上下反転フラグ
+    bool isFlipX_ = false; /// 左右反転フラグ
+    bool isFlipY_ = false; /// 上下反転フラグ
 
     // テクスチャ切り出し用
-    Vector2 textureLeftTop_ = { 0.0f, 0.0f }; ///< 切り出し開始座標
-    Vector2 textureSize_ = { 100.0f, 100.0f }; ///< 切り出しサイズ
+    Vector2 textureLeftTop_ = { 0.0f, 0.0f }; /// 切り出し開始座標
+    Vector2 textureSize_ = { 100.0f, 100.0f }; /// 切り出しサイズ
 };
