@@ -116,23 +116,6 @@ public:
      */
     void SetTexture(std::string textureFilePath);
 
-    /**
-     * @brief 動画用テクスチャをセットする（追加）
-     * @param srvIndex VideoPlayerから取得したSRVインデックス
-     * @param resource VideoPlayerが保持するリソース
-     */
-    void SetVideoTexture(uint32_t srvIndex, ID3D12Resource* resource)
-    {
-        // もらった番号を自分の変数に保存
-        srvIndex_ = srvIndex;
-
-        // 動画の解像度（幅と高さ）を取得して、スプライトのサイズを動画に合わせる
-        if (resource) {
-            D3D12_RESOURCE_DESC desc = resource->GetDesc();
-            size_ = { (float)desc.Width, (float)desc.Height };
-        }
-    }
-
 private:
     /**
      * @brief テクスチャサイズと実際の描画サイズを調整・反映する内部処理
