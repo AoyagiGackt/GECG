@@ -104,8 +104,11 @@ void VideoPlayer::Initialize(DirectXCommon* dxCommon, SpriteCommon* spriteCommon
     sprite_ = std::make_unique<Sprite>();
     sprite_->Initialize(spriteCommon_, "Resources/uvChecker.png");
 
+    // 始まる場所
+    sprite_->SetPosition({ 960.0f, 15.0f });
+
     // ウィンドウサイズ指定
-    sprite_->SetSize({ 640.0f, 360.0f });
+    sprite_->SetSize({ 300.0f, 450.0f });
 
     // スプライトに動画のテクスチャを使うよう指示する
     sprite_->SetExternalTexture(srvIndex_);
@@ -154,7 +157,7 @@ void VideoPlayer::Update()
             LONG mfStride = videoWidth_ * 4;
 
             for (int y = 0; y < videoHeight_; ++y) {
-                int srcY = y; // ← 反転させずにそのままの行を使う
+                int srcY = y;
                 memcpy(pMappedData + y * footprint.Footprint.RowPitch, pData + srcY * mfStride, videoWidth_ * 4);
             }
 
