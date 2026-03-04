@@ -10,10 +10,10 @@
  * @brief エンジンに組み込み済みの基本図形の種類
  */
 enum MeshType {
-    MeshType_Sphere, ///< 球体
-    MeshType_Cube, ///< 立方体
-    MeshType_Plane, ///< 平面
-    MeshType_Count ///< メッシュの種類の総数
+    MeshType_Sphere, /// 球体
+    MeshType_Cube, /// 立方体
+    MeshType_Plane, /// 平面
+    MeshType_Count /// メッシュの種類の総数
 };
 
 

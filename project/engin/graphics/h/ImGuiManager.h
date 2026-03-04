@@ -1,6 +1,6 @@
 ﻿/**
  * @file ImGuiManager.h
- * @brief デバッグ用UIライブラリ「ImGui」の初期化・更新・描画・終了処理を一元管理するファイル
+ * @brief デバッグ用UIライブラリImGuiの初期化・更新・描画・終了処理を一元管理するファイル
  */
 #pragma once
 #include "DirectXCommon.h"
