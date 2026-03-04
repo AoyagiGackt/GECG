@@ -74,6 +74,9 @@ public: // メンバ関数
 
     Stick GetLeftStick() const;
 
+    /** @brief マウスのホイールスクロール量を取得する */
+    int32_t GetWheel() const { return mouseState_.lZ; }
+
 private:
 
     /** @brief DirectInput 8 の本体ポインタ */
@@ -112,4 +115,12 @@ private:
     XINPUT_STATE previousState_ {}; /// 前回のコントローラー状態
     const float deadzone_ = 0.2f; /// デッドゾーン
 
+    // --- マウス状態管理用 ---
+
+    /** @brief マウスデバイスのポインタ */
+    Microsoft::WRL::ComPtr<IDirectInputDevice8> mouse_;
+    /** @brief マウスの現在の状態 */
+    DIMOUSESTATE2 mouseState_ = {};
+    /** @brief マウスの前回の状態 */
+    DIMOUSESTATE2 mouseStatePre_ = {};
 };
