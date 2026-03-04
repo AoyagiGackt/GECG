@@ -95,19 +95,19 @@ private:
      * @brief GPUに送るための座標変換行列データ
      */
     struct TransformationMatrix {
-        Matrix4x4 WVP; ///< ワールド・ビュー・プロジェクション行列
-        Matrix4x4 World; ///< ワールド行列（法線やライティング計算用）
+        Matrix4x4 WVP; /// ワールド・ビュー・プロジェクション行列
+        Matrix4x4 World; /// ワールド行列（法線やライティング計算用）
     };
 
     /**
      * @brief GPUに送るためのマテリアル（質感）データ
      */
     struct Material {
-        Vector4 color; ///< 基本色（RGBA）
-        int enableLighting; ///< ライティングを有効にするか（1:有効, 0:無効）
-        int shadingType; ///< シェーディングの種類（ランバート、ハーフランバート等）
-        float padding[2]; ///< HLSLの16バイトアライメント規則に合わせるためのパディング
-        Matrix4x4 uvTransform; ///< UVアニメーション等に使うUV変換行列
+        Vector4 color; /// 基本色（RGBA）
+        int enableLighting; /// ライティングを有効にするか（1:有効, 0:無効）
+        int shadingType; /// シェーディングの種類（ランバート、ハーフランバート等）
+        float padding[2]; /// HLSLの16バイトアライメント規則に合わせるためのパディング
+        Matrix4x4 uvTransform; /// UVアニメーション等に使うUV変換行列
     };
 
     /** @brief 全オブジェクトで共通して使うカメラのポインタ */

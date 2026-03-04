@@ -61,7 +61,7 @@ private:
     Vector3 homePos_ = { 0.0f, 0.0f, 0.0f }; /// 拠点（戻るべき場所）の座標
 
     // --- パラメータ（ImGui等で調整可能にすると便利） ---
-    float speed_ = 0.08f; ///< 移動速度
-    float detectionRange_ = 15.0f; ///< 索敵範囲（追跡に切り替わる距離）
-    float attackRange_ = 3.0f; ///< 攻撃範囲
+    float speed_ = 0.08f; /// 移動速度
+    float detectionRange_ = 15.0f; /// 索敵範囲（追跡に切り替わる距離）
+    float attackRange_ = 3.0f; /// 攻撃範囲
 };
