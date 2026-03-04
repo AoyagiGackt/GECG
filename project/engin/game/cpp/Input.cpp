@@ -54,7 +54,44 @@ bool Input::TriggerKey(BYTE keyNumber)
     if (key[keyNumber] && !prevKeyStates_[keyNumber]) {
         return true;
     }
+
     // そうでなければfalseを返す
     prevKeyStates_[keyNumber] = key[keyNumber];
     return false;
+}
+
+/**
+ * @brief ゲームパッドの状態更新
+ */
+void Input::UpdateGamepad()
+{
+    previousState_ = state_; // 前回の状態を保存
+
+    // 0番目のコントローラーを取得
+    DWORD result = XInputGetState(0, &state_);
+
+    if (result != ERROR_SUCCESS) {
+        // コントローラーが接続されていない場合はデータをゼロにする
+        ZeroMemory(&state_, sizeof(XINPUT_STATE));
+    }
+}
+
+/**
+ * @brief スティックの正規化（遊びを考慮して 0.0 ~ 1.0 に変換）
+ */
+Input::Stick Input::GetLeftStick() const
+{
+    float x = (float)state_.Gamepad.sThumbLX / 32767.0f;
+    float y = (float)state_.Gamepad.sThumbLY / 32767.0f;
+
+    // デッドゾーンの処理
+    if (std::abs(x) < deadzone_) {
+        x = 0.0f;
+    }
+
+    if (std::abs(y) < deadzone_) {
+        y = 0.0f;
+    }
+
+    return { x, y };
 }

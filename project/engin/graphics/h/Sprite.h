@@ -37,8 +37,6 @@ struct TransformationMatrixSprite {
 
 /**
  * @brief 2Dスプライトのインスタンスを管理・描画するクラス
- * @note UIや2Dエフェクトの表示に使用します。画像の中心や端を基準にする「アンカーポイント」や、
- * テクスチャの一部だけを描画する「切り出し」の機能を備えています。
  */
 class Sprite {
 public:
@@ -147,6 +145,7 @@ private:
     Vector2 size_ = { 640.0f, 360.0f }; ///< 描画サイズ
     Vector2 anchorPoint_ = { 0.0f, 0.0f }; ///< アンカーポイント（デフォルトは左上）
     Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; ///< 色・アルファ値
+    uint32_t srvIndex_ = 0;
 
     bool isFlipX_ = false; ///< 左右反転フラグ
     bool isFlipY_ = false; ///< 上下反転フラグ

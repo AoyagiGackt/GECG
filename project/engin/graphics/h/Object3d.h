@@ -1,6 +1,6 @@
 ﻿/**
  * @file Object3d.h
- * @brief 3D空間に配置される個々のオブジェクト（インスタンス）を管理・描画するファイル
+ * @brief 3D空間に配置される個々のオブジェクトを管理・描画するファイル
  */
 #pragma once
 #include "MakeAffine.h"
@@ -83,6 +83,12 @@ public:
      * @return const Transform& トランスフォーム構造体への参照
      */
     const Transform& GetTransform() const { return transform_; }
+
+    /**
+     * @brief トランスフォーム（座標・回転・スケール）への参照を取得する（書き込み用）
+     * @return Transform& トランスフォームへの参照
+     */
+    Transform& GetTransform() { return transform_; }
 
 private:
     /**
