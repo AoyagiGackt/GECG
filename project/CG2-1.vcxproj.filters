@@ -117,15 +117,6 @@
     <ClCompile Include="engin\game\cpp\GameObject.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="engin\game\cpp\EnemyAI.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="engin\game\cpp\Enemy.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="engin\game\cpp\Player.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="engin\graphics\cpp\VideoPlayer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -247,15 +238,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="engin\game\h\GameObject.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="engin\game\h\EnemyAI.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="engin\game\h\Enemy.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="engin\game\h\Player.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="engin\graphics\h\VideoPlayer.h">

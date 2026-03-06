@@ -157,15 +157,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="engin\game\cpp\Audio.cpp" />
-    <ClCompile Include="engin\game\cpp\Enemy.cpp" />
-    <ClCompile Include="engin\game\cpp\EnemyAI.cpp" />
     <ClCompile Include="engin\game\cpp\Framework.cpp" />
     <ClCompile Include="engin\game\cpp\Game.cpp" />
     <ClCompile Include="engin\game\cpp\GameObject.cpp" />
     <ClCompile Include="engin\game\cpp\GamePlayScene.cpp" />
     <ClCompile Include="engin\game\cpp\hoge.cpp" />
     <ClCompile Include="engin\game\cpp\LightingMode.cpp" />
-    <ClCompile Include="engin\game\cpp\Player.cpp" />
     <ClCompile Include="engin\game\cpp\SceneFactory.cpp" />
     <ClCompile Include="engin\game\cpp\SceneManager.cpp" />
     <ClCompile Include="engin\game\cpp\TitleScene.cpp" />
@@ -217,8 +214,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engin\game\h\AbstractSceneFactory.h" />
     <ClInclude Include="engin\game\h\Audio.h" />
     <ClInclude Include="engin\game\h\BaseScene.h" />
-    <ClInclude Include="engin\game\h\Enemy.h" />
-    <ClInclude Include="engin\game\h\EnemyAI.h" />
     <ClInclude Include="engin\game\h\Framework.h" />
     <ClInclude Include="engin\game\h\Game.h" />
     <ClInclude Include="engin\game\h\GameObject.h" />
@@ -226,7 +221,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engin\game\h\hoge.h" />
     <ClInclude Include="engin\game\h\LightingMode.h" />
     <ClInclude Include="engin\game\h\Logger.h" />
-    <ClInclude Include="engin\game\h\Player.h" />
     <ClInclude Include="engin\game\h\SceneFactory.h" />
     <ClInclude Include="engin\game\h\SceneManager.h" />
     <ClInclude Include="engin\game\h\TitleScene.h" />
